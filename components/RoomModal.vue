@@ -512,6 +512,20 @@ const allRoomNameSuggestions = computed(() => {
   return Array.from(suggestions).sort()
 })
 
+// Utility function to safely parse amenities and tags from database
+const parseAmenitiesAndTags = (value: any): string[] => {
+  if (Array.isArray(value)) return [...value]
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
 const formData = ref({
   room_number: props.room?.room_number || '',
   room_name: props.room?.room_name || '',
@@ -523,8 +537,8 @@ const formData = ref({
   price_per_night: props.room?.price_per_night || 0,
   status: props.room?.status || 'available',
   description: props.room?.description || '',
-  amenities: Array.isArray(props.room?.amenities) ? [...props.room.amenities] : [],
-  tags: Array.isArray(props.room?.tags) ? [...props.room.tags] : [],
+  amenities: parseAmenitiesAndTags(props.room?.amenities),
+  tags: parseAmenitiesAndTags(props.room?.tags),
   featured_image: props.room?.featured_image || '',
 })
 
@@ -574,14 +588,23 @@ const setFeaturedImage = (index: number) => {
 // Amenities management
 const addAmenity = () => {
   const amenity = newAmenity.value.trim()
-  if (amenity && !formData.value.amenities.includes(amenity)) {
-    formData.value.amenities.push(amenity)
-    newAmenity.value = ''
+  if (amenity && amenity.length > 0) {
+    // Check for duplicates (case-insensitive)
+    const exists = formData.value.amenities.some(existing => 
+      existing.toLowerCase() === amenity.toLowerCase()
+    )
+    if (!exists) {
+      formData.value.amenities.push(amenity)
+      newAmenity.value = ''
+    }
   }
 }
 
 const addSuggestedAmenity = (amenity: string) => {
-  if (!formData.value.amenities.includes(amenity)) {
+  const exists = formData.value.amenities.some(existing => 
+    existing.toLowerCase() === amenity.toLowerCase()
+  )
+  if (!exists) {
     formData.value.amenities.push(amenity)
   }
 }
@@ -593,14 +616,23 @@ const removeAmenity = (index: number) => {
 // Tags management
 const addTag = () => {
   const tag = newTag.value.trim()
-  if (tag && !formData.value.tags.includes(tag)) {
-    formData.value.tags.push(tag)
-    newTag.value = ''
+  if (tag && tag.length > 0) {
+    // Check for duplicates (case-insensitive)
+    const exists = formData.value.tags.some(existing => 
+      existing.toLowerCase() === tag.toLowerCase()
+    )
+    if (!exists) {
+      formData.value.tags.push(tag)
+      newTag.value = ''
+    }
   }
 }
 
 const addSuggestedTag = (tag: string) => {
-  if (!formData.value.tags.includes(tag)) {
+  const exists = formData.value.tags.some(existing => 
+    existing.toLowerCase() === tag.toLowerCase()
+  )
+  if (!exists) {
     formData.value.tags.push(tag)
   }
 }
@@ -616,12 +648,28 @@ const handleSubmit = async () => {
     loading.value = true
     error.value = ''
 
-    // Prepare room data
+    // Prepare room data with validated amenities and tags
+    const validatedAmenities = formData.value.amenities
+      .filter(amenity => amenity && amenity.trim() !== '')
+      .map(amenity => amenity.trim())
+    
+    const validatedTags = formData.value.tags
+      .filter(tag => tag && tag.trim() !== '')
+      .map(tag => tag.trim())
+    
+    // Ensure amenities and tags are properly formatted
     const roomData = {
       ...formData.value,
-      amenities: JSON.stringify(formData.value.amenities),
-      tags: JSON.stringify(formData.value.tags)
+      amenities: JSON.stringify(validatedAmenities),
+      tags: JSON.stringify(validatedTags)
     }
+    
+    // Log for debugging (can be removed in production)
+    console.log('Submitting room data:', {
+      ...roomData,
+      amenities: validatedAmenities,
+      tags: validatedTags
+    })
 
     let roomId = props.room?.id
 

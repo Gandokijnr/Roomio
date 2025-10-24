@@ -298,14 +298,23 @@ const loadRoom = async () => {
     if (roomError) throw roomError
     room.value = roomData
 
-    // Parse JSON fields
+    // Parse JSON fields safely
     if (room.value) {
-      room.value.amenities = typeof room.value.amenities === 'string' 
-        ? JSON.parse(room.value.amenities) 
-        : room.value.amenities || []
-      room.value.tags = typeof room.value.tags === 'string' 
-        ? JSON.parse(room.value.tags) 
-        : room.value.tags || []
+      try {
+        room.value.amenities = typeof room.value.amenities === 'string' 
+          ? JSON.parse(room.value.amenities) 
+          : room.value.amenities || []
+      } catch {
+        room.value.amenities = []
+      }
+      
+      try {
+        room.value.tags = typeof room.value.tags === 'string' 
+          ? JSON.parse(room.value.tags) 
+          : room.value.tags || []
+      } catch {
+        room.value.tags = []
+      }
       
       newStatus.value = room.value.status
     }

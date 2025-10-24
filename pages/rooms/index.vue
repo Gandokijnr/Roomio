@@ -145,12 +145,12 @@
             <span class="value">₦{{ room.price_per_night }}/night</span>
           </div>
         </div>
-        <div v-if="room.amenities?.length > 0" class="room-amenities">
-          <span v-for="amenity in room.amenities.slice(0, 3)" :key="amenity" class="amenity-tag">
+        <div v-if="room.parsedAmenities.length > 0" class="room-amenities">
+          <span v-for="amenity in room.parsedAmenities.slice(0, 3)" :key="amenity" class="amenity-tag">
             {{ amenity }}
           </span>
-          <span v-if="room.amenities.length > 3" class="more-amenities">
-            +{{ room.amenities.length - 3 }} more
+          <span v-if="room.parsedAmenities.length > 3" class="more-amenities">
+            +{{ room.parsedAmenities.length - 3 }} more
           </span>
         </div>
         <div class="room-actions">
@@ -276,8 +276,17 @@ const filters = ref({
 const viewMode = ref<'grid' | 'list'>('grid')
 const showBulkImport = ref(false)
 
+// Computed property to parse amenities and tags for all rooms
+const roomsWithParsedData = computed(() => {
+  return rooms.value.map(room => ({
+    ...room,
+    parsedAmenities: parseJsonArray(room.amenities),
+    parsedTags: parseJsonArray(room.tags)
+  }))
+})
+
 const filteredRooms = computed(() => {
-  return rooms.value.filter(room => {
+  return roomsWithParsedData.value.filter(room => {
     // Search filter
     if (filters.value.search) {
       const search = filters.value.search.toLowerCase()
@@ -286,8 +295,8 @@ const filteredRooms = computed(() => {
         room.room_name?.toLowerCase().includes(search) ||
         room.room_type?.name.toLowerCase().includes(search) ||
         room.section?.toLowerCase().includes(search) ||
-        parseJsonArray(room.amenities).some(amenity => amenity.toLowerCase().includes(search)) ||
-        parseJsonArray(room.tags).some(tag => tag.toLowerCase().includes(search))
+        room.parsedAmenities.some(amenity => amenity.toLowerCase().includes(search)) ||
+        room.parsedTags.some(tag => tag.toLowerCase().includes(search))
       if (!matchesSearch) return false
     }
 
@@ -340,6 +349,16 @@ const loadRooms = async () => {
 
     if (error) throw error
     rooms.value = data || []
+    
+    // Debug: Log the first room's amenities to see the format
+    if (data && data.length > 0) {
+      console.log('Sample room data:', {
+        room_number: data[0].room_number,
+        amenities: data[0].amenities,
+        amenities_type: typeof data[0].amenities,
+        parsed_amenities: parseJsonArray(data[0].amenities)
+      })
+    }
   } catch (error) {
     console.error('Error loading rooms:', error)
   } finally {
@@ -447,7 +466,7 @@ const updateRoomStatus = async (room: Room, event: Event) => {
 
 // Export rooms to CSV
 const exportRooms = () => {
-  const csvData = rooms.value.map(room => ({
+  const csvData = roomsWithParsedData.value.map(room => ({
     'Room ID': room.room_number,
     'Room Name': room.room_name || '',
     'Type': room.room_type?.name || '',
@@ -457,8 +476,8 @@ const exportRooms = () => {
     'Status': room.status,
     'Floor': room.floor,
     'Section': room.section || '',
-    'Amenities': parseJsonArray(room.amenities).join(', ') || '',
-    'Tags': parseJsonArray(room.tags).join(', ') || '',
+    'Amenities': room.parsedAmenities.join(', ') || '',
+    'Tags': room.parsedTags.join(', ') || '',
     'Description': room.description || ''
   }))
 
