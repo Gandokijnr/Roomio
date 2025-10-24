@@ -14,7 +14,24 @@
       </button>
     </div>
 
-    <div class="filters-section card">
+    <div class="view-controls card">
+      <div class="view-toggle">
+        <button
+          @click="currentView = 'list'"
+          :class="['btn', currentView === 'list' ? 'btn-primary' : 'btn-secondary']"
+        >
+          📋 List View
+        </button>
+        <button
+          @click="currentView = 'calendar'"
+          :class="['btn', currentView === 'calendar' ? 'btn-primary' : 'btn-secondary']"
+        >
+          📅 Calendar View
+        </button>
+      </div>
+    </div>
+
+    <div v-if="currentView === 'list'" class="filters-section card">
       <div class="filters-grid">
         <div class="filter-group">
           <label>Search</label>
@@ -49,13 +66,23 @@
 
     <div v-if="loading" class="loading">Loading reservations...</div>
 
-    <div v-else-if="filteredReservations.length === 0" class="empty-state card">
+    <!-- Calendar View -->
+    <div v-else-if="currentView === 'calendar'">
+      <CalendarView
+        :reservations="reservations"
+        @edit-reservation="editReservation"
+        @date-selected="handleDateSelected"
+      />
+    </div>
+
+    <!-- List View -->
+    <div v-else-if="currentView === 'list' && filteredReservations.length === 0" class="empty-state card">
       <div class="empty-icon">📅</div>
       <h3>No reservations found</h3>
       <p>Try adjusting your filters or create a new reservation</p>
     </div>
 
-    <div v-else class="reservations-table card">
+    <div v-else-if="currentView === 'list'" class="reservations-table card">
       <table>
         <thead>
           <tr>
@@ -85,7 +112,7 @@
             <td>{{ formatDate(reservation.check_in_date) }}</td>
             <td>{{ formatDate(reservation.check_out_date) }}</td>
             <td>{{ reservation.number_of_guests }}</td>
-            <td class="amount">${{ reservation.total_amount.toFixed(2) }}</td>
+            <td class="amount">₦{{ reservation.total_amount.toFixed(2) }}</td>
             <td>
               <span :class="['badge', `badge-${getStatusColor(reservation.status)}`]">
                 {{ reservation.status.replace('_', ' ') }}
@@ -152,6 +179,7 @@ const { canManageReservations } = useAuth()
 
 const loading = ref(true)
 const reservations = ref<Reservation[]>([])
+const currentView = ref<'list' | 'calendar'>('list')
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const showCheckInModal = ref(false)
@@ -265,6 +293,17 @@ const handleReservationSaved = () => {
   loadReservations()
 }
 
+const editReservation = (reservation: Reservation) => {
+  selectedReservation.value = reservation
+  showEditModal.value = true
+}
+
+const handleDateSelected = (date: Date) => {
+  // Switch to list view and filter by selected date
+  currentView.value = 'list'
+  filters.value.checkInDate = date.toISOString().split('T')[0]
+}
+
 onMounted(() => {
   loadReservations()
 })
@@ -291,6 +330,17 @@ onMounted(() => {
 .page-header p {
   color: var(--neutral-600);
   font-size: 0.938rem;
+}
+
+.view-controls {
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.view-toggle {
+  display: flex;
+  gap: var(--spacing-xs);
+  justify-content: center;
 }
 
 .filters-section {

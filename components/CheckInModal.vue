@@ -32,7 +32,7 @@
             </div>
             <div class="summary-item">
               <label>Total Amount:</label>
-              <span>${{ reservation.total_amount.toFixed(2) }}</span>
+              <span>₦{{ reservation.total_amount.toFixed(2) }}</span>
             </div>
           </div>
         </div>
@@ -101,16 +101,16 @@
           <div class="payment-status">
             <div class="payment-info">
               <span class="label">Total Amount:</span>
-              <span class="amount">${{ reservation.total_amount.toFixed(2) }}</span>
+              <span class="amount">₦{{ reservation.total_amount.toFixed(2) }}</span>
             </div>
             <div class="payment-info">
               <span class="label">Paid Amount:</span>
-              <span class="amount">${{ reservation.paid_amount.toFixed(2) }}</span>
+              <span class="amount">₦{{ reservation.paid_amount.toFixed(2) }}</span>
             </div>
             <div class="payment-info">
               <span class="label">Balance Due:</span>
               <span class="amount balance" :class="{ 'paid': balanceDue <= 0 }">
-                ${{ balanceDue.toFixed(2) }}
+                ₦{{ balanceDue.toFixed(2) }}
               </span>
             </div>
           </div>

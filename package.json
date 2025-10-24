@@ -11,9 +11,12 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.76.1",
+    "@tailwindcss/vite": "^4.1.16",
     "@vueuse/core": "^14.0.0",
+    "nodemailer": "^6.9.7",
     "nuxt": "^3.13.0",
-    "supabase": "^2.53.6"
+    "supabase": "^2.53.6",
+    "tailwindcss": "^4.1.16"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",

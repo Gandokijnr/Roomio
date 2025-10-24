@@ -42,23 +42,23 @@
           <div class="bill-summary">
             <div class="bill-item">
               <span class="label">Room Charges:</span>
-              <span class="amount">${{ reservation.total_amount.toFixed(2) }}</span>
+              <span class="amount">₦{{ reservation.total_amount.toFixed(2) }}</span>
             </div>
             <div class="bill-item">
               <span class="label">Additional Charges:</span>
-              <span class="amount">${{ checkOutData.additional_charges.toFixed(2) }}</span>
+              <span class="amount">₦{{ checkOutData.additional_charges.toFixed(2) }}</span>
             </div>
             <div class="bill-item total">
               <span class="label">Total Amount:</span>
-              <span class="amount">${{ finalTotal.toFixed(2) }}</span>
+              <span class="amount">₦{{ finalTotal.toFixed(2) }}</span>
             </div>
             <div class="bill-item">
               <span class="label">Total Paid:</span>
-              <span class="amount">${{ totalPaid.toFixed(2) }}</span>
+              <span class="amount">₦{{ totalPaid.toFixed(2) }}</span>
             </div>
             <div class="bill-item balance" :class="{ 'paid': finalBalance <= 0, 'due': finalBalance > 0 }">
               <span class="label">{{ finalBalance > 0 ? 'Balance Due:' : 'Overpaid:' }}</span>
-              <span class="amount">${{ Math.abs(finalBalance).toFixed(2) }}</span>
+              <span class="amount">₦{{ Math.abs(finalBalance).toFixed(2) }}</span>
             </div>
           </div>
         </div>

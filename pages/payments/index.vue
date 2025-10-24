@@ -30,7 +30,7 @@
             <td>{{ formatDate(payment.payment_date) }}</td>
             <td>{{ payment.reservation?.reservation_number }}</td>
             <td>{{ payment.reservation?.guest?.first_name }} {{ payment.reservation?.guest?.last_name }}</td>
-            <td class="amount">${{ payment.amount.toFixed(2) }}</td>
+            <td class="amount">₦{{ payment.amount.toFixed(2) }}</td>
             <td>{{ payment.payment_method }}</td>
             <td>
               <span :class="['badge', `badge-${getStatusColor(payment.payment_status)}`]">

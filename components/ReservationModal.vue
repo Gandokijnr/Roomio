@@ -50,7 +50,7 @@
                 :key="room.id"
                 :value="room.id"
               >
-                Room {{ room.room_number }} - ${{ room.price_per_night }}/night
+                Room {{ room.room_number }} - ₦{{ room.price_per_night }}/night
               </option>
             </select>
           </div>
@@ -116,7 +116,7 @@
               :disabled="loading || !!reservation"
             />
             <div v-if="!reservation && selectedRoom && numberOfNights > 0" class="calculation-info">
-              {{ numberOfNights }} night{{ numberOfNights !== 1 ? 's' : '' }} × ${{ selectedRoom.price_per_night }} = ${{ calculatedAmount }}
+              {{ numberOfNights }} night{{ numberOfNights !== 1 ? 's' : '' }} × ₦{{ selectedRoom.price_per_night }} = ₦{{ calculatedAmount }}
             </div>
           </div>
 
@@ -267,6 +267,8 @@ const loadGuests = async () => {
 
 const loadAvailableRooms = async () => {
   try {
+    console.log('Loading available rooms...')
+    
     // First get all active rooms
     const { data: allRooms, error: roomsError } = await $supabase
       .from('rooms')
@@ -274,11 +276,18 @@ const loadAvailableRooms = async () => {
       .eq('is_active', true)
       .order('room_number')
 
+    console.log('All rooms from database:', allRooms)
+    console.log('Rooms error:', roomsError)
+
     if (roomsError) throw roomsError
 
     if (!formData.value.check_in_date || !formData.value.check_out_date) {
-      // If no dates selected, show only currently available rooms
-      availableRooms.value = allRooms?.filter(room => room.status === 'available') || []
+      // If no dates selected, show rooms that could potentially be available
+      // (exclude only maintenance and out_of_order)
+      availableRooms.value = allRooms?.filter(room => 
+        room.status !== 'maintenance' && room.status !== 'out_of_order'
+      ) || []
+      console.log('No dates selected, showing potentially available rooms:', availableRooms.value.length)
       return
     }
 
@@ -289,15 +298,30 @@ const loadAvailableRooms = async () => {
       .in('status', ['confirmed', 'checked_in'])
       .or(`and(check_in_date.lte.${formData.value.check_out_date},check_out_date.gte.${formData.value.check_in_date})`)
 
+    console.log('Conflicting reservations:', conflictingReservations)
+
     if (reservationsError) throw reservationsError
 
     const occupiedRoomIds = new Set(conflictingReservations?.map(r => r.room_id) || [])
     
     // Filter out rooms that are occupied during the requested period
-    availableRooms.value = allRooms?.filter(room => 
-      (room.status === 'available' || room.status === 'cleaning') && 
-      !occupiedRoomIds.has(room.id)
-    ) || []
+    // Allow rooms that are currently occupied but will be free during the requested dates
+    availableRooms.value = allRooms?.filter(room => {
+      // Exclude rooms that are permanently unavailable
+      if (room.status === 'maintenance' || room.status === 'out_of_order') {
+        return false
+      }
+      
+      // Exclude rooms that have conflicting reservations
+      if (occupiedRoomIds.has(room.id)) {
+        return false
+      }
+      
+      // Include all other rooms (available, cleaning, occupied but free during dates)
+      return true
+    }) || []
+
+    console.log('Final available rooms:', availableRooms.value.length)
 
   } catch (err) {
     console.error('Error loading available rooms:', err)
@@ -333,9 +357,11 @@ const handleSubmit = async () => {
       created_by: user.value.id,
     }
 
-    const { error: insertError } = await $supabase
+    const { data: newReservation, error: insertError } = await $supabase
       .from('reservations')
       .insert([reservationData])
+      .select('*, guest:guests(*), room:rooms(*)')
+      .single()
 
     if (insertError) throw insertError
 
@@ -343,6 +369,24 @@ const handleSubmit = async () => {
       .from('rooms')
       .update({ status: 'reserved' })
       .eq('id', formData.value.room_id)
+
+    // Send booking confirmation email
+    const { sendBookingConfirmation } = useEmailNotifications()
+    const selectedGuest = guests.value.find(g => g.id === formData.value.guest_id)
+    
+    if (selectedGuest?.email && newReservation) {
+      try {
+        const emailResult = await sendBookingConfirmation(newReservation, selectedGuest.email)
+        if (emailResult.success) {
+          console.log('Booking confirmation email sent successfully')
+        } else {
+          console.warn('Failed to send booking confirmation email:', emailResult.error)
+        }
+      } catch (emailError) {
+        console.warn('Email notification failed:', emailError)
+        // Don't fail the reservation creation if email fails
+      }
+    }
 
     emit('saved')
   } catch (err: any) {
