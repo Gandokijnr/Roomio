@@ -233,6 +233,20 @@
 <script setup lang="ts">
 import type { Room, RoomType, RoomStatus } from '~/types/database'
 
+// Utility function to safely parse JSON arrays from database
+const parseJsonArray = (value: any): string[] => {
+  if (Array.isArray(value)) return value
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
 definePageMeta({
   middleware: ['auth', 'role']
 })
@@ -272,8 +286,8 @@ const filteredRooms = computed(() => {
         room.room_name?.toLowerCase().includes(search) ||
         room.room_type?.name.toLowerCase().includes(search) ||
         room.section?.toLowerCase().includes(search) ||
-        room.amenities?.some(amenity => amenity.toLowerCase().includes(search)) ||
-        room.tags?.some(tag => tag.toLowerCase().includes(search))
+        parseJsonArray(room.amenities).some(amenity => amenity.toLowerCase().includes(search)) ||
+        parseJsonArray(room.tags).some(tag => tag.toLowerCase().includes(search))
       if (!matchesSearch) return false
     }
 
@@ -288,8 +302,11 @@ const filteredRooms = computed(() => {
     }
 
     // Floor filter
-    if (filters.value.floor && room.floor.toString() !== filters.value.floor) {
-      return false
+    if (filters.value.floor) {
+      const selectedFloor = parseInt(filters.value.floor)
+      if (room.floor !== selectedFloor) {
+        return false
+      }
     }
 
     // Price range filter
@@ -440,8 +457,8 @@ const exportRooms = () => {
     'Status': room.status,
     'Floor': room.floor,
     'Section': room.section || '',
-    'Amenities': room.amenities?.join(', ') || '',
-    'Tags': room.tags?.join(', ') || '',
+    'Amenities': parseJsonArray(room.amenities).join(', ') || '',
+    'Tags': parseJsonArray(room.tags).join(', ') || '',
     'Description': room.description || ''
   }))
 
