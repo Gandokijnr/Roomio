@@ -322,8 +322,15 @@
                 v-for="(image, index) in imagePreview"
                 :key="index"
                 class="image-preview-item"
+                :class="{ 'existing-image': image.isExisting, 'new-image': !image.isExisting }"
               >
                 <img :src="image.url" :alt="image.name" class="preview-image" />
+                <div class="image-status-badge" v-if="image.isExisting">
+                  Existing
+                </div>
+                <div class="image-status-badge new-badge" v-else>
+                  New
+                </div>
                 <div class="image-overlay">
                   <button
                     type="button"
@@ -545,8 +552,9 @@ const formData = ref({
 // Additional reactive variables
 const newAmenity = ref('')
 const newTag = ref('')
-const imagePreview = ref<Array<{url: string, name: string, file?: File}>>([])
+const imagePreview = ref<Array<{url: string, name: string, file?: File, id?: string, isExisting?: boolean}>>([])
 const fileInput = ref<HTMLInputElement | null>(null)
+const imagesToDelete = ref<string[]>([])
 
 // Image management methods
 const handleImageUpload = (event: Event) => {
@@ -577,6 +585,13 @@ const handleImageUpload = (event: Event) => {
 }
 
 const removeImage = (index: number) => {
+  const image = imagePreview.value[index]
+  
+  // If it's an existing image, add it to the deletion list
+  if (image.isExisting && image.id) {
+    imagesToDelete.value.push(image.id)
+  }
+  
   imagePreview.value.splice(index, 1)
 }
 
@@ -693,9 +708,9 @@ const handleSubmit = async () => {
       roomId = data.id
     }
 
-    // Handle image uploads if there are any
-    if (imagePreview.value.length > 0 && roomId) {
-      await handleImageUploads(roomId)
+    // Handle image changes (uploads, deletions, reordering)
+    if (roomId) {
+      await handleImageChanges(roomId)
     }
 
     emit('saved')
@@ -707,56 +722,117 @@ const handleSubmit = async () => {
   }
 }
 
-// Handle image uploads to storage and database
-const handleImageUploads = async (roomId: string) => {
-  const imagesToUpload = imagePreview.value.filter(img => img.file)
-  
-  for (let i = 0; i < imagesToUpload.length; i++) {
-    const image = imagesToUpload[i]
-    if (!image.file) continue
+// Handle all image changes: uploads, deletions, and reordering
+const handleImageChanges = async (roomId: string) => {
+  try {
+    // Step 1: Delete images that were marked for deletion
+    if (imagesToDelete.value.length > 0) {
+      for (const imageId of imagesToDelete.value) {
+        // Get image details before deletion
+        const { data: imageData } = await $supabase
+          .from('room_images')
+          .select('image_url')
+          .eq('id', imageId)
+          .single()
 
-    try {
-      // Upload to Supabase storage
-      const fileName = `${roomId}/${Date.now()}-${image.file.name}`
-      const { data: uploadData, error: uploadError } = await $supabase.storage
-        .from('room-images')
-        .upload(fileName, image.file)
+        if (imageData) {
+          // Delete from storage
+          const fileName = imageData.image_url.split('/').pop()
+          if (fileName) {
+            await $supabase.storage
+              .from('room-images')
+              .remove([`${roomId}/${fileName}`])
+          }
+        }
 
-      if (uploadError) {
-        console.error('Error uploading image:', uploadError)
-        continue
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = $supabase.storage
-        .from('room-images')
-        .getPublicUrl(fileName)
-
-      // Save image record to database
-      const { error: dbError } = await $supabase
-        .from('room_images')
-        .insert({
-          room_id: roomId,
-          image_url: publicUrl,
-          image_name: image.file.name,
-          is_featured: i === 0, // First image is featured
-          sort_order: i
-        })
-
-      if (dbError) {
-        console.error('Error saving image record:', dbError)
-      }
-
-      // Update room's featured_image if this is the first image
-      if (i === 0) {
+        // Delete from database
         await $supabase
-          .from('rooms')
-          .update({ featured_image: publicUrl })
-          .eq('id', roomId)
+          .from('room_images')
+          .delete()
+          .eq('id', imageId)
       }
-    } catch (err) {
-      console.error('Error processing image:', err)
     }
+
+    // Step 2: Upload new images
+    const imagesToUpload = imagePreview.value.filter(img => img.file && !img.isExisting)
+    
+    for (let i = 0; i < imagesToUpload.length; i++) {
+      const image = imagesToUpload[i]
+      if (!image.file) continue
+
+      try {
+        // Upload to Supabase storage
+        const fileName = `${roomId}/${Date.now()}-${image.file.name}`
+        const { data: uploadData, error: uploadError } = await $supabase.storage
+          .from('room-images')
+          .upload(fileName, image.file)
+
+        if (uploadError) {
+          console.error('Error uploading image:', uploadError)
+          continue
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = $supabase.storage
+          .from('room-images')
+          .getPublicUrl(fileName)
+
+        // Save image record to database
+        const { error: dbError } = await $supabase
+          .from('room_images')
+          .insert({
+            room_id: roomId,
+            image_url: publicUrl,
+            image_name: image.file.name,
+            is_featured: false, // Will be set in step 3
+            sort_order: 0 // Will be updated in step 3
+          })
+
+        if (dbError) {
+          console.error('Error saving image record:', dbError)
+        }
+      } catch (err) {
+        console.error('Error processing image:', err)
+      }
+    }
+
+    // Step 3: Update sort order and featured status for all remaining images
+    for (let i = 0; i < imagePreview.value.length; i++) {
+      const image = imagePreview.value[i]
+      
+      if (image.isExisting && image.id) {
+        // Update existing image order and featured status
+        await $supabase
+          .from('room_images')
+          .update({
+            sort_order: i,
+            is_featured: i === 0
+          })
+          .eq('id', image.id)
+      }
+    }
+
+    // Step 4: Update room's featured_image
+    if (imagePreview.value.length > 0) {
+      const featuredImage = imagePreview.value[0]
+      await $supabase
+        .from('rooms')
+        .update({ featured_image: featuredImage.url })
+        .eq('id', roomId)
+    } else {
+      // No images left, clear featured_image
+      await $supabase
+        .from('rooms')
+        .update({ featured_image: null })
+        .eq('id', roomId)
+    }
+
+    // Clear the deletion list
+    imagesToDelete.value = []
+    
+  } catch (err) {
+    console.error('Error handling image changes:', err)
+    throw err
   }
 }
 
@@ -786,8 +862,16 @@ watch(() => formData.value.room_type_id, (newRoomTypeId, oldRoomTypeId) => {
   }
 })
 
+// Reset image state
+const resetImageState = () => {
+  imagePreview.value = []
+  imagesToDelete.value = []
+}
+
 // Load existing images if editing
 onMounted(async () => {
+  // Reset image state first
+  resetImageState()
   if (props.room?.id) {
     try {
       const { data: images } = await $supabase
@@ -799,7 +883,9 @@ onMounted(async () => {
       if (images) {
         imagePreview.value = images.map(img => ({
           url: img.image_url,
-          name: img.image_name || 'Room Image'
+          name: img.image_name || 'Room Image',
+          id: img.id,
+          isExisting: true
         }))
       }
     } catch (err) {
@@ -988,6 +1074,31 @@ textarea.input {
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--neutral-100);
+}
+
+.image-preview-item.existing-image {
+  border: 2px solid var(--primary-300);
+}
+
+.image-preview-item.new-image {
+  border: 2px solid var(--success-300);
+}
+
+.image-status-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--primary-600);
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  z-index: 10;
+}
+
+.image-status-badge.new-badge {
+  background: var(--success-600);
 }
 
 .preview-image {

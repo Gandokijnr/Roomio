@@ -167,6 +167,13 @@
           >
             Edit
           </button>
+          <button
+            v-if="canDeleteRooms()"
+            @click="deleteRoom(room)"
+            class="btn btn-error btn-sm"
+          >
+            Delete
+          </button>
           <div class="quick-actions" v-if="canUpdateRoomStatus()">
             <select
               @change="updateRoomStatus(room, $event)"
@@ -252,7 +259,7 @@ definePageMeta({
 })
 
 const { $supabase } = useNuxtApp()
-const { canManageRooms, hasRole } = useAuth()
+const { canManageRooms, canDeleteRooms, hasRole } = useAuth()
 
 const canUpdateRoomStatus = () => {
   return hasRole(['admin', 'manager', 'receptionist', 'housekeeping'])
@@ -435,6 +442,63 @@ const closeModals = () => {
 const handleRoomSaved = () => {
   closeModals()
   loadRooms()
+}
+
+// Room deletion
+const deleteRoom = async (room: Room) => {
+  if (!canDeleteRooms()) {
+    alert('You do not have permission to delete rooms.')
+    return
+  }
+
+  const confirmed = confirm(`Are you sure you want to delete room ${room.room_number}? This action cannot be undone.`)
+  if (!confirmed) return
+
+  try {
+    loading.value = true
+
+    // First, delete associated room images from storage and database
+    const { data: images } = await $supabase
+      .from('room_images')
+      .select('image_url')
+      .eq('room_id', room.id)
+
+    if (images && images.length > 0) {
+      // Delete images from storage
+      for (const image of images) {
+        const fileName = image.image_url.split('/').pop()
+        if (fileName) {
+          await $supabase.storage
+            .from('room-images')
+            .remove([`${room.id}/${fileName}`])
+        }
+      }
+
+      // Delete image records from database
+      await $supabase
+        .from('room_images')
+        .delete()
+        .eq('room_id', room.id)
+    }
+
+    // Soft delete the room (set is_active to false instead of hard delete)
+    const { error } = await $supabase
+      .from('rooms')
+      .update({ is_active: false })
+      .eq('id', room.id)
+
+    if (error) throw error
+
+    // Remove room from local state
+    rooms.value = rooms.value.filter(r => r.id !== room.id)
+    
+    alert(`Room ${room.room_number} has been deleted successfully.`)
+  } catch (error) {
+    console.error('Error deleting room:', error)
+    alert('Failed to delete room. Please try again.')
+  } finally {
+    loading.value = false
+  }
 }
 
 // Room status update

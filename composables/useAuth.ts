@@ -89,6 +89,7 @@ export const useAuth = () => {
   }
 
   const canManageRooms = () => hasRole(['admin', 'manager'])
+  const canDeleteRooms = () => hasRole(['admin']) // Only admins can delete rooms
   const canManageReservations = () => hasRole(['admin', 'manager', 'receptionist'])
   const canManagePayments = () => hasRole(['admin', 'manager', 'receptionist', 'accountant'])
   const canManageInvoices = () => hasRole(['admin', 'manager', 'accountant'])
@@ -105,6 +106,7 @@ export const useAuth = () => {
     signOut,
     hasRole,
     canManageRooms,
+    canDeleteRooms,
     canManageReservations,
     canManagePayments,
     canManageInvoices,
