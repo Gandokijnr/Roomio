@@ -10,18 +10,29 @@
         <div class="form-grid">
           <div class="form-group">
             <label for="guest">Guest *</label>
-            <select
-              id="guest"
-              v-model="formData.guest_id"
-              class="input"
-              required
-              :disabled="loading || !!reservation"
-            >
-              <option value="">Select guest</option>
-              <option v-for="guest in guests" :key="guest.id" :value="guest.id">
-                {{ guest.first_name }} {{ guest.last_name }}
-              </option>
-            </select>
+            <div class="guest-selection">
+              <select
+                id="guest"
+                v-model="formData.guest_id"
+                class="input"
+                required
+                :disabled="loading || !!reservation"
+              >
+                <option value="">Select guest</option>
+                <option v-for="guest in guests" :key="guest.id" :value="guest.id">
+                  {{ guest.first_name }} {{ guest.last_name }} {{ guest.email ? `(${guest.email})` : '' }}
+                </option>
+              </select>
+              <button
+                v-if="!reservation"
+                type="button"
+                @click="showGuestModal = true"
+                class="btn btn-secondary btn-sm"
+                :disabled="loading"
+              >
+                + New Guest
+              </button>
+            </div>
           </div>
 
           <div class="form-group">
@@ -104,18 +115,32 @@
               required
               :disabled="loading || !!reservation"
             />
+            <div v-if="!reservation && selectedRoom && numberOfNights > 0" class="calculation-info">
+              {{ numberOfNights }} night{{ numberOfNights !== 1 ? 's' : '' }} × ${{ selectedRoom.price_per_night }} = ${{ calculatedAmount }}
+            </div>
           </div>
 
           <div class="form-group">
-            <label for="booking-source">Booking Source</label>
-            <input
+            <label for="booking-source">Booking Source *</label>
+            <select
               id="booking-source"
               v-model="formData.booking_source"
-              type="text"
               class="input"
-              placeholder="Direct"
+              required
               :disabled="loading || !!reservation"
-            />
+            >
+              <option value="Direct">Direct Booking</option>
+              <option value="Walk-in">Walk-in</option>
+              <option value="Website">Hotel Website</option>
+              <option value="Phone">Phone Booking</option>
+              <option value="Booking.com">Booking.com</option>
+              <option value="Expedia">Expedia</option>
+              <option value="Airbnb">Airbnb</option>
+              <option value="Agoda">Agoda</option>
+              <option value="Corporate">Corporate Booking</option>
+              <option value="Travel Agent">Travel Agent</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
 
           <div class="form-group full-width">
@@ -150,6 +175,13 @@
         </div>
       </form>
     </div>
+
+    <!-- Guest Modal -->
+    <GuestModal
+      v-if="showGuestModal"
+      @close="showGuestModal = false"
+      @saved="handleGuestSaved"
+    />
   </div>
 </template>
 
@@ -172,6 +204,7 @@ const loading = ref(false)
 const error = ref('')
 const guests = ref<Guest[]>([])
 const availableRooms = ref<Room[]>([])
+const showGuestModal = ref(false)
 
 const generateReservationNumber = () => {
   const prefix = 'RES'
@@ -192,6 +225,32 @@ const formData = ref({
   special_requests: props.reservation?.special_requests || '',
 })
 
+// Computed properties for automatic calculations
+const selectedRoom = computed(() => {
+  return availableRooms.value.find(room => room.id === formData.value.room_id)
+})
+
+const numberOfNights = computed(() => {
+  if (!formData.value.check_in_date || !formData.value.check_out_date) return 0
+  const checkIn = new Date(formData.value.check_in_date)
+  const checkOut = new Date(formData.value.check_out_date)
+  const diffTime = checkOut.getTime() - checkIn.getTime()
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return diffDays > 0 ? diffDays : 0
+})
+
+const calculatedAmount = computed(() => {
+  if (!selectedRoom.value || numberOfNights.value <= 0) return 0
+  return selectedRoom.value.price_per_night * numberOfNights.value
+})
+
+// Watch for changes to automatically update total amount
+watch([() => formData.value.room_id, () => formData.value.check_in_date, () => formData.value.check_out_date], () => {
+  if (!props.reservation && calculatedAmount.value > 0) {
+    formData.value.total_amount = calculatedAmount.value
+  }
+})
+
 const loadGuests = async () => {
   try {
     const { data, error } = await $supabase
@@ -208,18 +267,54 @@ const loadGuests = async () => {
 
 const loadAvailableRooms = async () => {
   try {
-    const { data, error } = await $supabase
+    // First get all active rooms
+    const { data: allRooms, error: roomsError } = await $supabase
       .from('rooms')
       .select('*')
-      .eq('status', 'available')
       .eq('is_active', true)
       .order('room_number')
 
-    if (error) throw error
-    availableRooms.value = data || []
+    if (roomsError) throw roomsError
+
+    if (!formData.value.check_in_date || !formData.value.check_out_date) {
+      // If no dates selected, show only currently available rooms
+      availableRooms.value = allRooms?.filter(room => room.status === 'available') || []
+      return
+    }
+
+    // Check for conflicting reservations in the date range
+    const { data: conflictingReservations, error: reservationsError } = await $supabase
+      .from('reservations')
+      .select('room_id')
+      .in('status', ['confirmed', 'checked_in'])
+      .or(`and(check_in_date.lte.${formData.value.check_out_date},check_out_date.gte.${formData.value.check_in_date})`)
+
+    if (reservationsError) throw reservationsError
+
+    const occupiedRoomIds = new Set(conflictingReservations?.map(r => r.room_id) || [])
+    
+    // Filter out rooms that are occupied during the requested period
+    availableRooms.value = allRooms?.filter(room => 
+      (room.status === 'available' || room.status === 'cleaning') && 
+      !occupiedRoomIds.has(room.id)
+    ) || []
+
   } catch (err) {
-    console.error('Error loading rooms:', err)
+    console.error('Error loading available rooms:', err)
   }
+}
+
+// Watch for date changes to update available rooms
+watch([() => formData.value.check_in_date, () => formData.value.check_out_date], () => {
+  if (!props.reservation) {
+    loadAvailableRooms()
+  }
+})
+
+const handleGuestSaved = async (guestId: string) => {
+  showGuestModal.value = false
+  await loadGuests()
+  formData.value.guest_id = guestId
 }
 
 const handleSubmit = async () => {
@@ -347,6 +442,22 @@ onMounted(() => {
 textarea.input {
   resize: vertical;
   font-family: inherit;
+}
+
+.guest-selection {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-end;
+}
+
+.guest-selection select {
+  flex: 1;
+}
+
+.calculation-info {
+  font-size: 0.75rem;
+  color: var(--neutral-600);
+  margin-top: var(--spacing-xs);
 }
 
 .error-message {

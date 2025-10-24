@@ -96,7 +96,7 @@
                 <button @click="viewReservation(reservation)" class="btn-icon" title="View">👁️</button>
                 <button
                   v-if="reservation.status === 'confirmed'"
-                  @click="checkIn(reservation)"
+                  @click="openCheckInModal(reservation)"
                   class="btn-icon"
                   title="Check In"
                 >
@@ -104,7 +104,7 @@
                 </button>
                 <button
                   v-if="reservation.status === 'checked_in'"
-                  @click="checkOut(reservation)"
+                  @click="openCheckOutModal(reservation)"
                   class="btn-icon"
                   title="Check Out"
                 >
@@ -123,6 +123,20 @@
       @close="closeModals"
       @saved="handleReservationSaved"
     />
+
+    <CheckInModal
+      v-if="showCheckInModal"
+      :reservation="selectedReservation!"
+      @close="closeCheckInModal"
+      @checked-in="handleCheckedIn"
+    />
+
+    <CheckOutModal
+      v-if="showCheckOutModal"
+      :reservation="selectedReservation!"
+      @close="closeCheckOutModal"
+      @checked-out="handleCheckedOut"
+    />
   </div>
 </template>
 
@@ -140,6 +154,8 @@ const loading = ref(true)
 const reservations = ref<Reservation[]>([])
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
+const showCheckInModal = ref(false)
+const showCheckOutModal = ref(false)
 const selectedReservation = ref<Reservation | null>(null)
 
 const filters = ref({
@@ -208,54 +224,34 @@ const viewReservation = (reservation: Reservation) => {
   showEditModal.value = true
 }
 
-const checkIn = async (reservation: Reservation) => {
-  if (!confirm(`Check in ${reservation.guest?.first_name} ${reservation.guest?.last_name}?`)) return
-
-  try {
-    const { error } = await $supabase
-      .from('reservations')
-      .update({
-        status: 'checked_in',
-        actual_check_in: new Date().toISOString()
-      })
-      .eq('id', reservation.id)
-
-    if (error) throw error
-
-    await $supabase
-      .from('rooms')
-      .update({ status: 'occupied' })
-      .eq('id', reservation.room_id)
-
-    await loadReservations()
-  } catch (error) {
-    console.error('Error checking in:', error)
-  }
+const openCheckInModal = (reservation: Reservation) => {
+  selectedReservation.value = reservation
+  showCheckInModal.value = true
 }
 
-const checkOut = async (reservation: Reservation) => {
-  if (!confirm(`Check out ${reservation.guest?.first_name} ${reservation.guest?.last_name}?`)) return
+const closeCheckInModal = () => {
+  showCheckInModal.value = false
+  selectedReservation.value = null
+}
 
-  try {
-    const { error } = await $supabase
-      .from('reservations')
-      .update({
-        status: 'checked_out',
-        actual_check_out: new Date().toISOString()
-      })
-      .eq('id', reservation.id)
+const handleCheckedIn = () => {
+  closeCheckInModal()
+  loadReservations()
+}
 
-    if (error) throw error
+const openCheckOutModal = (reservation: Reservation) => {
+  selectedReservation.value = reservation
+  showCheckOutModal.value = true
+}
 
-    await $supabase
-      .from('rooms')
-      .update({ status: 'cleaning' })
-      .eq('id', reservation.room_id)
+const closeCheckOutModal = () => {
+  showCheckOutModal.value = false
+  selectedReservation.value = null
+}
 
-    await loadReservations()
-  } catch (error) {
-    console.error('Error checking out:', error)
-  }
+const handleCheckedOut = () => {
+  closeCheckOutModal()
+  loadReservations()
 }
 
 const closeModals = () => {

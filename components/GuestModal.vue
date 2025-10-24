@@ -68,7 +68,7 @@
 import type { Guest } from '~/types/database'
 
 const props = defineProps<{ guest?: Guest | null }>()
-const emit = defineEmits<{ close: [], saved: [] }>()
+const emit = defineEmits<{ close: [], saved: [guestId: string] }>()
 
 const { $supabase } = useNuxtApp()
 const loading = ref(false)
@@ -91,12 +91,14 @@ const handleSubmit = async () => {
     loading.value = true
     error.value = ''
 
-    const { error: insertError } = await $supabase
+    const { data, error: insertError } = await $supabase
       .from('guests')
       .insert([formData.value])
+      .select('id')
+      .single()
 
     if (insertError) throw insertError
-    emit('saved')
+    emit('saved', data.id)
   } catch (err: any) {
     error.value = err.message || 'Failed to save guest'
   } finally {
