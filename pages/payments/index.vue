@@ -5,9 +5,42 @@
         <h1>Payments</h1>
         <p>Track and manage payment transactions</p>
       </div>
-      <button @click="showCreateModal = true" class="btn btn-primary">
-        + Record Payment
-      </button>
+      <div class="header-actions">
+        <NuxtLink to="/expenses" class="btn btn-secondary">
+          Manage Expenses
+        </NuxtLink>
+        <button @click="showCreateModal = true" class="btn btn-primary">
+          + Record Payment
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions card">
+      <h3>Quick Actions</h3>
+      <div class="action-buttons">
+        <button @click="showCreateModal = true" class="action-btn">
+          <span class="icon">💳</span>
+          <div>
+            <strong>Record Guest Payment</strong>
+            <p>Payment from reservation</p>
+          </div>
+        </button>
+        <NuxtLink to="/expenses" class="action-btn">
+          <span class="icon">📝</span>
+          <div>
+            <strong>Record Expense</strong>
+            <p>Business expense or bill</p>
+          </div>
+        </NuxtLink>
+        <NuxtLink to="/invoices" class="action-btn">
+          <span class="icon">🧾</span>
+          <div>
+            <strong>Create Invoice</strong>
+            <p>Generate guest invoice</p>
+          </div>
+        </NuxtLink>
+      </div>
     </div>
 
     <div v-if="loading" class="loading">Loading payments...</div>
@@ -126,6 +159,67 @@ onMounted(() => {
 .page-header p {
   color: var(--neutral-600);
   font-size: 0.938rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.quick-actions {
+  margin-bottom: var(--spacing-xl);
+}
+
+.quick-actions h3 {
+  font-size: 1.125rem;
+  color: var(--neutral-900);
+  margin-bottom: var(--spacing-md);
+}
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--neutral-50);
+  border: 2px solid var(--neutral-200);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.action-btn:hover {
+  background: var(--neutral-100);
+  border-color: var(--primary-500);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn .icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.action-btn strong {
+  display: block;
+  color: var(--neutral-900);
+  font-size: 0.938rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.action-btn p {
+  color: var(--neutral-600);
+  font-size: 0.813rem;
+  margin: 0;
 }
 
 .loading {
