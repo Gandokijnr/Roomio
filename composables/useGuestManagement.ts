@@ -404,7 +404,7 @@ export const useGuestManagement = () => {
         .from("group_bookings")
         .insert([
           {
-            group_name,
+            group_name: groupName,
             group_leader_id: groupLeaderId,
             total_guests: totalGuests,
             event_type: eventType,

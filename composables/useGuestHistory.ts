@@ -267,22 +267,23 @@ export const useGuestHistory = () => {
 
       reservations?.forEach(reservation => {
         // Room type preferences
-        const roomType = reservation.room?.room_type?.name
+        const room = Array.isArray(reservation.room) ? reservation.room[0] : reservation.room
+        const roomType = room?.room_type?.[0]?.name
         if (roomType) {
           roomTypes[roomType] = (roomTypes[roomType] || 0) + 1
         }
 
         // Special requests
         if (reservation.special_requests) {
-          const requests = reservation.special_requests.split(',').map(r => r.trim())
-          requests.forEach(request => {
+          const requests = reservation.special_requests.split(',').map((r: string) => r.trim())
+          requests.forEach((request: string) => {
             specialRequests[request] = (specialRequests[request] || 0) + 1
           })
         }
 
         // Amenity preferences
-        const roomAmenities = reservation.room?.room_type?.amenities || []
-        roomAmenities.forEach(amenity => {
+        const roomAmenities = room?.room_type?.[0]?.amenities || []
+        roomAmenities.forEach((amenity: string) => {
           amenities[amenity] = (amenities[amenity] || 0) + 1
         })
       })
