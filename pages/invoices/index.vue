@@ -30,7 +30,7 @@
             <td class="invoice-number">{{ invoice.invoice_number }}</td>
             <td>{{ invoice.guest?.first_name }} {{ invoice.guest?.last_name }}</td>
             <td>{{ formatDate(invoice.issue_date) }}</td>
-            <td class="amount">${{ invoice.total_amount.toFixed(2) }}</td>
+            <td class="amount">₦{{ invoice.total_amount.toFixed(2) }}</td>
             <td>
               <span :class="['badge', `badge-${getStatusColor(invoice.status)}`]">
                 {{ invoice.status }}

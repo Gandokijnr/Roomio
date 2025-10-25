@@ -39,7 +39,7 @@ export const useGuestHistory = () => {
         totalSpent: 0,
         averageStayDuration: 0,
         preferredRoomTypes: [] as { type: string; count: number }[],
-        seasonalPreferences: Array(12).fill(0).map((_, i) => ({ month: i + 1, count: 0 }))
+        seasonalPreferences: Array(12).fill(0).map((_, i) => ({ month: i, count: 0 }))
       }
 
       if (stays && stays.length > 0) {
@@ -57,7 +57,9 @@ export const useGuestHistory = () => {
 
         // Calculate room type preferences
         const roomTypes = stays.reduce((acc: { [key: string]: number }, stay) => {
-          const typeName = stay.room?.room_type?.name || 'Unknown'
+          const room = Array.isArray(stay.room) ? stay.room[0] : stay.room
+          const roomType = Array.isArray(room?.room_type) ? room.room_type[0] : room?.room_type
+          const typeName = roomType?.name || 'Unknown'
           acc[typeName] = (acc[typeName] || 0) + 1
           return acc
         }, {})
