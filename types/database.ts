@@ -6,6 +6,14 @@ export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 export type TaskType = 'cleaning' | 'maintenance' | 'inspection'
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled'
+export type Gender = 'male' | 'female' | 'other'
+export type IdType = 'passport' | 'national_id' | 'driver_license' | 'other'
+export type LoyaltyTier = 'bronze' | 'silver' | 'gold' | 'platinum'
+export type CommunicationType = 'email' | 'sms' | 'call' | 'in_person'
+export type CommunicationDirection = 'inbound' | 'outbound'
+export type CommunicationStatus = 'sent' | 'delivered' | 'read' | 'failed'
+export type LoyaltyTransactionType = 'earned' | 'redeemed' | 'expired' | 'adjusted'
+export type BillingPreference = 'consolidated' | 'individual'
 
 export interface Profile {
   id: string
@@ -65,22 +73,144 @@ export interface Room {
 
 export interface Guest {
   id: string
+  guest_id?: string
   first_name: string
   last_name: string
   email?: string
   phone?: string
-  id_type?: string
-  id_number?: string
-  address?: string
-  city?: string
-  country?: string
+  gender?: Gender
   date_of_birth?: string
-  preferences: Record<string, any>
+  nationality?: string
+  city?: string
+  address?: string
+  id_type?: IdType
+  id_number?: string
+  emergency_contact?: string
+  occupation?: string
+  company?: string
+  preferred_payment_method?: string
+  special_preferences?: string
   notes?: string
-  vip_status: boolean
-  total_visits: number
+  loyalty_tier: LoyaltyTier
+  loyalty_points: number
+  total_stays: number
+  total_spending: number
+  last_visit_date?: string
+  is_corporate: boolean
+  corporate_id?: string
+  corporate_account?: CorporateAccount
+  marketing_consent: boolean
+  profile_image_url?: string
   created_at: string
   updated_at: string
+}
+
+export interface CorporateAccount {
+  id: string
+  company_name: string
+  company_address?: string
+  tax_id?: string
+  contact_person?: string
+  contact_email?: string
+  contact_phone?: string
+  billing_preference: BillingPreference
+  discount_percentage: number
+  payment_terms: number
+  credit_limit: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface GuestFeedback {
+  id: string
+  guest_id: string
+  guest?: Guest
+  reservation_id?: string
+  reservation?: Reservation
+  overall_rating?: number
+  cleanliness_rating?: number
+  service_rating?: number
+  amenities_rating?: number
+  value_rating?: number
+  comments?: string
+  would_recommend?: boolean
+  feedback_date: string
+  response_required: boolean
+  staff_response?: string
+  responded_by?: string
+  responded_at?: string
+}
+
+export interface LoyaltyTransaction {
+  id: string
+  guest_id: string
+  guest?: Guest
+  transaction_type: LoyaltyTransactionType
+  points: number
+  description?: string
+  reservation_id?: string
+  reservation?: Reservation
+  created_at: string
+  expires_at?: string
+}
+
+export interface GuestCommunication {
+  id: string
+  guest_id: string
+  guest?: Guest
+  communication_type: CommunicationType
+  subject?: string
+  message?: string
+  direction: CommunicationDirection
+  status: CommunicationStatus
+  sent_by?: string
+  sent_by_user?: Profile
+  created_at: string
+}
+
+export interface GuestPreference {
+  id: string
+  guest_id: string
+  preference_type: string
+  preference_value: string
+  created_at: string
+}
+
+export interface GuestDocument {
+  id: string
+  guest_id: string
+  document_type: string
+  document_url: string
+  file_name?: string
+  file_size?: number
+  uploaded_by?: string
+  created_at: string
+}
+
+export interface GroupBooking {
+  id: string
+  group_name: string
+  group_leader_id: string
+  group_leader?: Guest
+  total_guests: number
+  event_type?: string
+  special_requirements?: string
+  group_discount_percentage: number
+  booking_date: string
+  created_by?: string
+  created_at: string
+}
+
+export interface GroupBookingGuest {
+  id: string
+  group_booking_id: string
+  group_booking?: GroupBooking
+  guest_id: string
+  guest?: Guest
+  reservation_id?: string
+  reservation?: Reservation
+  created_at: string
 }
 
 export interface Reservation {

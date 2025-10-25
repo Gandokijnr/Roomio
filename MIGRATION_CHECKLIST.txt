@@ -1,0 +1,101 @@
+═══════════════════════════════════════════════════════════════
+  DATABASE MIGRATION CHECKLIST
+═══════════════════════════════════════════════════════════════
+
+Current Status: ⏳ MIGRATION PENDING
+
+Your app is running but needs database tables to be created.
+
+═══════════════════════════════════════════════════════════════
+  QUICK START (5 MINUTES)
+═══════════════════════════════════════════════════════════════
+
+□ Step 1: Open Supabase Dashboard
+  → https://supabase.com/dashboard/project/dsmfhrfqygzqgazicgsv
+  → Click "SQL Editor" in left sidebar
+
+□ Step 2: Copy SQL Script
+  → Open file: supabase/COMPLETE_MIGRATION.sql
+  → Select all (Ctrl+A)
+  → Copy (Ctrl+C)
+
+□ Step 3: Run Migration
+  → Paste into SQL Editor
+  → Click "Run" button (or Ctrl+Enter)
+  → Wait for "Success" message
+
+□ Step 4: Verify Tables
+  → Click "Table Editor" in left sidebar
+  → Check these tables exist:
+    ✓ guests
+    ✓ loyalty_transactions
+    ✓ guest_communications
+    ✓ corporate_accounts
+    ✓ guest_feedback
+
+□ Step 5: Test Application
+  → Go to: http://localhost:3001
+  → Press F5 to refresh
+  → Open Console (F12)
+  → Check: No 404 errors!
+
+═══════════════════════════════════════════════════════════════
+  VERIFICATION
+═══════════════════════════════════════════════════════════════
+
+After running migration, verify:
+
+□ No errors in SQL execution
+□ Tables appear in Table Editor
+□ Browser console shows no 404 errors
+□ Can create new guest without 400 error
+□ Guest data saves successfully
+
+═══════════════════════════════════════════════════════════════
+  TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+If SQL fails:
+→ Check you're logged into correct Supabase project
+→ Verify project ID: dsmfhrfqygzqgazicgsv
+→ Read error message in SQL Editor
+→ Check QUICK_FIX_GUIDE.md for help
+
+If 404 errors persist:
+→ Verify tables exist in Table Editor
+→ Check RLS policies are enabled
+→ Refresh browser (Ctrl+Shift+R for hard refresh)
+
+If 400 errors persist:
+→ Check guests table has all required columns
+→ Verify .env has correct Supabase credentials
+→ Check browser console for detailed error
+
+═══════════════════════════════════════════════════════════════
+  HELPFUL FILES
+═══════════════════════════════════════════════════════════════
+
+📄 supabase/COMPLETE_MIGRATION.sql
+   → Complete SQL script to run in dashboard (USE THIS ONE!)
+
+📄 QUICK_FIX_GUIDE.md
+   → Detailed step-by-step instructions
+
+📄 ERROR_SUMMARY.md
+   → Explanation of all errors
+
+📄 docs/DEPLOYMENT_CHECKLIST.md
+   → Complete deployment guide
+
+═══════════════════════════════════════════════════════════════
+  CURRENT ENVIRONMENT
+═══════════════════════════════════════════════════════════════
+
+✓ Dev server: Running on http://localhost:3001
+✓ Migration files: Ready in supabase/migrations/
+✓ Quick fix script: Created (apply_missing_tables.sql)
+⏳ Database tables: NEED TO BE CREATED
+
+═══════════════════════════════════════════════════════════════
+
+Next Action: Open Supabase Dashboard and run the SQL script!
