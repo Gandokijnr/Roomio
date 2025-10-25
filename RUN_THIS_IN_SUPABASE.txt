@@ -1,0 +1,133 @@
+═══════════════════════════════════════════════════════════════
+  ⚠️ IMPORTANT: USE THE COMPLETE SETUP FILE INSTEAD!
+═══════════════════════════════════════════════════════════════
+
+You need to create the loyalty_transactions table first.
+
+Please run this file instead:
+  supabase/COMPLETE_SETUP_ALL_TABLES.sql
+
+It will create:
+  ✓ loyalty_transactions table
+  ✓ guest_communications table
+  ✓ All functions
+  ✓ Trigger
+  ✓ View
+
+═══════════════════════════════════════════════════════════════
+  OR COPY THE CODE BELOW (COMPLETE VERSION)
+═══════════════════════════════════════════════════════════════
+
+-- Create loyalty_transactions table
+CREATE TABLE IF NOT EXISTS loyalty_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  guest_id UUID NOT NULL REFERENCES guests(id) ON DELETE CASCADE,
+  transaction_type VARCHAR(20) CHECK (transaction_type IN ('earned', 'redeemed', 'expired', 'adjusted')),
+  points INTEGER NOT NULL,
+  description TEXT,
+  reservation_id UUID,
+  created_at TIMESTAMP DEFAULT NOW(),
+  expires_at TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_loyalty_transactions_guest_id ON loyalty_transactions(guest_id);
+ALTER TABLE loyalty_transactions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow authenticated users to manage loyalty transactions" ON loyalty_transactions;
+CREATE POLICY "Allow authenticated users to manage loyalty transactions" ON loyalty_transactions
+  FOR ALL TO authenticated USING (true);
+
+-- Create functions
+CREATE OR REPLACE FUNCTION calculate_loyalty_points(p_amount DECIMAL, p_loyalty_tier VARCHAR DEFAULT 'bronze')
+RETURNS INTEGER AS $$
+DECLARE v_multiplier DECIMAL;
+BEGIN
+  v_multiplier := CASE p_loyalty_tier WHEN 'platinum' THEN 2.0 WHEN 'gold' THEN 1.5 WHEN 'silver' THEN 1.25 ELSE 1.0 END;
+  RETURN GREATEST(FLOOR((p_amount / 1000) * v_multiplier)::INTEGER, 0);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION determine_loyalty_tier(p_total_spending DECIMAL, p_total_stays INTEGER)
+RETURNS VARCHAR AS $$
+BEGIN
+  IF p_total_spending >= 1000000 OR p_total_stays >= 20 THEN RETURN 'platinum';
+  ELSIF p_total_spending >= 500000 OR p_total_stays >= 10 THEN RETURN 'gold';
+  ELSIF p_total_spending >= 200000 OR p_total_stays >= 5 THEN RETURN 'silver';
+  ELSE RETURN 'bronze';
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Drop existing function first (required to change return type)
+DROP FUNCTION IF EXISTS process_guest_checkout(UUID, UUID, NUMERIC, DATE, DATE);
+
+CREATE OR REPLACE FUNCTION process_guest_checkout(
+  p_reservation_id UUID,
+  p_guest_id UUID,
+  p_total_amount DECIMAL,
+  p_check_in_date DATE,
+  p_check_out_date DATE
+)
+RETURNS TABLE(
+  points_awarded INTEGER,
+  new_tier VARCHAR,
+  total_points INTEGER,
+  guest_total_spending DECIMAL
+) AS $$
+DECLARE
+  v_points_awarded INTEGER;
+  v_current_tier VARCHAR;
+  v_new_tier VARCHAR;
+  v_total_spending DECIMAL;
+  v_total_stays INTEGER;
+  v_total_points INTEGER;
+  v_stay_duration INTEGER;
+BEGIN
+  SELECT g.loyalty_tier, g.total_spending, g.total_stays, g.loyalty_points
+  INTO v_current_tier, v_total_spending, v_total_stays, v_total_points
+  FROM guests g
+  WHERE g.id = p_guest_id;
+  
+  v_stay_duration := p_check_out_date - p_check_in_date;
+  v_points_awarded := calculate_loyalty_points(p_total_amount, v_current_tier);
+  
+  UPDATE guests
+  SET 
+    total_stays = total_stays + 1,
+    total_spending = total_spending + p_total_amount,
+    loyalty_points = loyalty_points + v_points_awarded,
+    last_visit_date = NOW(),
+    updated_at = NOW()
+  WHERE id = p_guest_id;
+  
+  SELECT g.total_spending, g.total_stays, g.loyalty_points
+  INTO v_total_spending, v_total_stays, v_total_points
+  FROM guests g
+  WHERE g.id = p_guest_id;
+  
+  v_new_tier := determine_loyalty_tier(v_total_spending, v_total_stays);
+  
+  IF v_new_tier != v_current_tier THEN
+    UPDATE guests
+    SET loyalty_tier = v_new_tier, updated_at = NOW()
+    WHERE id = p_guest_id;
+  END IF;
+  
+  INSERT INTO loyalty_transactions (guest_id, transaction_type, points, description, reservation_id, created_at)
+  VALUES (p_guest_id, 'earned', v_points_awarded, 
+          FORMAT('Points earned from %s-day stay (₦%s spent)', v_stay_duration, p_total_amount),
+          p_reservation_id, NOW());
+  
+  RETURN QUERY SELECT v_points_awarded, v_new_tier, v_total_points, v_total_spending;
+END;
+$$ LANGUAGE plpgsql;
+
+═══════════════════════════════════════════════════════════════
+  AFTER RUNNING THIS:
+═══════════════════════════════════════════════════════════════
+
+1. You should see: "DROP FUNCTION" and "CREATE FUNCTION" success messages
+2. Refresh your app at http://localhost:3001
+3. The ambiguous column error will be GONE!
+
+═══════════════════════════════════════════════════════════════

@@ -329,6 +329,159 @@ export const useLoyaltySystem = () => {
     }
   }
 
+  const getActiveReservationStats = async (guestId: string): Promise<{
+    stats?: Array<{
+      reservation_id: string;
+      room_number: string;
+      check_in_date: string;
+      check_out_date: string;
+      days_remaining: number;
+      total_days: number;
+      current_spending: number;
+      estimated_points: number;
+    }>;
+    error?: string;
+  }> => {
+    try {
+      const { data, error } = await $supabase
+        .rpc('get_active_reservation_stats', { p_guest_id: guestId })
+
+      if (error) throw error
+
+      return { stats: data || [] }
+    } catch (error: any) {
+      console.error('Failed to get active reservation stats:', error)
+      return { error: error.message || 'Failed to get active reservation stats' }
+    }
+  }
+
+  const processCheckout = async (
+    reservationId: string,
+    guestId: string,
+    totalAmount: number,
+    checkInDate: string,
+    checkOutDate: string
+  ): Promise<{
+    result?: {
+      points_awarded: number;
+      new_tier: string;
+      total_points: number;
+      guest_total_spending: number;
+    };
+    error?: string;
+  }> => {
+    try {
+      const { data, error } = await $supabase
+        .rpc('process_guest_checkout', {
+          p_reservation_id: reservationId,
+          p_guest_id: guestId,
+          p_total_amount: totalAmount,
+          p_check_in_date: checkInDate,
+          p_check_out_date: checkOutDate
+        })
+
+      if (error) throw error
+
+      // Get guest info for email
+      const { data: guest } = await $supabase
+        .from('guests')
+        .select('*')
+        .eq('id', guestId)
+        .single()
+
+      // Send notification if tier changed
+      if (guest && data && data[0]) {
+        const result = data[0]
+        const currentTier = guest.loyalty_tier
+
+        if (result.new_tier !== currentTier && guest.email) {
+          await sendTierUpgrade(guest, guest.email, {
+            oldTier: currentTier,
+            newTier: result.new_tier
+          })
+        }
+
+        // Send loyalty update
+        if (guest.email) {
+          await sendLoyaltyUpdate(guest, guest.email, {
+            type: 'earned',
+            points: result.points_awarded,
+            description: `Points earned from checkout`
+          })
+        }
+      }
+
+      return { result: data?.[0] }
+    } catch (error: any) {
+      console.error('Failed to process checkout:', error)
+      return { error: error.message || 'Failed to process checkout' }
+    }
+  }
+
+  const redeemPointsWithDB = async (
+    guestId: string,
+    pointsToRedeem: number,
+    description: string = 'Points redeemed for discount'
+  ): Promise<{
+    result?: {
+      success: boolean;
+      new_balance: number;
+      message: string;
+    };
+    error?: string;
+  }> => {
+    try {
+      const { data, error } = await $supabase
+        .rpc('redeem_loyalty_points', {
+          p_guest_id: guestId,
+          p_points_to_redeem: pointsToRedeem,
+          p_description: description
+        })
+
+      if (error) throw error
+
+      return { result: data?.[0] }
+    } catch (error: any) {
+      console.error('Failed to redeem points:', error)
+      return { error: error.message || 'Failed to redeem points' }
+    }
+  }
+
+  const calculateDaysRemaining = (checkOutDate: string): number => {
+    const today = new Date()
+    const checkout = new Date(checkOutDate)
+    const diffTime = checkout.getTime() - today.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return Math.max(0, diffDays)
+  }
+
+  const getLoyaltyStats = async (guestId: string): Promise<{
+    stats?: {
+      tier_progress_percentage: number;
+      next_tier: string;
+      spending_to_next_tier: number;
+      active_reservations: number;
+      lifetime_value: number;
+      avg_spending_per_stay: number;
+    };
+    error?: string;
+  }> => {
+    try {
+      const { data, error } = await $supabase
+        .from('guest_loyalty_stats')
+        .select('*')
+        .eq('id', guestId)
+        .single()
+
+      if (error) throw error
+
+      return { stats: data }
+    } catch (error: any) {
+      console.error('Failed to get loyalty stats:', error)
+      return { error: error.message || 'Failed to get loyalty stats' }
+    }
+  }
+
   return {
     TIER_THRESHOLDS,
     POINTS_RULES,
@@ -340,6 +493,11 @@ export const useLoyaltySystem = () => {
     checkAndUpdateTier,
     getLoyaltyHistory,
     awardFeedbackPoints,
-    checkForBirthdayBonus
+    checkForBirthdayBonus,
+    getActiveReservationStats,
+    processCheckout,
+    redeemPointsWithDB,
+    calculateDaysRemaining,
+    getLoyaltyStats
   }
 }
