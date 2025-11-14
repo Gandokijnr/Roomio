@@ -5,6 +5,7 @@ import nodeCrypto from 'node:crypto';
 import { parentPort, threadId } from 'node:worker_threads';
 import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, getQuery as getQuery$1, readBody, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, getResponseStatusText } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/h3/dist/index.mjs';
 import { escapeHtml } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/@vue/shared/dist/shared.cjs.js';
+import { createClient } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/@supabase/supabase-js/dist/main/index.js';
 import { createRenderer, getRequestDependencies, getPreloadLinks, getPrefetchLinks } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/vue-bundle-renderer/dist/runtime.mjs';
 import { parseURL, withoutBase, joinURL, getQuery, withQuery, withTrailingSlash, decodePath, withLeadingSlash, withoutTrailingSlash, joinRelativeURL } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/ufo/dist/index.mjs';
 import { renderToString } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/vue/server-renderer/index.mjs';
@@ -1510,10 +1511,14 @@ async function getIslandContext(event) {
   return ctx;
 }
 
+const _lazy_jQDxER = () => Promise.resolve().then(function () { return demoRequest_post$1; });
+const _lazy_Bd5poG = () => Promise.resolve().then(function () { return sendInvitation_post$1; });
 const _lazy_7Vc5ea = () => Promise.resolve().then(function () { return renderer$1; });
 
 const handlers = [
   { route: '', handler: _pXuHUk, lazy: false, middleware: true, method: undefined },
+  { route: '/api/demo-request', handler: _lazy_jQDxER, lazy: true, middleware: false, method: "post" },
+  { route: '/api/send-invitation', handler: _lazy_Bd5poG, lazy: true, middleware: false, method: "post" },
   { route: '/__nuxt_error', handler: _lazy_7Vc5ea, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_island/**', handler: _SxA8c9, lazy: false, middleware: false, method: undefined },
   { route: '/**', handler: _lazy_7Vc5ea, lazy: true, middleware: false, method: undefined }
@@ -1847,6 +1852,188 @@ const styles$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   default: styles
 }, Symbol.toStringTag, { value: 'Module' }));
 
+const demoRequest_post = defineEventHandler(async (event) => {
+  try {
+    const body = await readBody(event);
+    const { name, email, hotel, rooms } = body;
+    if (!name || !email || !hotel || !rooms) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Missing required fields"
+      });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Invalid email format"
+      });
+    }
+    const supabase = createClient(
+      process.env.VITE_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+    const { data: existingRequest } = await supabase.from("demo_requests").select("id, status").eq("email", email).single();
+    if (existingRequest) {
+      if (existingRequest.status === "pending") {
+        return {
+          success: true,
+          message: "Your request is already being reviewed. We'll contact you soon!"
+        };
+      } else if (existingRequest.status === "approved") {
+        return {
+          success: true,
+          message: "You already have access! Check your email for your invitation link."
+        };
+      }
+    }
+    const { data, error } = await supabase.from("demo_requests").insert({
+      name,
+      email,
+      hotel_name: hotel,
+      room_count: rooms,
+      status: "pending"
+    }).select().single();
+    if (error) {
+      console.error("Supabase error:", error);
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to submit request"
+      });
+    }
+    try {
+      const { createEmailService } = await Promise.resolve().then(function () { return emailService; });
+      const { createAdminNotificationEmail } = await Promise.resolve().then(function () { return emailTemplates; });
+      const emailService$1 = createEmailService();
+      const baseUrl = process.env.NUXT_PUBLIC_BASE_URL || "http://localhost:3000";
+      const adminNotificationTemplate = createAdminNotificationEmail({
+        name,
+        email,
+        hotelName: hotel,
+        roomCount: rooms,
+        requestId: data.id,
+        adminPanelLink: `${baseUrl}/admin/demo-requests`
+      });
+      const adminEmail = process.env.ADMIN_EMAIL || "admin@roomio.com";
+      await emailService$1.sendEmail({
+        to: adminEmail,
+        toName: "Roomio Admin",
+        template: adminNotificationTemplate
+      });
+      console.log("Admin notification sent for request:", data.id);
+    } catch (emailError) {
+      console.error("Failed to send admin notification:", emailError);
+    }
+    return {
+      success: true,
+      message: "Thank you! Your request has been submitted. We'll review your application and send you an invitation within 24 hours.",
+      requestId: data.id
+    };
+  } catch (error) {
+    console.error("Demo request error:", error);
+    if (error.statusCode) {
+      throw error;
+    }
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Internal server error"
+    });
+  }
+});
+
+const demoRequest_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: demoRequest_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const sendInvitation_post = defineEventHandler(async (event) => {
+  try {
+    const body = await readBody(event);
+    const { requestId } = body;
+    if (!requestId) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Request ID is required"
+      });
+    }
+    const supabase = createClient(
+      process.env.VITE_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+    const { data: request, error: fetchError } = await supabase.from("demo_requests").select("*").eq("id", requestId).eq("status", "approved").single();
+    if (fetchError || !request) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Request not found or not approved"
+      });
+    }
+    const expiryDate = /* @__PURE__ */ new Date();
+    expiryDate.setDate(expiryDate.getDate() + 7);
+    const { error: updateError } = await supabase.from("demo_requests").update({
+      invitation_sent_at: (/* @__PURE__ */ new Date()).toISOString(),
+      invitation_expires_at: expiryDate.toISOString(),
+      updated_at: (/* @__PURE__ */ new Date()).toISOString()
+    }).eq("id", requestId);
+    if (updateError) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to update invitation status"
+      });
+    }
+    const baseUrl = process.env.NUXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const invitationLink = `${baseUrl}/signup?token=${request.invitation_token}`;
+    try {
+      const { createEmailService } = await Promise.resolve().then(function () { return emailService; });
+      const { createInvitationEmail } = await Promise.resolve().then(function () { return emailTemplates; });
+      const emailService$1 = createEmailService();
+      const invitationTemplate = createInvitationEmail({
+        name: request.name,
+        email: request.email,
+        hotelName: request.hotel_name,
+        invitationLink,
+        expiryDate: expiryDate.toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        })
+      });
+      const emailResult = await emailService$1.sendEmail({
+        to: request.email,
+        toName: request.name,
+        template: invitationTemplate
+      });
+      if (!emailResult.success) {
+        console.error("Failed to send invitation email:", emailResult.error);
+      } else {
+        console.log("Invitation email sent successfully:", emailResult.messageId);
+      }
+    } catch (emailError) {
+      console.error("Email service error:", emailError);
+    }
+    return {
+      success: true,
+      message: "Invitation sent successfully",
+      invitationLink,
+      expiresAt: expiryDate.toISOString()
+    };
+  } catch (error) {
+    console.error("Send invitation error:", error);
+    if (error.statusCode) {
+      throw error;
+    }
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Internal server error"
+    });
+  }
+});
+
+const sendInvitation_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: sendInvitation_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
 function renderPayloadResponse(ssrContext) {
   return {
     body: stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers) ,
@@ -2044,5 +2231,397 @@ function renderHTMLDocument(html) {
 const renderer$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: renderer
+}, Symbol.toStringTag, { value: 'Module' }));
+
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, key + "" , value);
+class EmailService {
+  constructor(config) {
+    __publicField(this, "config");
+    this.config = config;
+  }
+  async sendEmail(data) {
+    try {
+      switch (this.config.provider) {
+        case "console":
+          return this.sendConsoleEmail(data);
+        case "sendgrid":
+          return this.sendSendGridEmail(data);
+        case "resend":
+          return this.sendResendEmail(data);
+        case "mailgun":
+          return this.sendMailgunEmail(data);
+        default:
+          throw new Error(`Unsupported email provider: ${this.config.provider}`);
+      }
+    } catch (error) {
+      console.error("Email sending failed:", error);
+      return { success: false, error: error.message };
+    }
+  }
+  async sendConsoleEmail(data) {
+    console.log("\n\u{1F4E7} EMAIL WOULD BE SENT:");
+    console.log("=====================================");
+    console.log(`From: ${this.config.fromName} <${this.config.fromEmail}>`);
+    console.log(`To: ${data.toName || ""} <${data.to}>`);
+    console.log(`Subject: ${data.template.subject}`);
+    console.log("-------------------------------------");
+    console.log("TEXT VERSION:");
+    console.log(data.template.text);
+    console.log("-------------------------------------");
+    console.log("HTML VERSION:");
+    console.log(data.template.html.substring(0, 200) + "...");
+    console.log("=====================================\n");
+    return { success: true, messageId: `console-${Date.now()}` };
+  }
+  async sendSendGridEmail(data) {
+    if (!this.config.apiKey) {
+      throw new Error("SendGrid API key is required");
+    }
+    const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${this.config.apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        personalizations: [{
+          to: [{ email: data.to, name: data.toName }]
+        }],
+        from: { email: this.config.fromEmail, name: this.config.fromName },
+        subject: data.template.subject,
+        content: [
+          { type: "text/plain", value: data.template.text },
+          { type: "text/html", value: data.template.html }
+        ]
+      })
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`SendGrid error: ${error}`);
+    }
+    const messageId = response.headers.get("x-message-id");
+    return { success: true, messageId: messageId || void 0 };
+  }
+  async sendResendEmail(data) {
+    if (!this.config.apiKey) {
+      throw new Error("Resend API key is required");
+    }
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${this.config.apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        from: `${this.config.fromName} <${this.config.fromEmail}>`,
+        to: [data.to],
+        subject: data.template.subject,
+        text: data.template.text,
+        html: data.template.html
+      })
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Resend error: ${error}`);
+    }
+    const result = await response.json();
+    return { success: true, messageId: result.id };
+  }
+  async sendMailgunEmail(data) {
+    if (!this.config.apiKey) {
+      throw new Error("Mailgun API key is required");
+    }
+    const domain = this.config.fromEmail.split("@")[1];
+    const formData = new FormData();
+    formData.append("from", `${this.config.fromName} <${this.config.fromEmail}>`);
+    formData.append("to", data.to);
+    formData.append("subject", data.template.subject);
+    formData.append("text", data.template.text);
+    formData.append("html", data.template.html);
+    const response = await fetch(`https://api.mailgun.net/v3/${domain}/messages`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Basic ${Buffer.from(`api:${this.config.apiKey}`).toString("base64")}`
+      },
+      body: formData
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Mailgun error: ${error}`);
+    }
+    const result = await response.json();
+    return { success: true, messageId: result.id };
+  }
+}
+function createEmailService() {
+  const provider = process.env.EMAIL_PROVIDER || "console";
+  const config = {
+    provider,
+    apiKey: process.env.EMAIL_API_KEY,
+    fromEmail: process.env.EMAIL_FROM || "noreply@roomio.com",
+    fromName: process.env.EMAIL_FROM_NAME || "Roomio Team"
+  };
+  return new EmailService(config);
+}
+
+const emailService = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  EmailService: EmailService,
+  createEmailService: createEmailService
+}, Symbol.toStringTag, { value: 'Module' }));
+
+function createInvitationEmail(data) {
+  const subject = `Welcome to Roomio - Your Exclusive Invitation Awaits`;
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Welcome to Roomio</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; }
+        .container { max-width: 600px; margin: 0 auto; background: white; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center; }
+        .logo { font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .tagline { opacity: 0.9; font-size: 1.1rem; }
+        .content { padding: 2rem; }
+        .welcome-text { font-size: 1.1rem; margin-bottom: 1.5rem; }
+        .hotel-info { background: #f8fafc; padding: 1rem; border-radius: 8px; margin: 1.5rem 0; }
+        .cta-button { display: inline-block; background: #3b82f6; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 1.5rem 0; }
+        .cta-button:hover { background: #2563eb; }
+        .features { margin: 2rem 0; }
+        .feature { display: flex; align-items: center; margin: 1rem 0; }
+        .feature-icon { font-size: 1.5rem; margin-right: 1rem; }
+        .expiry-notice { background: #fef3c7; border: 1px solid #f59e0b; padding: 1rem; border-radius: 8px; margin: 1.5rem 0; }
+        .footer { background: #1f2937; color: white; padding: 2rem; text-align: center; }
+        .footer-links { margin: 1rem 0; }
+        .footer-links a { color: #60a5fa; text-decoration: none; margin: 0 1rem; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <div class="logo">\u{1F3E8} Roomio</div>
+          <div class="tagline">Premium Hotel Management Software</div>
+        </div>
+        
+        <div class="content">
+          <h1>Welcome to the Future of Hotel Management!</h1>
+          
+          <p class="welcome-text">
+            Dear ${data.name},
+          </p>
+          
+          <p>
+            Congratulations! Your request for exclusive access to Roomio has been approved. 
+            You're now part of an elite community of forward-thinking hotel owners who are 
+            transforming their operations with our premium management platform.
+          </p>
+          
+          <div class="hotel-info">
+            <strong>Your Hotel:</strong> ${data.hotelName}<br>
+            <strong>Invitation For:</strong> ${data.email}
+          </div>
+          
+          <p>
+            Roomio is trusted by hundreds of leading hotels worldwide to:
+          </p>
+          
+          <div class="features">
+            <div class="feature">
+              <span class="feature-icon">\u26A1</span>
+              <span>Reduce operational costs by up to 40%</span>
+            </div>
+            <div class="feature">
+              <span class="feature-icon">\u{1F4C8}</span>
+              <span>Increase revenue through dynamic pricing</span>
+            </div>
+            <div class="feature">
+              <span class="feature-icon">\u{1F3AF}</span>
+              <span>Automate housekeeping and room management</span>
+            </div>
+            <div class="feature">
+              <span class="feature-icon">\u{1F4CA}</span>
+              <span>Get real-time analytics and insights</span>
+            </div>
+          </div>
+          
+          <p style="text-align: center;">
+            <a href="${data.invitationLink}" class="cta-button">
+              Create Your Account \u2192
+            </a>
+          </p>
+          
+          <div class="expiry-notice">
+            <strong>\u23F0 Important:</strong> This invitation expires on ${data.expiryDate}. 
+            Please create your account soon to secure your access.
+          </div>
+          
+          <p>
+            Once you've created your account, you'll receive:
+          </p>
+          
+          <ul>
+            <li>Personalized onboarding session</li>
+            <li>Dedicated success manager</li>
+            <li>Priority customer support</li>
+            <li>Access to exclusive features</li>
+          </ul>
+          
+          <p>
+            If you have any questions or need assistance, our team is here to help. 
+            Simply reply to this email or contact our support team.
+          </p>
+          
+          <p>
+            Welcome to Roomio!<br>
+            <strong>The Roomio Team</strong>
+          </p>
+        </div>
+        
+        <div class="footer">
+          <p>\xA9 2024 Roomio. All rights reserved.</p>
+          <div class="footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Support</a>
+          </div>
+          <p style="font-size: 0.9rem; opacity: 0.8;">
+            This invitation was sent to ${data.email}. If you didn't request access to Roomio, 
+            please ignore this email.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+  const text = `
+Welcome to Roomio - Your Exclusive Invitation
+
+Dear ${data.name},
+
+Congratulations! Your request for exclusive access to Roomio has been approved.
+
+Hotel: ${data.hotelName}
+Email: ${data.email}
+
+Create your account: ${data.invitationLink}
+
+This invitation expires on ${data.expiryDate}.
+
+Roomio helps hotels:
+- Reduce operational costs by up to 40%
+- Increase revenue through dynamic pricing
+- Automate housekeeping and room management
+- Get real-time analytics and insights
+
+Welcome to the future of hotel management!
+
+The Roomio Team
+
+---
+\xA9 2024 Roomio. All rights reserved.
+If you didn't request access, please ignore this email.
+  `;
+  return { subject, html, text };
+}
+function createAdminNotificationEmail(data) {
+  const subject = `New Access Request - ${data.hotelName}`;
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>New Access Request</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; }
+        .container { max-width: 600px; margin: 0 auto; background: white; }
+        .header { background: #1f2937; color: white; padding: 1.5rem; text-align: center; }
+        .content { padding: 2rem; }
+        .request-details { background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; }
+        .detail-row { display: flex; justify-content: space-between; margin: 0.5rem 0; padding: 0.5rem 0; border-bottom: 1px solid #e5e7eb; }
+        .detail-label { font-weight: 600; color: #374151; }
+        .detail-value { color: #6b7280; }
+        .cta-button { display: inline-block; background: #3b82f6; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 1rem 0; }
+        .urgent { background: #fef2f2; border: 1px solid #fecaca; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>\u{1F3E8} New Access Request</h1>
+        </div>
+        
+        <div class="content">
+          <p>A new hotel owner has requested access to Roomio:</p>
+          
+          <div class="request-details">
+            <div class="detail-row">
+              <span class="detail-label">Name:</span>
+              <span class="detail-value">${data.name}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Email:</span>
+              <span class="detail-value">${data.email}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Hotel:</span>
+              <span class="detail-value">${data.hotelName}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Room Count:</span>
+              <span class="detail-value">${data.roomCount}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Request ID:</span>
+              <span class="detail-value">${data.requestId}</span>
+            </div>
+          </div>
+          
+          <div class="urgent">
+            <strong>\u23F0 Action Required:</strong> Please review this request and approve or reject it 
+            within 24 hours to maintain our premium service standards.
+          </div>
+          
+          <p style="text-align: center;">
+            <a href="${data.adminPanelLink}" class="cta-button">
+              Review Request \u2192
+            </a>
+          </p>
+          
+          <p>
+            You can approve, reject, or add notes to this request in the admin panel.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+  const text = `
+New Access Request - ${data.hotelName}
+
+A new hotel owner has requested access to Roomio:
+
+Name: ${data.name}
+Email: ${data.email}
+Hotel: ${data.hotelName}
+Room Count: ${data.roomCount}
+Request ID: ${data.requestId}
+
+Please review this request: ${data.adminPanelLink}
+
+Action required within 24 hours.
+  `;
+  return { subject, html, text };
+}
+
+const emailTemplates = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  createAdminNotificationEmail: createAdminNotificationEmail,
+  createInvitationEmail: createInvitationEmail
 }, Symbol.toStringTag, { value: 'Module' }));
 //# sourceMappingURL=index.mjs.map
