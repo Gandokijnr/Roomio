@@ -1,6 +1,6 @@
-const { sendEmail } = require('./utils/email')
+import { sendEmail } from './utils/email.js'
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
   try {
     const { to, guestData, pointsData, hotelInfo } = JSON.parse(event.body)
 
