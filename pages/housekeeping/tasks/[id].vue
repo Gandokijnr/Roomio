@@ -414,8 +414,8 @@ onMounted(() => {
 }
 
 .room-badge {
-  background: #dbeafe;
-  color: #1e40af;
+  background: #fef3c7;
+  color: #92400e;
   padding: 0.25rem 0.75rem;
   border-radius: 0.375rem;
   font-size: 0.875rem;
@@ -430,7 +430,7 @@ onMounted(() => {
 }
 
 .status-pending { background: #fef3c7; color: #92400e; }
-.status-in_progress { background: #dbeafe; color: #1e40af; }
+.status-in_progress { background: #fef3c7; color: #92400e; }
 .status-completed { background: #d1fae5; color: #065f46; }
 .status-cancelled { background: #f3f4f6; color: #374151; }
 
@@ -611,12 +611,12 @@ onMounted(() => {
 }
 
 .btn-primary {
-  background: #3b82f6;
+  background: #d4af37;
   color: white;
 }
 
 .btn-primary:hover {
-  background: #2563eb;
+  background: #b8931f;
 }
 
 .btn-secondary {

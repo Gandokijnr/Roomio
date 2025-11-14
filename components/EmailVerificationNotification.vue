@@ -2,15 +2,15 @@
   <div v-if="show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden">
       <!-- Header -->
-      <div class="bg-blue-50 px-6 py-4 border-b border-blue-100">
+      <div class="bg-yellow-50 px-6 py-4 border-b border-yellow-100">
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
             </svg>
           </div>
           <div class="ml-3">
-            <h3 class="text-lg font-semibold text-blue-900">
+            <h3 class="text-lg font-semibold text-yellow-900">
               Check Your Email
             </h3>
           </div>
@@ -31,11 +31,11 @@
             </h4>
           </div>
 
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p class="text-sm text-blue-800 mb-3">
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p class="text-sm text-yellow-800 mb-3">
               <strong>📧 Verification email sent to:</strong>
             </p>
-            <p class="font-medium text-blue-900 bg-white px-3 py-2 rounded border">
+            <p class="font-medium text-yellow-900 bg-white px-3 py-2 rounded border">
               {{ email }}
             </p>
           </div>
@@ -46,15 +46,15 @@
             </p>
             <ul class="space-y-2 ml-4">
               <li class="flex items-start">
-                <span class="text-blue-600 mr-2">1.</span>
+                <span class="text-yellow-600 mr-2">1.</span>
                 <span>Check your email inbox for a verification message</span>
               </li>
               <li class="flex items-start">
-                <span class="text-blue-600 mr-2">2.</span>
+                <span class="text-yellow-600 mr-2">2.</span>
                 <span>Click the verification link in the email</span>
               </li>
               <li class="flex items-start">
-                <span class="text-blue-600 mr-2">3.</span>
+                <span class="text-yellow-600 mr-2">3.</span>
                 <span>Return here to sign in with your verified account</span>
               </li>
             </ul>
@@ -83,7 +83,7 @@
               <button 
                 @click="resendVerification" 
                 :disabled="resendLoading || resendCooldown > 0"
-                class="text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                class="text-yellow-600 hover:text-yellow-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span v-if="resendCooldown > 0">
                   Resend in {{ resendCooldown }}s
@@ -111,7 +111,7 @@
           </button>
           <button
             @click="closeNotification"
-            class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+            class="bg-yellow-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-yellow-700 transition-colors"
           >
             Got it!
           </button>

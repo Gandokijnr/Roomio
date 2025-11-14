@@ -13,7 +13,7 @@
             toast.type === 'success' && 'border-l-4 border-green-500',
             toast.type === 'error' && 'border-l-4 border-red-500',
             toast.type === 'warning' && 'border-l-4 border-yellow-500',
-            toast.type === 'info' && 'border-l-4 border-blue-500'
+            toast.type === 'info' && 'border-l-4 border-yellow-500'
           ]"
         >
           <div class="p-4">
@@ -48,7 +48,7 @@
                 </svg>
                 <svg
                   v-else
-                  class="h-6 w-6 text-blue-400"
+                  class="h-6 w-6 text-yellow-400"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -67,7 +67,7 @@
               <div class="ml-4 flex-shrink-0 flex">
                 <button
                   @click="removeToast(toast.id)"
-                  class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
                 >
                   <span class="sr-only">Close</span>
                   <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

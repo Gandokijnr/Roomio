@@ -492,12 +492,12 @@ onMounted(() => {
 }
 
 .btn-primary {
-  background: #3b82f6;
+  background: #d4af37;
   color: white;
 }
 
 .btn-primary:hover {
-  background: #2563eb;
+  background: #b8931f;
 }
 
 .btn-secondary {

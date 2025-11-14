@@ -57,14 +57,14 @@
           </div>
 
           <!-- Email verification reminder for signup -->
-          <div v-if="isSignup" class="rounded-md bg-blue-50 border border-blue-200 px-4 py-3 text-sm">
+          <div v-if="isSignup" class="rounded-md bg-yellow-50 border border-yellow-200 px-4 py-3 text-sm">
             <div class="flex items-start">
-              <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
               </svg>
               <div>
-                <p class="font-medium text-blue-800 mb-1">Email Verification Required</p>
-                <p class="text-blue-700">
+                <p class="font-medium text-yellow-800 mb-1">Email Verification Required</p>
+                <p class="text-yellow-700">
                   After creating your account, you'll receive a verification email. 
                   Please check your inbox and click the verification link to activate your account.
                 </p>
