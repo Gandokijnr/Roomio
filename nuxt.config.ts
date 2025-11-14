@@ -25,6 +25,15 @@ export default defineNuxtConfig({
 
   css: ["~/assets/css/main.css"],
 
+  nitro: {
+    preset: 'netlify',
+    output: {
+      dir: '.netlify',
+      serverDir: '.netlify/functions-internal',
+      publicDir: '.output/public'
+    }
+  },
+
   app: {
     head: {
       title: "Hotel Management Software",
