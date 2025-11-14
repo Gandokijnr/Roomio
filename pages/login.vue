@@ -1,68 +1,83 @@
 <template>
-  <div class="login-page">
-    <div class="login-container">
-      <div class="login-card card">
-        <div class="login-header">
-          <h1>Hotel Management</h1>
-          <p>{{ isSignup ? 'Create your account' : 'Sign in to your account' }}</p>
+  <div class="relative min-h-screen flex items-center justify-center p-6">
+    <div v-if="bgUrl" class="absolute inset-0">
+      <div class="absolute inset-0 bg-cover bg-center"/>
+      <div class="absolute inset-0 bg-gradient-to-br from-black/35 to-black/55" />
+    </div>
+
+    <div class="relative z-10 w-full max-w-md">
+      <div class="rounded-xl border border-black/5 bg-white/90 backdrop-blur-md shadow-xl p-8 md:p-10">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-semibold text-neutral-900 mb-2">Hotel Management</h1>
+          <p class="text-sm text-neutral-600">{{ isSignup ? 'Create your account' : 'Sign in to your account' }}</p>
         </div>
 
-        <form @submit.prevent="isSignup ? handleSignup() : handleLogin()" class="login-form">
-          <div v-if="isSignup" class="form-group">
-            <label for="full-name">Full Name</label>
+        <form @submit.prevent="isSignup ? handleSignup() : handleLogin()" class="grid gap-6">
+          <div v-if="isSignup" class="grid gap-2">
+            <label for="full-name" class="text-sm font-medium text-neutral-700">Full Name</label>
             <input
               id="full-name"
               v-model="fullName"
               type="text"
-              class="input"
+              class="form-input w-full rounded-md border-neutral-300 focus:border-[var(--primary-500)] focus:ring-2 focus:ring-[rgba(212,175,55,0.25)]"
               placeholder="John Doe"
               required
               :disabled="loading"
             />
           </div>
-          <div class="form-group">
-            <label for="email">Email</label>
+
+          <div class="grid gap-2">
+            <label for="email" class="text-sm font-medium text-neutral-700">Email</label>
             <input
               id="email"
               v-model="email"
               type="email"
-              class="input"
+              class="form-input w-full rounded-md border-neutral-300 focus:border-[var(--primary-500)] focus:ring-2 focus:ring-[rgba(212,175,55,0.25)]"
               placeholder="admin@hotel.com"
               required
               :disabled="loading"
             />
           </div>
 
-          <div class="form-group">
-            <label for="password">Password</label>
+          <div class="grid gap-2">
+            <label for="password" class="text-sm font-medium text-neutral-700">Password</label>
             <input
               id="password"
               v-model="password"
               type="password"
-              class="input"
+              class="form-input w-full rounded-md border-neutral-300 focus:border-[var(--primary-500)] focus:ring-2 focus:ring-[rgba(212,175,55,0.25)]"
               placeholder="••••••••"
               required
               :disabled="loading"
             />
           </div>
 
-          <div v-if="error" class="error-message">
+          <div v-if="error" class="rounded-md bg-[var(--error-50)] text-[var(--error-700)] px-4 py-3 text-sm">
             {{ error }}
           </div>
 
-          <button type="submit" class="btn btn-primary btn-lg" :disabled="loading">
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center gap-2 rounded-md bg-[var(--primary-600)] px-6 py-3 text-white text-base font-medium shadow-md transition hover:bg-[var(--primary-700)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="loading"
+          >
             {{ loading ? (isSignup ? 'Creating Account...' : 'Signing in...') : (isSignup ? 'Create Account' : 'Sign In') }}
           </button>
 
-          <div class="toggle-mode">
-            <button type="button" @click="isSignup = !isSignup" class="btn-link" :disabled="loading">
+          <div class="text-center">
+            <button
+              type="button"
+              @click="isSignup = !isSignup"
+              class="text-sm font-medium text-[var(--primary-600)] hover:text-[var(--primary-700)]"
+              :disabled="loading"
+            >
               {{ isSignup ? 'Already have an account? Sign In' : 'Need an account? Sign Up' }}
             </button>
           </div>
         </form>
 
-        <div v-if="!isSignup" class="demo-credentials">
-          <p><strong>New User?</strong></p>
+        <div v-if="!isSignup" class="mt-6 text-center text-sm text-neutral-600">
+          <p><strong class="font-semibold">New User?</strong></p>
           <p>Click "Sign Up" above to create your account</p>
         </div>
       </div>
@@ -77,6 +92,7 @@ definePageMeta({
 
 const { signIn, signUp } = useAuth()
 const router = useRouter()
+const config = useRuntimeConfig()
 
 const isSignup = ref(false)
 const fullName = ref('')
@@ -84,6 +100,9 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const error = ref('')
+
+const bgUrl = computed(() => (config?.public as any)?.authBackgroundUrl as string | undefined)
+const authBgImage = computed(() => bgUrl.value ? { backgroundImage: `url('${bgUrl.value}')` } : {})
 
 const handleLogin = async () => {
   try {
@@ -115,95 +134,3 @@ const handleSignup = async () => {
   }
 }
 </script>
-
-<style scoped>
-.login-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
-  padding: var(--spacing-lg);
-}
-
-.login-container {
-  width: 100%;
-  max-width: 420px;
-}
-
-.login-card {
-  padding: var(--spacing-2xl);
-}
-
-.login-header {
-  text-align: center;
-  margin-bottom: var(--spacing-xl);
-}
-
-.login-header h1 {
-  font-size: 1.875rem;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-sm);
-}
-
-.login-header p {
-  color: var(--neutral-600);
-  font-size: 0.938rem;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.form-group label {
-  font-weight: 500;
-  font-size: 0.875rem;
-  color: var(--neutral-700);
-}
-
-.error-message {
-  padding: var(--spacing-md);
-  background: var(--error-50);
-  color: var(--error-700);
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-}
-
-.demo-credentials {
-  margin-top: var(--spacing-xl);
-  padding-top: var(--spacing-xl);
-  border-top: 1px solid var(--neutral-200);
-  text-align: center;
-  font-size: 0.813rem;
-  color: var(--neutral-600);
-}
-
-.demo-credentials p {
-  margin-bottom: var(--spacing-xs);
-}
-
-.toggle-mode {
-  text-align: center;
-  margin-top: var(--spacing-md);
-}
-
-.btn-link {
-  background: none;
-  color: var(--primary-600);
-  font-size: 0.875rem;
-  padding: 0;
-}
-
-.btn-link:hover:not(:disabled) {
-  color: var(--primary-700);
-  text-decoration: underline;
-}
-</style>

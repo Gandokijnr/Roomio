@@ -19,6 +19,7 @@ export default defineNuxtConfig({
     public: {
       supabaseUrl: process.env.VITE_SUPABASE_URL,
       supabaseKey: process.env.VITE_SUPABASE_ANON_KEY,
+      authBackgroundUrl: process.env.NUXT_PUBLIC_AUTH_BACKGROUND_URL || 'https://www.freepik.com/free-photo/sunset-pool_1035192.htm#fromView=search&page=1&position=1&uuid=1ec59f22-b43d-4db9-97cb-7a6b457d1195&query=hotel+view',
     },
   },
 

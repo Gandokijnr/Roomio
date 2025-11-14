@@ -13,13 +13,13 @@
       <div class="flex gap-4">
         <button
           @click="exportGuests"
-          class="px-4 py-2 text-white transition-colors bg-gray-500 rounded-md hover:bg-gray-600"
+          class="px-4 py-2 text-white transition-colors btn btn-secondary"
         >
           📊 Export Data
         </button>
         <button
           @click="showCreateModal = true"
-          class="px-4 py-2 text-white transition-colors bg-blue-500 rounded-md hover:bg-blue-600"
+          class="px-4 py-2 text-white transition-colors btn btn-primary"
         >
           + Add Guest
         </button>
