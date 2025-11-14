@@ -79,8 +79,12 @@
               <span class="status-count">{{ stats.maintenanceRooms }} rooms</span>
             </div>
             <div class="status-item">
-              <span class="badge badge-neutral">Cleaning</span>
-              <span class="status-count">{{ stats.cleaningRooms }} rooms</span>
+              <span class="badge badge-warning">Needs Cleaning</span>
+              <span class="status-count">{{ stats.needsCleaningRooms }} rooms</span>
+            </div>
+            <div class="status-item">
+              <span class="badge badge-info">Assigned Housekeeper</span>
+              <span class="status-count">{{ stats.assignedHousekeeperRooms }} rooms</span>
             </div>
           </div>
         </div>
@@ -145,6 +149,8 @@ const stats = ref({
   reservedRooms: 0,
   maintenanceRooms: 0,
   cleaningRooms: 0,
+  needsCleaningRooms: 0,
+  assignedHousekeeperRooms: 0,
   todayCheckIns: 0,
   todayCheckOuts: 0,
   occupancyRate: 0,
@@ -182,6 +188,8 @@ const loadDashboardData = async () => {
       stats.value.reservedRooms = activeRooms.filter(r => r.status === 'reserved').length
       stats.value.maintenanceRooms = activeRooms.filter(r => r.status === 'maintenance').length
       stats.value.cleaningRooms = activeRooms.filter(r => r.status === 'cleaning').length
+      stats.value.needsCleaningRooms = activeRooms.filter(r => r.status === 'needs_cleaning').length
+      stats.value.assignedHousekeeperRooms = activeRooms.filter(r => r.status === 'assigned_housekeeper').length
 
       if (stats.value.totalRooms > 0) {
         stats.value.occupancyRate = Math.round((stats.value.occupiedRooms / stats.value.totalRooms) * 100)

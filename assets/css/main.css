@@ -236,3 +236,8 @@ a:hover {
   background: var(--primary-50);
   color: var(--primary-700);
 }
+
+.badge-info {
+  background: #dbeafe;
+  color: #c5b053;
+}

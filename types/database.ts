@@ -1,5 +1,5 @@
 export type UserRole = 'admin' | 'manager' | 'receptionist' | 'accountant' | 'housekeeping'
-export type RoomStatus = 'available' | 'occupied' | 'reserved' | 'maintenance' | 'cleaning' | 'out_of_service'
+export type RoomStatus = 'available' | 'occupied' | 'reserved' | 'maintenance' | 'cleaning' | 'out_of_service' | 'needs_cleaning' | 'assigned_housekeeper'
 export type ReservationStatus = 'pending' | 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled' | 'no_show'
 export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded'
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
@@ -287,16 +287,61 @@ export interface HousekeepingTask {
   id: string
   room_id: string
   room?: Room
+  assigned_to?: string
+  assigned_housekeeper?: Profile
   task_type: TaskType
   priority: TaskPriority
   status: TaskStatus
-  assigned_to?: string
-  assigned_user?: Profile
-  description: string
+  title: string
+  description?: string
   notes?: string
-  scheduled_date: string
+  special_instructions?: string
+  estimated_duration?: number
+  actual_duration?: number
+  scheduled_date?: string
+  started_at?: string
   completed_at?: string
   created_by?: string
   created_at: string
   updated_at: string
+}
+
+export interface HousekeepingTaskLog {
+  id: string
+  task_id: string
+  action: string
+  notes?: string
+  logged_by?: string
+  created_at: string
+}
+
+export interface HousekeepingChecklist {
+  id: string
+  name: string
+  description?: string
+  room_type_id?: string
+  task_type: TaskType
+  checklist_items: ChecklistItem[]
+  estimated_duration: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface ChecklistItem {
+  id: string
+  task: string
+  required: boolean
+  completed?: boolean
+}
+
+export interface HousekeepingTaskCompletion {
+  id: string
+  task_id: string
+  checklist_id?: string
+  completed_items: string[]
+  completion_notes?: string
+  quality_rating?: number
+  completed_by?: string
+  completed_at: string
 }

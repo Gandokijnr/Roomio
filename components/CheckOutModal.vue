@@ -317,32 +317,44 @@ const handleCheckOut = async () => {
 
     if (reservationError) throw reservationError
 
-    // Update room status based on condition
-    let newRoomStatus = 'cleaning'
-    if (checkOutData.value.room_condition === 'damaged' || checkOutData.value.room_condition === 'poor') {
-      newRoomStatus = 'maintenance'
-    }
-
+    // Update room status to needs cleaning
     const { error: roomError } = await $supabase
       .from('rooms')
-      .update({ status: newRoomStatus })
+      .update({ status: 'needs_cleaning' })
       .eq('id', props.reservation.room_id)
 
     if (roomError) throw roomError
 
+    // Determine task type and priority based on room condition
+    let taskType = 'cleaning'
+    let priority = 'medium'
+    let taskTitle = `Room Cleaning - ${props.reservation.room?.room_number}`
+    
+    if (checkOutData.value.room_condition === 'damaged' || checkOutData.value.room_condition === 'poor') {
+      taskType = 'maintenance'
+      priority = 'urgent'
+      taskTitle = `Room Maintenance - ${props.reservation.room?.room_number}`
+    } else if (checkOutData.value.room_condition === 'excellent') {
+      priority = 'low'
+    }
+
     // Create housekeeping task
-    await $supabase
+    const { error: taskError } = await $supabase
       .from('housekeeping_tasks')
       .insert({
         room_id: props.reservation.room_id,
-        task_type: newRoomStatus === 'maintenance' ? 'maintenance' : 'cleaning',
-        priority: checkOutData.value.room_condition === 'damaged' ? 'urgent' : 'medium',
+        task_type: taskType,
+        priority: priority,
         status: 'pending',
-        description: `Post-checkout ${newRoomStatus} for room ${props.reservation.room?.room_number}`,
+        title: taskTitle,
+        description: `Post-checkout ${taskType} required for room ${props.reservation.room?.room_number}. Room condition: ${checkOutData.value.room_condition}`,
         notes: checkOutData.value.notes,
+        special_instructions: checkOutData.value.room_condition === 'damaged' ? 'Check for damages and report maintenance issues' : null,
         scheduled_date: new Date().toISOString(),
         created_by: user.value.id,
       })
+
+    if (taskError) throw taskError
 
     // Generate invoice if requested
     if (checkOutData.value.generate_invoice) {
