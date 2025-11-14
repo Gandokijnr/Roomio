@@ -255,7 +255,7 @@ const finalBalance = computed(() => {
 
 const isFormValid = computed(() => {
   return checkOutData.value.room_condition && 
-         (finalBalance.value <= 0 || (checkOutData.value.payment_method && checkOutData.value.final_payment > 0))
+         (finalBalance.value <= 0.01 || (finalBalance.value > 0.01 && checkOutData.value.payment_method && checkOutData.value.final_payment > 0))
 })
 
 const formatDate = (dateStr: string) => {
