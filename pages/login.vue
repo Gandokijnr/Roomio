@@ -56,6 +56,22 @@
             {{ error }}
           </div>
 
+          <!-- Email verification reminder for signup -->
+          <div v-if="isSignup" class="rounded-md bg-blue-50 border border-blue-200 px-4 py-3 text-sm">
+            <div class="flex items-start">
+              <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+              </svg>
+              <div>
+                <p class="font-medium text-blue-800 mb-1">Email Verification Required</p>
+                <p class="text-blue-700">
+                  After creating your account, you'll receive a verification email. 
+                  Please check your inbox and click the verification link to activate your account.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <button
             type="submit"
             class="inline-flex items-center justify-center gap-2 rounded-md bg-[var(--primary-600)] px-6 py-3 text-white text-base font-medium shadow-md transition hover:bg-[var(--primary-700)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -82,6 +98,7 @@
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -93,6 +110,10 @@ definePageMeta({
 const { signIn, signUp } = useAuth()
 const router = useRouter()
 const config = useRuntimeConfig()
+const { 
+  emailVerificationSuccess,
+  emailVerificationResent
+} = useNotifications()
 
 const isSignup = ref(false)
 const fullName = ref('')
@@ -124,13 +145,30 @@ const handleSignup = async () => {
     loading.value = true
     error.value = ''
 
-    await signUp(email.value, password.value, fullName.value)
-    router.push('/')
+    const result = await signUp(email.value, password.value, fullName.value)
+    
+    // Check if user needs email verification
+    if (result.user && !result.user.email_confirmed_at) {
+      // Show email verification notification
+      emailVerificationSuccess(email.value)
+      
+      // Reset form but don't redirect
+      fullName.value = ''
+      password.value = ''
+      isSignup.value = false
+    } else {
+      // User is confirmed, redirect to dashboard
+      router.push('/')
+    }
   } catch (err: any) {
     console.error('Signup error:', err)
     error.value = err.message || 'Failed to create account'
   } finally {
     loading.value = false
   }
+}
+
+const handleResendVerification = () => {
+  emailVerificationResent()
 }
 </script>
