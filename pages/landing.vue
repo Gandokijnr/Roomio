@@ -35,7 +35,7 @@ useHead({
   meta: [
     {
       name: 'description',
-      content: 'Transform your hotel operations with Roomio. Streamline bookings, automate housekeeping, track room status, and boost revenue with our all-in-one hotel management solution.'
+      content: 'Effortless bookings, automated housekeeping, profit-driven revenue tools, connected operations, and actionable analytics—Roomio is the all-in-one hotel operating system that cuts operational costs by 40 %.'
     },
     {
       name: 'keywords',
@@ -47,7 +47,7 @@ useHead({
     },
     {
       property: 'og:description',
-      content: 'Transform your hotel operations with our comprehensive management solution. Increase efficiency, reduce costs, and enhance guest experience.'
+      content: 'Effortless bookings, automated housekeeping, profit-driven revenue tools, connected operations, and actionable analytics—Roomio cuts operational costs by 40 % while elevating every guest stay.'
     },
     {
       property: 'og:type',

@@ -18,8 +18,7 @@
               </span>
             </h1>
             <p class="text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              The complete hotel management solution that streamlines bookings, automates housekeeping, 
-              and maximizes revenue. Join hundreds of hotels already saving 40% on operational costs.
+              Effortless bookings, automated housekeeping, profit-driven revenue tools, connected operations, and actionable analytics all in one platform trusted by hotels to cut operational costs by <strong>40&nbsp;%</strong>.
             </p>
           </div>
           
@@ -33,7 +32,7 @@
             </button>
             <button 
               @click="scrollToFeatures" 
-              class="bg-transparent text-gray-700 border border-gray-300 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all duration-300"
+              class="bg-gray-100 text-gray-700 border border-gray-400 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-200 transition-all duration-300"
             >
               See Features
             </button>

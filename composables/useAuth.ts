@@ -89,6 +89,11 @@ export const useAuth = () => {
   const canManageInvoices = () => hasRole(['admin', 'manager', 'accountant'])
   const canManageHousekeeping = () => hasRole(['admin', 'manager'])
   const canViewReports = () => hasRole(['admin', 'manager', 'accountant'])
+  
+  // Restaurant & Bar Operations permissions
+  const canManageRestaurant = () => hasRole(['admin', 'manager', 'receptionist', 'restaurant_staff'])
+  const canManageBar = () => hasRole(['admin', 'manager', 'receptionist', 'bar_staff'])
+  const canManageInventory = () => hasRole(['admin', 'manager', 'restaurant_staff', 'bar_staff'])
 
   return {
     user,
@@ -106,5 +111,8 @@ export const useAuth = () => {
     canManageInvoices,
     canManageHousekeeping,
     canViewReports,
+    canManageRestaurant,
+    canManageBar,
+    canManageInventory,
   }
 }

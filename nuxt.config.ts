@@ -16,6 +16,9 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Private keys (only available on server-side)
+    supabaseUrl: process.env.VITE_SUPABASE_URL,
+    supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     public: {
       supabaseUrl: process.env.VITE_SUPABASE_URL,
       supabaseKey: process.env.VITE_SUPABASE_ANON_KEY,

@@ -652,7 +652,9 @@ const _inlineRuntimeConfig = {
     "supabaseUrl": "https://dsmfhrfqygzqgazicgsv.supabase.co",
     "supabaseKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzbWZocmZxeWd6cWdhemljZ3N2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5NTk1NDMsImV4cCI6MjA3NjUzNTU0M30.o3xk0Iqw-84vrT0qNXV50x5HCoudEJH6HyWddFCpGks",
     "authBackgroundUrl": "https://www.freepik.com/free-photo/sunset-pool_1035192.htm#fromView=search&page=1&position=1&uuid=1ec59f22-b43d-4db9-97cb-7a6b457d1195&query=hotel+view"
-  }
+  },
+  "supabaseUrl": "https://dsmfhrfqygzqgazicgsv.supabase.co",
+  "supabaseServiceKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzbWZocmZxeWd6cWdhemljZ3N2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk1OTU0MywiZXhwIjoyMDc2NTM1NTQzfQ.mZm5GqPLalXkUMMaMm62jfoWmZgeJzTlfYMLhk2wKUs"
 };
 const envOptions = {
   prefix: "NITRO_",
@@ -1512,12 +1514,26 @@ async function getIslandContext(event) {
 }
 
 const _lazy_jQDxER = () => Promise.resolve().then(function () { return demoRequest_post$1; });
+const _lazy_dlbk4e = () => Promise.resolve().then(function () { return categories_get$1; });
+const _lazy_Cegxv9 = () => Promise.resolve().then(function () { return items_get$1; });
+const _lazy_A9_iSs = () => Promise.resolve().then(function () { return items_post$1; });
+const _lazy_Kt1t_e = () => Promise.resolve().then(function () { return menuItems_get$1; });
+const _lazy_H0FyjL = () => Promise.resolve().then(function () { return orders_get$1; });
+const _lazy_zkThyt = () => Promise.resolve().then(function () { return orders_post$1; });
+const _lazy_DxqCh1 = () => Promise.resolve().then(function () { return tables_get$1; });
 const _lazy_Bd5poG = () => Promise.resolve().then(function () { return sendInvitation_post$1; });
 const _lazy_7Vc5ea = () => Promise.resolve().then(function () { return renderer$1; });
 
 const handlers = [
   { route: '', handler: _pXuHUk, lazy: false, middleware: true, method: undefined },
   { route: '/api/demo-request', handler: _lazy_jQDxER, lazy: true, middleware: false, method: "post" },
+  { route: '/api/inventory/categories', handler: _lazy_dlbk4e, lazy: true, middleware: false, method: "get" },
+  { route: '/api/inventory/items', handler: _lazy_Cegxv9, lazy: true, middleware: false, method: "get" },
+  { route: '/api/inventory/items', handler: _lazy_A9_iSs, lazy: true, middleware: false, method: "post" },
+  { route: '/api/restaurant/menu-items', handler: _lazy_Kt1t_e, lazy: true, middleware: false, method: "get" },
+  { route: '/api/restaurant/orders', handler: _lazy_H0FyjL, lazy: true, middleware: false, method: "get" },
+  { route: '/api/restaurant/orders', handler: _lazy_zkThyt, lazy: true, middleware: false, method: "post" },
+  { route: '/api/restaurant/tables', handler: _lazy_DxqCh1, lazy: true, middleware: false, method: "get" },
   { route: '/api/send-invitation', handler: _lazy_Bd5poG, lazy: true, middleware: false, method: "post" },
   { route: '/__nuxt_error', handler: _lazy_7Vc5ea, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_island/**', handler: _SxA8c9, lazy: false, middleware: false, method: undefined },
@@ -1869,9 +1885,10 @@ const demoRequest_post = defineEventHandler(async (event) => {
         statusMessage: "Invalid email format"
       });
     }
+    const config = useRuntimeConfig();
     const supabase = createClient(
-      process.env.VITE_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
+      config.supabaseUrl,
+      config.supabaseServiceKey
     );
     const { data: existingRequest } = await supabase.from("demo_requests").select("id, status").eq("email", email).single();
     if (existingRequest) {
@@ -1946,6 +1963,498 @@ const demoRequest_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.define
   default: demoRequest_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
+const categories_get = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const query = getQuery$1(event);
+    const { category_type } = query;
+    let queryBuilder = supabase.from("inventory_categories").select("*").eq("is_active", true).order("name");
+    if (category_type) {
+      queryBuilder = queryBuilder.eq("category_type", category_type);
+    }
+    const { data, error } = await queryBuilder;
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const categories_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: categories_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const items_get = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const query = getQuery$1(event);
+    const { category_id, search, stock_status } = query;
+    let queryBuilder = supabase.from("inventory_items").select(`
+        *,
+        category:inventory_categories(id, name, category_type),
+        supplier:vendors(id, vendor_name)
+      `).eq("is_active", true).order("name");
+    if (category_id) {
+      queryBuilder = queryBuilder.eq("category_id", category_id);
+    }
+    if (search) {
+      queryBuilder = queryBuilder.or(`name.ilike.%${search}%,item_code.ilike.%${search}%`);
+    }
+    const { data, error } = await queryBuilder;
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    let filteredData = data;
+    if (stock_status) {
+      filteredData = data == null ? void 0 : data.filter((item) => {
+        switch (stock_status) {
+          case "in_stock":
+            return item.current_stock > item.minimum_stock;
+          case "low_stock":
+            return item.current_stock <= item.minimum_stock && item.current_stock > 0;
+          case "out_of_stock":
+            return item.current_stock === 0;
+          default:
+            return true;
+        }
+      });
+    }
+    return {
+      success: true,
+      data: filteredData
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error instanceof Error ? error.message : "An unexpected error occurred"
+    });
+  }
+});
+
+const items_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: items_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const items_post = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const user = { id: "system" };
+    if (!user) {
+      throw createError({
+        statusCode: 401,
+        statusMessage: "Unauthorized"
+      });
+    }
+    const body = await readBody(event);
+    const requiredFields = ["name", "category_id", "unit_of_measure", "minimum_stock"];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: `${field} is required`
+        });
+      }
+    }
+    if (!body.item_code) {
+      const { data: lastItem } = await supabase.from("inventory_items").select("item_code").order("created_at", { ascending: false }).limit(1);
+      let nextNumber = 1;
+      if (lastItem && lastItem.length > 0) {
+        const lastCode = lastItem[0].item_code;
+        const match = lastCode.match(/INV-(\d+)/);
+        if (match) {
+          nextNumber = parseInt(match[1]) + 1;
+        }
+      }
+      body.item_code = `INV-${String(nextNumber).padStart(6, "0")}`;
+    }
+    body.created_by = user.id;
+    body.created_at = (/* @__PURE__ */ new Date()).toISOString();
+    body.updated_at = (/* @__PURE__ */ new Date()).toISOString();
+    const { data, error } = await supabase.from("inventory_items").insert(body).select(`
+        *,
+        category:inventory_categories(id, name, category_type),
+        supplier:vendors(id, vendor_name)
+      `).single();
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    if (body.current_stock > 0) {
+      await supabase.from("inventory_transactions").insert({
+        transaction_number: `ADJ-${Date.now()}`,
+        transaction_type: "adjustment",
+        inventory_item_id: data.id,
+        quantity: body.current_stock,
+        stock_before: 0,
+        stock_after: body.current_stock,
+        notes: "Initial stock entry",
+        processed_by: user.id
+      });
+    }
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error instanceof Error ? error.message : "An unexpected error occurred"
+    });
+  }
+});
+
+const items_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: items_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const menuItems_get = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const query = getQuery$1(event);
+    const {
+      category_id,
+      item_type,
+      is_available,
+      search,
+      limit: queryLimit = 100,
+      offset: queryOffset = 0
+    } = query;
+    const limit = parseInt(String(queryLimit));
+    const offset = parseInt(String(queryOffset));
+    let queryBuilder = supabase.from("menu_items").select(`
+        *,
+        category:menu_categories(id, name, category_type),
+        recipe_ingredients:recipe_ingredients(
+          id,
+          quantity_required,
+          unit,
+          inventory_item:inventory_items(id, name, unit_of_measure, current_stock)
+        )
+      `).order("name").range(offset, offset + limit - 1);
+    if (category_id) {
+      queryBuilder = queryBuilder.eq("category_id", category_id);
+    }
+    if (item_type) {
+      queryBuilder = queryBuilder.eq("item_type", item_type);
+    }
+    if (is_available !== void 0) {
+      queryBuilder = queryBuilder.eq("is_available", is_available === "true");
+    }
+    if (search) {
+      queryBuilder = queryBuilder.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
+    }
+    const { data, error, count } = await queryBuilder;
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data,
+      count
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const menuItems_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: menuItems_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const orders_get = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const query = getQuery$1(event);
+    const {
+      status,
+      order_type,
+      date_from,
+      date_to,
+      limit: queryLimit = 50,
+      offset: queryOffset = 0
+    } = query;
+    const limit = parseInt(String(queryLimit));
+    const offset = parseInt(String(queryOffset));
+    let queryBuilder = supabase.from("restaurant_orders").select(`
+        *,
+        guest:guests(id, first_name, last_name, email, phone),
+        reservation:reservations(id, reservation_number),
+        items:restaurant_order_items(
+          id,
+          quantity,
+          unit_price,
+          total_price,
+          modifications,
+          item_status,
+          menu_item:menu_items(id, name, description)
+        ),
+        taken_by_profile:profiles!taken_by(id, full_name),
+        prepared_by_profile:profiles!prepared_by(id, full_name),
+        served_by_profile:profiles!served_by(id, full_name)
+      `).order("order_time", { ascending: false }).range(offset, offset + limit - 1);
+    if (status) {
+      queryBuilder = queryBuilder.eq("order_status", status);
+    }
+    if (order_type) {
+      queryBuilder = queryBuilder.eq("order_type", order_type);
+    }
+    if (date_from) {
+      queryBuilder = queryBuilder.gte("order_time", date_from);
+    }
+    if (date_to) {
+      queryBuilder = queryBuilder.lte("order_time", date_to);
+    }
+    const { data, error, count } = await queryBuilder;
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data,
+      count
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const orders_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: orders_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const orders_post = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const body = await readBody(event);
+    const requiredFields = ["order_type", "items", "total_amount"];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: `${field} is required`
+        });
+      }
+    }
+    if (!Array.isArray(body.items) || body.items.length === 0) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Order must contain at least one item"
+      });
+    }
+    if (!body.order_number) {
+      const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10).replace(/-/g, "");
+      const { data: lastOrder } = await supabase.from("restaurant_orders").select("order_number").like("order_number", `ORD-${today}-%`).order("created_at", { ascending: false }).limit(1);
+      let nextNumber = 1;
+      if (lastOrder && lastOrder.length > 0) {
+        const lastOrderNumber = lastOrder[0].order_number;
+        const match = lastOrderNumber.match(/ORD-\d{8}-(\d+)/);
+        if (match) {
+          nextNumber = parseInt(match[1]) + 1;
+        }
+      }
+      body.order_number = `ORD-${today}-${String(nextNumber).padStart(4, "0")}`;
+    }
+    body.order_status = body.order_status || "pending";
+    body.payment_status = body.payment_status || "pending";
+    body.order_time = body.order_time || (/* @__PURE__ */ new Date()).toISOString();
+    let subtotal = 0;
+    const items = body.items.map((item) => {
+      const itemTotal = item.quantity * item.unit_price;
+      subtotal += itemTotal;
+      return {
+        ...item,
+        total_price: itemTotal
+      };
+    });
+    body.subtotal = subtotal;
+    body.tax_amount = body.tax_amount || 0;
+    body.service_charge = body.service_charge || 0;
+    body.discount_amount = body.discount_amount || 0;
+    body.total_amount = subtotal + body.tax_amount + body.service_charge - body.discount_amount;
+    const orderItems = items;
+    delete body.items;
+    const { data: order, error: orderError } = await supabase.from("restaurant_orders").insert(body).select().single();
+    if (orderError) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: orderError.message
+      });
+    }
+    const orderItemsWithOrderId = orderItems.map((item) => ({
+      ...item,
+      order_id: order.id
+    }));
+    const { error: itemsError } = await supabase.from("restaurant_order_items").insert(orderItemsWithOrderId);
+    if (itemsError) {
+      await supabase.from("restaurant_orders").delete().eq("id", order.id);
+      throw createError({
+        statusCode: 400,
+        statusMessage: itemsError.message
+      });
+    }
+    const { data: completeOrder, error: fetchError } = await supabase.from("restaurant_orders").select(`
+        *,
+        guest:guests(id, first_name, last_name, email, phone),
+        reservation:reservations(id, reservation_number),
+        items:restaurant_order_items(
+          id,
+          quantity,
+          unit_price,
+          total_price,
+          modifications,
+          item_status,
+          menu_item:menu_items(id, name, description, item_type)
+        )
+      `).eq("id", order.id).single();
+    if (fetchError) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: fetchError.message
+      });
+    }
+    return {
+      success: true,
+      data: completeOrder
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const orders_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: orders_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const tables_get = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const query = getQuery$1(event);
+    const {
+      status,
+      capacity_min,
+      capacity_max,
+      location,
+      is_active,
+      limit: queryLimit = 100,
+      offset: queryOffset = 0
+    } = query;
+    const limit = parseInt(String(queryLimit));
+    const offset = parseInt(String(queryOffset));
+    let queryBuilder = supabase.from("restaurant_tables").select(`
+        *,
+        current_reservation:table_reservations(
+          id,
+          reservation_time,
+          party_size,
+          guest:guests(id, first_name, last_name, phone),
+          status
+        )
+      `).order("table_number").range(offset, offset + limit - 1);
+    if (status) {
+      queryBuilder = queryBuilder.eq("status", status);
+    }
+    if (capacity_min) {
+      queryBuilder = queryBuilder.gte("capacity", parseInt(String(capacity_min)));
+    }
+    if (capacity_max) {
+      queryBuilder = queryBuilder.lte("capacity", parseInt(String(capacity_max)));
+    }
+    if (location) {
+      queryBuilder = queryBuilder.eq("location", location);
+    }
+    if (is_active !== void 0) {
+      queryBuilder = queryBuilder.eq("is_active", is_active === "true");
+    }
+    const { data, error, count } = await queryBuilder;
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data,
+      count
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const tables_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: tables_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
 const sendInvitation_post = defineEventHandler(async (event) => {
   try {
     const body = await readBody(event);
@@ -1956,9 +2465,10 @@ const sendInvitation_post = defineEventHandler(async (event) => {
         statusMessage: "Request ID is required"
       });
     }
+    const config = useRuntimeConfig();
     const supabase = createClient(
-      process.env.VITE_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
+      config.supabaseUrl,
+      config.supabaseServiceKey
     );
     const { data: request, error: fetchError } = await supabase.from("demo_requests").select("*").eq("id", requestId).eq("status", "approved").single();
     if (fetchError || !request) {

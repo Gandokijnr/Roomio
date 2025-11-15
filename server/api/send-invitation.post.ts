@@ -13,9 +13,10 @@ export default defineEventHandler(async (event) => {
     }
 
     // Initialize Supabase client
+    const config = useRuntimeConfig()
     const supabase = createClient(
-      process.env.VITE_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      config.supabaseUrl!,
+      config.supabaseServiceKey!
     )
 
     // Get the demo request

@@ -281,7 +281,7 @@ const loadAnalytics = async () => {
     }
 
     // Calculate average room count
-    const roomCounts = allRequests.map(r => {
+    const roomCounts: number[] = allRequests.map(r => {
       const count = r.room_count
       if (count === '1-25') return 12.5
       if (count === '26-50') return 38

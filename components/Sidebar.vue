@@ -70,6 +70,41 @@
         <span>Housekeeping</span>
       </NuxtLink>
 
+      <!-- Restaurant & Bar Operations -->
+      <div v-if="canManageRestaurant() || canManageBar() || canManageInventory()" class="nav-section">
+        <div class="nav-section-title">F&B Operations</div>
+        
+        <NuxtLink
+          v-if="canManageRestaurant()"
+          to="/restaurant"
+          class="nav-item"
+          active-class="active"
+        >
+          <span class="icon">🍽️</span>
+          <span>Restaurant</span>
+        </NuxtLink>
+
+        <NuxtLink
+          v-if="canManageBar()"
+          to="/bar"
+          class="nav-item"
+          active-class="active"
+        >
+          <span class="icon">🍸</span>
+          <span>Bar</span>
+        </NuxtLink>
+
+        <NuxtLink
+          v-if="canManageInventory()"
+          to="/inventory"
+          class="nav-item"
+          active-class="active"
+        >
+          <span class="icon">📦</span>
+          <span>Inventory</span>
+        </NuxtLink>
+      </div>
+
       <NuxtLink
         v-if="canViewReports()"
         to="/reports"
@@ -110,7 +145,20 @@
 </template>
 
 <script setup lang="ts">
-const { profile, signOut, hasRole, canManageRooms, canManageReservations, canManagePayments, canManageInvoices, canManageHousekeeping, canViewReports } = useAuth()
+const { 
+  profile, 
+  signOut, 
+  hasRole, 
+  canManageRooms, 
+  canManageReservations, 
+  canManagePayments, 
+  canManageInvoices, 
+  canManageHousekeeping, 
+  canViewReports,
+  canManageRestaurant,
+  canManageBar,
+  canManageInventory
+} = useAuth()
 
 const handleSignOut = async () => {
   try {
@@ -183,6 +231,20 @@ const handleSignOut = async () => {
   justify-content: center;
 }
 
+.nav-section {
+  margin: var(--spacing-lg) 0;
+}
+
+.nav-section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-sm);
+  padding: 0 var(--spacing-md);
+}
+
 .sidebar-footer {
   padding: var(--spacing-md);
   border-top: 1px solid var(--neutral-200);
@@ -246,5 +308,17 @@ const handleSignOut = async () => {
 
 .btn-signout:hover {
   background: var(--neutral-200);
+}
+
+.debug-info {
+  padding: var(--spacing-sm);
+  background: var(--neutral-50);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+}
+
+.debug-info p {
+  margin: 2px 0;
+  color: var(--neutral-600);
 }
 </style>

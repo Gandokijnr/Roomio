@@ -56,6 +56,31 @@
             <div class="stat-value">{{ stats.occupancyRate }}%</div>
           </div>
         </div>
+
+        <!-- F&B Operations Stats -->
+        <div v-if="canManageRestaurant() || canManageBar()" class="stat-card card">
+          <div class="stat-icon" style="background: var(--warning-50); color: var(--warning-600);">🍽️</div>
+          <div class="stat-info">
+            <div class="stat-label">Today's Orders</div>
+            <div class="stat-value">{{ stats.todayOrders }}</div>
+          </div>
+        </div>
+
+        <div v-if="canManageBar()" class="stat-card card">
+          <div class="stat-icon" style="background: var(--info-50); color: var(--info-600);">🍸</div>
+          <div class="stat-info">
+            <div class="stat-label">Bar Orders</div>
+            <div class="stat-value">{{ stats.barOrders }}</div>
+          </div>
+        </div>
+
+        <div v-if="canManageInventory()" class="stat-card card">
+          <div class="stat-icon" style="background: var(--error-50); color: var(--error-600);">📦</div>
+          <div class="stat-info">
+            <div class="stat-label">Low Stock Items</div>
+            <div class="stat-value">{{ stats.lowStockItems }}</div>
+          </div>
+        </div>
       </div>
 
       <div class="dashboard-grid">
@@ -108,6 +133,51 @@
             </div>
           </div>
         </div>
+
+        <!-- Restaurant Orders Card -->
+        <div v-if="canManageRestaurant() || canManageBar()" class="card restaurant-orders-card">
+          <h3>Recent Restaurant Orders</h3>
+          <div v-if="recentOrders.length === 0" class="empty-state">
+            No recent orders
+          </div>
+          <div v-else class="orders-list">
+            <div v-for="order in recentOrders" :key="order.id" class="order-item">
+              <div class="order-info">
+                <div class="order-number">#{{ order.order_number }}</div>
+                <div class="order-details">
+                  {{ order.service_type }} • {{ order.table_number ? `Table ${order.table_number}` : 'Room Service' }}
+                </div>
+              </div>
+              <div class="order-meta">
+                <span :class="['badge', `badge-${getOrderStatusColor(order.status)}`]">
+                  {{ order.status }}
+                </span>
+                <div class="order-total">${{ order.total_amount }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inventory Alerts Card -->
+        <div v-if="canManageInventory()" class="card inventory-alerts-card">
+          <h3>Inventory Alerts</h3>
+          <div v-if="inventoryAlerts.length === 0" class="empty-state">
+            All items are well stocked
+          </div>
+          <div v-else class="alerts-list">
+            <div v-for="item in inventoryAlerts" :key="item.id" class="alert-item">
+              <div class="alert-info">
+                <div class="item-name">{{ item.name }}</div>
+                <div class="item-details">
+                  Current: {{ item.current_stock }} {{ item.unit }} • Min: {{ item.minimum_stock }} {{ item.unit }}
+                </div>
+              </div>
+              <span :class="['badge', item.current_stock === 0 ? 'badge-error' : 'badge-warning']">
+                {{ item.current_stock === 0 ? 'Out of Stock' : 'Low Stock' }}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div v-if="canManageHousekeeping() || hasRole(['housekeeping'])" class="card housekeeping-card">
@@ -139,7 +209,13 @@ definePageMeta({
 })
 
 const { $supabase } = useNuxtApp()
-const { hasRole, canManageHousekeeping } = useAuth()
+const { 
+  hasRole, 
+  canManageHousekeeping, 
+  canManageRestaurant, 
+  canManageBar, 
+  canManageInventory 
+} = useAuth()
 
 const loading = ref(true)
 const stats = ref({
@@ -154,10 +230,16 @@ const stats = ref({
   todayCheckIns: 0,
   todayCheckOuts: 0,
   occupancyRate: 0,
+  // F&B Operations Stats
+  todayOrders: 0,
+  barOrders: 0,
+  lowStockItems: 0,
 })
 
 const recentReservations = ref<Reservation[]>([])
 const pendingTasks = ref<HousekeepingTask[]>([])
+const recentOrders = ref<any[]>([])
+const inventoryAlerts = ref<any[]>([])
 
 const loadDashboardData = async () => {
   try {
@@ -165,7 +247,8 @@ const loadDashboardData = async () => {
 
     const today = new Date().toISOString().split('T')[0]
 
-    const [roomsRes, reservationsRes, tasksRes] = await Promise.all([
+    // Prepare all data fetching promises
+    const promises = [
       $supabase.from('rooms').select('status, is_active'),
       $supabase
         .from('reservations')
@@ -178,7 +261,33 @@ const loadDashboardData = async () => {
         .eq('status', 'pending')
         .order('priority', { ascending: false })
         .limit(5),
-    ])
+    ]
+
+    // Add F&B data fetching if user has permissions
+    let ordersPromise = null
+    let inventoryPromise = null
+
+    if (canManageRestaurant() || canManageBar()) {
+      ordersPromise = $supabase
+        .from('restaurant_orders')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5)
+      promises.push(ordersPromise)
+    }
+
+    if (canManageInventory()) {
+      inventoryPromise = $supabase
+        .from('inventory_items')
+        .select('*')
+        .lte('current_stock', 'minimum_stock')
+        .eq('is_active', true)
+        .limit(10)
+      promises.push(inventoryPromise)
+    }
+
+    const results = await Promise.all(promises)
+    const [roomsRes, reservationsRes, tasksRes, ...fbResults] = results
 
     if (roomsRes.data) {
       const activeRooms = roomsRes.data.filter(r => r.is_active)
@@ -197,7 +306,11 @@ const loadDashboardData = async () => {
     }
 
     if (reservationsRes.data) {
-      recentReservations.value = reservationsRes.data
+      // Type assertion with runtime validation
+      const reservationData = reservationsRes.data as any[]
+      recentReservations.value = reservationData.filter(item => 
+        item && typeof item === 'object' && 'id' in item && 'reservation_number' in item
+      ) as Reservation[]
 
       const { data: checkInsData } = await $supabase
         .from('reservations')
@@ -216,7 +329,41 @@ const loadDashboardData = async () => {
     }
 
     if (tasksRes.data) {
-      pendingTasks.value = tasksRes.data
+      // Type assertion with runtime validation for housekeeping tasks
+      const tasksData = tasksRes.data as any[]
+      pendingTasks.value = tasksData.filter(item => 
+        item && typeof item === 'object' && 'id' in item && 'room_id' in item && 'task_type' in item
+      ) as HousekeepingTask[]
+    }
+
+    // Process F&B data
+    let fbResultIndex = 0
+    
+    if (canManageRestaurant() || canManageBar()) {
+      const ordersRes = fbResults[fbResultIndex++]
+      if (ordersRes?.data) {
+        recentOrders.value = ordersRes.data
+        
+        // Count today's orders
+        const todayOrdersCount = ordersRes.data.filter(order => 
+          order.created_at?.startsWith(today)
+        ).length
+        stats.value.todayOrders = todayOrdersCount
+        
+        // Count bar orders specifically
+        const barOrdersCount = ordersRes.data.filter(order => 
+          order.service_type === 'bar' && order.created_at?.startsWith(today)
+        ).length
+        stats.value.barOrders = barOrdersCount
+      }
+    }
+
+    if (canManageInventory()) {
+      const inventoryRes = fbResults[fbResultIndex++]
+      if (inventoryRes?.data) {
+        inventoryAlerts.value = inventoryRes.data
+        stats.value.lowStockItems = inventoryRes.data.length
+      }
     }
   } catch (error) {
     console.error('Error loading dashboard data:', error)
@@ -245,6 +392,18 @@ const getPriorityColor = (priority: TaskPriority) => {
     urgent: 'error',
   }
   return colors[priority] || 'neutral'
+}
+
+const getOrderStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
+    pending: 'warning',
+    confirmed: 'primary',
+    preparing: 'info',
+    ready: 'success',
+    served: 'neutral',
+    cancelled: 'error',
+  }
+  return colors[status] || 'neutral'
 }
 
 onMounted(() => {
@@ -341,12 +500,16 @@ onMounted(() => {
 
 .room-status-card,
 .recent-reservations-card,
+.restaurant-orders-card,
+.inventory-alerts-card,
 .housekeeping-card {
   padding: 0;
 }
 
 .room-status-list,
 .reservations-list,
+.orders-list,
+.alerts-list,
 .tasks-list {
   padding: var(--spacing-lg);
   display: flex;
@@ -356,6 +519,8 @@ onMounted(() => {
 
 .status-item,
 .reservation-item,
+.order-item,
+.alert-item,
 .task-item {
   display: flex;
   align-items: center;
@@ -368,6 +533,8 @@ onMounted(() => {
 
 .status-item:hover,
 .reservation-item:hover,
+.order-item:hover,
+.alert-item:hover,
 .task-item:hover {
   background: var(--neutral-100);
 }
@@ -379,12 +546,16 @@ onMounted(() => {
 }
 
 .reservation-info,
+.order-info,
+.alert-info,
 .task-info {
   flex: 1;
   min-width: 0;
 }
 
 .reservation-guest,
+.order-number,
+.item-name,
 .task-title {
   font-weight: 500;
   color: var(--neutral-900);
@@ -393,9 +564,24 @@ onMounted(() => {
 }
 
 .reservation-details,
+.order-details,
+.item-details,
 .task-details {
   font-size: 0.813rem;
   color: var(--neutral-600);
+}
+
+.order-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-xs);
+}
+
+.order-total {
+  font-weight: 600;
+  color: var(--neutral-900);
+  font-size: 0.875rem;
 }
 
 .empty-state {
