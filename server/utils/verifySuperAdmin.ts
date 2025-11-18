@@ -22,7 +22,7 @@ export const verifySuperAdmin = async (event: any) => {
   const config = useRuntimeConfig()
   const supabase = createClient(
     config.supabaseUrl!,
-    config.public.supabaseKey!
+    config.supabaseServiceKey!
   )
 
   const { data: { user }, error } = await supabase.auth.getUser(token)

@@ -1541,7 +1541,9 @@ const _lazy_DwAPGa = () => Promise.resolve().then(function () { return reject_po
 const _lazy_wtczLp = () => Promise.resolve().then(function () { return activity_get$1; });
 const _lazy_c46E7X = () => Promise.resolve().then(function () { return dashboard_get$1; });
 const _lazy_wpoaUC = () => Promise.resolve().then(function () { return tenants_get$1; });
+const _lazy_d8uoMu = () => Promise.resolve().then(function () { return _id__activity_get$1; });
 const _lazy_WjX9cZ = () => Promise.resolve().then(function () { return _id__get$1; });
+const _lazy_78ocNa = () => Promise.resolve().then(function () { return _id__metrics_get$1; });
 const _lazy_9a40sP = () => Promise.resolve().then(function () { return _id__patch$1; });
 const _lazy_h3Sq2s = () => Promise.resolve().then(function () { return vendors_get$1; });
 const _lazy_7Vc5ea = () => Promise.resolve().then(function () { return renderer$1; });
@@ -1576,7 +1578,9 @@ const handlers = [
   { route: '/api/super/activity', handler: _lazy_wtczLp, lazy: true, middleware: false, method: "get" },
   { route: '/api/super/dashboard', handler: _lazy_c46E7X, lazy: true, middleware: false, method: "get" },
   { route: '/api/super/tenants', handler: _lazy_wpoaUC, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/tenants/:id.activity', handler: _lazy_d8uoMu, lazy: true, middleware: false, method: "get" },
   { route: '/api/super/tenants/:id', handler: _lazy_WjX9cZ, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/tenants/:id.metrics', handler: _lazy_78ocNa, lazy: true, middleware: false, method: "get" },
   { route: '/api/super/tenants/:id', handler: _lazy_9a40sP, lazy: true, middleware: false, method: "patch" },
   { route: '/api/vendors', handler: _lazy_h3Sq2s, lazy: true, middleware: false, method: "get" },
   { route: '/__nuxt_error', handler: _lazy_7Vc5ea, lazy: true, middleware: false, method: undefined },
@@ -3604,7 +3608,7 @@ const verifySuperAdmin = async (event) => {
   const config = useRuntimeConfig();
   const supabase = createClient(
     config.supabaseUrl,
-    config.public.supabaseKey
+    config.supabaseServiceKey
   );
   const { data: { user }, error } = await supabase.auth.getUser(token);
   if (error || !user) {
@@ -4295,24 +4299,99 @@ const dashboard_get = defineEventHandler(async (event) => {
   const now = /* @__PURE__ */ new Date();
   const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1e3);
   const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1e3);
-  const [{ count: tenantsCount }, { count: pendingRequestsCount }, { count: activeUsersCount }, { count: errorCount }] = await Promise.all([
-    supabase.from("tenants").select("*", { count: "exact", head: true }),
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1e3);
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1e3);
+  const [
+    { data: tenantRows, error: tenantsError },
+    { count: pendingRequestsCount },
+    { count: activeUsersCount },
+    { count: errorCountLastHour },
+    { count: totalEventsLast24h },
+    { count: errorEventsLast24h },
+    { count: totalRooms },
+    { count: totalInventoryItems }
+  ] = await Promise.all([
+    supabase.from("tenants").select("id, status, subscription_plan, date_joined, updated_at"),
     supabase.from("demo_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("activity_logs").select("id", { count: "exact", head: true }).gte("created_at", fifteenMinutesAgo.toISOString()),
-    supabase.from("activity_logs").select("id", { count: "exact", head: true }).gte("created_at", oneHourAgo.toISOString()).or("entity_type.eq.system,action.ilike.%error%")
+    supabase.from("activity_logs").select("id", { count: "exact", head: true }).gte("created_at", oneHourAgo.toISOString()).or("entity_type.eq.system,action.ilike.%error%"),
+    supabase.from("activity_logs").select("id", { count: "exact", head: true }).gte("created_at", twentyFourHoursAgo.toISOString()),
+    supabase.from("activity_logs").select("id", { count: "exact", head: true }).gte("created_at", twentyFourHoursAgo.toISOString()).or("entity_type.eq.system,action.ilike.%error%"),
+    supabase.from("rooms").select("*", { count: "exact", head: true }),
+    supabase.from("inventory_items").select("*", { count: "exact", head: true })
   ]);
+  if (tenantsError) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: tenantsError.message
+    });
+  }
+  const tenants = tenantRows || [];
+  const totalTenants = tenants.length;
+  const newTenantsLast30Days = tenants.filter((tenant) => {
+    if (!tenant.date_joined) return false;
+    const joinedAt = new Date(tenant.date_joined);
+    return joinedAt >= thirtyDaysAgo;
+  }).length;
+  const subscriptionBreakdown = {
+    trial: 0,
+    basic: 0,
+    premium: 0,
+    enterprise: 0,
+    other: 0
+  };
+  const PLAN_PRICES = {
+    trial: 0,
+    basic: 79,
+    premium: 149,
+    enterprise: 299
+  };
+  let mrr = 0;
+  let churnedLast30Days = 0;
+  let activeAndChurnedBaseline = 0;
+  tenants.forEach((tenant) => {
+    var _a;
+    const plan = (tenant.subscription_plan || "").toLowerCase();
+    const status = (tenant.status || "").toLowerCase();
+    if (plan in subscriptionBreakdown) {
+      subscriptionBreakdown[plan] += 1;
+    } else {
+      subscriptionBreakdown.other += 1;
+    }
+    if (status === "active") {
+      const price = (_a = PLAN_PRICES[plan]) != null ? _a : 0;
+      mrr += price;
+      activeAndChurnedBaseline += 1;
+    }
+    const updatedAt = tenant.updated_at ? new Date(tenant.updated_at) : null;
+    if (status === "suspended" && updatedAt && updatedAt >= thirtyDaysAgo) {
+      churnedLast30Days += 1;
+      activeAndChurnedBaseline += 1;
+    }
+  });
+  const churnRateLast30Days = activeAndChurnedBaseline > 0 ? churnedLast30Days / activeAndChurnedBaseline : 0;
   const errorThreshold = 5;
-  const systemHealthStatus = (errorCount || 0) >= errorThreshold ? "red" : "green";
+  const systemHealthStatus = (errorCountLastHour || 0) >= errorThreshold ? "red" : "green";
+  const totalEvents = totalEventsLast24h || 0;
+  const errorEvents = errorEventsLast24h || 0;
+  const errorRateLast24h = totalEvents > 0 ? errorEvents / totalEvents : 0;
   return {
     success: true,
     data: {
-      totalTenants: tenantsCount || 0,
+      totalTenants,
       pendingRequests: pendingRequestsCount || 0,
       activeUsers: activeUsersCount || 0,
       systemHealth: {
         status: systemHealthStatus,
-        errorCountLastHour: errorCount || 0
-      }
+        errorCountLastHour: errorCountLastHour || 0,
+        errorRateLast24h
+      },
+      newTenantsLast30Days,
+      totalRooms: totalRooms || 0,
+      totalInventoryItems: totalInventoryItems || 0,
+      mrr,
+      subscriptionBreakdown,
+      churnRateLast30Days
     }
   };
 });
@@ -4367,6 +4446,72 @@ const tenants_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
   default: tenants_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
+const _id__activity_get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const params = getRouterParams(event);
+  const id = params.id;
+  if (!id) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant ID is required"
+    });
+  }
+  const query = getQuery$1(event);
+  const { limit = 50 } = query;
+  const max = Math.min(parseInt(String(limit)) || 50, 200);
+  const { data, error } = await supabase.from("activity_logs").select("*").eq("tenant_id", id).order("created_at", { ascending: false }).limit(max);
+  if (error) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: error.message
+    });
+  }
+  const events = (data || []).map((log) => {
+    var _a;
+    let type = log.action;
+    let title = log.action;
+    if (log.entity_type === "tenant" && log.action === "tenant_status_updated") {
+      type = "tenant_status";
+      title = "Tenant status updated";
+    } else if (log.entity_type === "tenant" && log.action === "tenant_plan_updated") {
+      type = "tenant_plan";
+      title = "Tenant plan updated";
+    } else if (log.entity_type === "tenant" && log.action === "access_request_approved") {
+      type = "tenant_created";
+      title = "New tenant created";
+    } else if (log.entity_type === "system" && ((_a = log.action) == null ? void 0 : _a.toLowerCase().includes("error"))) {
+      type = "system_error";
+      title = "System error";
+    }
+    return {
+      id: log.id,
+      type,
+      title,
+      action: log.action,
+      entity_type: log.entity_type,
+      entity_id: log.entity_id,
+      metadata: log.metadata,
+      created_at: log.created_at
+    };
+  });
+  return {
+    success: true,
+    data: {
+      events
+    }
+  };
+});
+
+const _id__activity_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _id__activity_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
 const _id__get = defineEventHandler(async (event) => {
   await verifySuperAdmin(event);
   const config = useRuntimeConfig();
@@ -4404,6 +4549,105 @@ const _id__get = defineEventHandler(async (event) => {
 const _id__get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: _id__get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _id__metrics_get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const params = getRouterParams(event);
+  const id = params.id;
+  if (!id) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant ID is required"
+    });
+  }
+  const now = /* @__PURE__ */ new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1e3);
+  const thirtyDaysAgoDate = thirtyDaysAgo.toISOString().slice(0, 10);
+  const [
+    { count: totalRooms },
+    { count: activeRooms },
+    { data: reservationsRows, error: reservationsError },
+    { data: invoicesRows, error: invoicesError },
+    { count: fbOrdersLast30Days },
+    { count: staffCount }
+  ] = await Promise.all([
+    supabase.from("rooms").select("*", { count: "exact", head: true }).eq("tenant_id", id),
+    supabase.from("rooms").select("*", { count: "exact", head: true }).eq("tenant_id", id).in("status", ["available", "occupied", "reserved"]),
+    supabase.from("reservations").select("id, total_amount, check_in_date, check_out_date, status").eq("tenant_id", id).gte("check_in_date", thirtyDaysAgoDate),
+    supabase.from("invoices").select("total_amount, issue_date").eq("tenant_id", id).gte("issue_date", thirtyDaysAgoDate),
+    supabase.from("restaurant_orders").select("*", { count: "exact", head: true }).eq("tenant_id", id).gte("order_time", thirtyDaysAgo.toISOString()),
+    supabase.from("profiles").select("*", { count: "exact", head: true }).eq("tenant_id", id)
+  ]);
+  if (reservationsError) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: reservationsError.message
+    });
+  }
+  if (invoicesError) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: invoicesError.message
+    });
+  }
+  const reservations = reservationsRows || [];
+  const invoices = invoicesRows || [];
+  const reservationsLast30Days = reservations.length;
+  const revenueLast30Days = invoices.reduce((sum, invoice) => {
+    const amount = Number(invoice.total_amount) || 0;
+    return sum + amount;
+  }, 0);
+  let occupiedNights = 0;
+  const nowDateOnly = new Date(now.toISOString().slice(0, 10));
+  reservations.forEach((reservation) => {
+    if (!reservation.check_in_date || !reservation.check_out_date) return;
+    const checkIn = new Date(reservation.check_in_date);
+    const checkOut = new Date(reservation.check_out_date);
+    const rangeStart = checkIn < thirtyDaysAgo ? thirtyDaysAgo : checkIn;
+    const rangeEnd = checkOut > nowDateOnly ? nowDateOnly : checkOut;
+    const diffMs = rangeEnd.getTime() - rangeStart.getTime();
+    const nights = Math.max(0, Math.round(diffMs / (1e3 * 60 * 60 * 24)));
+    occupiedNights += nights;
+  });
+  const totalRoomNights = (totalRooms || 0) * 30;
+  const occupancyRate30Days = totalRoomNights > 0 ? occupiedNights / totalRoomNights : 0;
+  const reservationsRevenue = reservations.reduce((sum, reservation) => {
+    const amount = Number(reservation.total_amount) || 0;
+    return sum + amount;
+  }, 0);
+  const adr30Days = occupiedNights > 0 ? reservationsRevenue / occupiedNights : 0;
+  return {
+    success: true,
+    data: {
+      rooms: {
+        totalRooms: totalRooms || 0,
+        activeRooms: activeRooms || 0,
+        reservationsLast30Days,
+        occupancyRate30Days,
+        adr30Days
+      },
+      revenue: {
+        revenueLast30Days
+      },
+      fb: {
+        fbOrdersLast30Days: fbOrdersLast30Days || 0
+      },
+      staff: {
+        staffCount: staffCount || 0
+      }
+    }
+  };
+});
+
+const _id__metrics_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _id__metrics_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const _id__patch = defineEventHandler(async (event) => {
@@ -4470,6 +4714,7 @@ const _id__patch = defineEventHandler(async (event) => {
     action: action === "update_status" ? "tenant_status_updated" : "tenant_plan_updated",
     entity_type: "tenant",
     entity_id: id,
+    tenant_id: id,
     metadata: updates
   });
   return {

@@ -86,6 +86,7 @@ export default defineEventHandler(async (event) => {
       action: action === 'update_status' ? 'tenant_status_updated' : 'tenant_plan_updated',
       entity_type: 'tenant',
       entity_id: id,
+      tenant_id: id,
       metadata: updates
     })
 

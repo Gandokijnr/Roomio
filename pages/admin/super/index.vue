@@ -8,10 +8,64 @@
       <span class="super-admin-badge">Super Admin</span>
     </header>
 
-    <section class="metrics-grid" v-if="dashboard">
+    <nav class="super-admin-tabs">
+      <button
+        class="tab-pill"
+        :class="{ active: activeTab === 'overview' }"
+        type="button"
+        @click="setActiveTab('overview')"
+      >
+        🛡️ Overview
+      </button>
+      <button
+        class="tab-pill"
+        :class="{ active: activeTab === 'tenantsSummary' }"
+        type="button"
+        @click="setActiveTab('tenantsSummary')"
+      >
+        🏨 Tenants (Summary)
+      </button>
+      <button
+        class="tab-pill"
+        :class="{ active: activeTab === 'tenantsDirectory' }"
+        type="button"
+        @click="setActiveTab('tenantsDirectory')"
+      >
+        📋 Tenants Directory
+      </button>
+      <button
+        class="tab-pill"
+        :class="{ active: activeTab === 'onboardingSummary' }"
+        type="button"
+        @click="setActiveTab('onboardingSummary')"
+      >
+        📬 Onboarding (Summary)
+      </button>
+      <button
+        class="tab-pill"
+        :class="{ active: activeTab === 'onboardingQueue' }"
+        type="button"
+        @click="setActiveTab('onboardingQueue')"
+      >
+        ✅ Onboarding Queue
+      </button>
+      <button
+        class="tab-pill"
+        :class="{ active: activeTab === 'activity' }"
+        type="button"
+        @click="setActiveTab('activity')"
+      >
+        📣 Activity
+      </button>
+    </nav>
+
+    <section class="metrics-grid" v-if="dashboard && activeTab === 'overview'">
       <div class="metric-card tenants">
         <div class="metric-label">Total Tenants</div>
         <div class="metric-value">{{ dashboard.totalTenants }}</div>
+        <div class="metric-sub" v-if="dashboard.newTenantsLast30Days !== undefined">
+          {{ dashboard.newTenantsLast30Days }} new in last 30 days
+        </div>
       </div>
       <div class="metric-card requests">
         <div class="metric-label">Pending Requests</div>
@@ -20,6 +74,22 @@
       <div class="metric-card users">
         <div class="metric-label">Active Users (15 min)</div>
         <div class="metric-value">{{ dashboard.activeUsers }}</div>
+        <div class="metric-sub" v-if="dashboard.churnRateLast30Days !== undefined">
+          Churn 30d: {{ (dashboard.churnRateLast30Days * 100).toFixed(1) }}%
+        </div>
+      </div>
+      <div class="metric-card financial" v-if="dashboard.mrr !== undefined">
+        <div class="metric-label">Monthly Recurring Revenue</div>
+        <div class="metric-value">
+          ${{ dashboard.mrr.toLocaleString() }}
+        </div>
+      </div>
+      <div class="metric-card usage" v-if="dashboard.totalRooms !== undefined">
+        <div class="metric-label">Rooms Managed</div>
+        <div class="metric-value">{{ dashboard.totalRooms }}</div>
+        <div class="metric-sub" v-if="dashboard.totalInventoryItems !== undefined">
+          {{ dashboard.totalInventoryItems }} inventory items
+        </div>
       </div>
       <div class="metric-card health" :class="dashboard.systemHealth.status">
         <div class="metric-label">System Health</div>
@@ -28,215 +98,334 @@
         </div>
         <div class="metric-sub">
           {{ dashboard.systemHealth.errorCountLastHour }} errors in last hour
+          <span v-if="dashboard.systemHealth.errorRateLast24h !== undefined">
+            · {{ (dashboard.systemHealth.errorRateLast24h * 100).toFixed(1) }}% last 24h
+          </span>
         </div>
       </div>
     </section>
 
-    <div class="content-grid">
-      <!-- Tenant Management -->
-      <section class="card tenants-card">
-        <header class="card-header">
-          <div>
-            <h2>Tenants</h2>
-            <p>Manage all hotels on the platform</p>
-          </div>
-          <div class="card-filters">
-            <select v-model="tenantStatus" @change="loadTenants" class="filter-input">
-              <option value="">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="trial">Trial</option>
-              <option value="pending">Pending</option>
-              <option value="suspended">Suspended</option>
-            </select>
-            <input
-              v-model="tenantSearch"
-              @keyup.enter="loadTenants"
-              class="filter-input"
-              type="search"
-              placeholder="Search hotels or contacts..."
-            />
-            <button class="btn" @click="loadTenants">Refresh</button>
-          </div>
-        </header>
-
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Hotel Name</th>
-                <th>Primary Contact</th>
-                <th>Plan</th>
-                <th>Status</th>
-                <th>Date Joined</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="tenant in tenants"
-                :key="tenant.id"
-                :class="{ selected: selectedTenant && selectedTenant.id === tenant.id }"
-                @click="selectTenant(tenant)"
-              >
-                <td>{{ tenant.name }}</td>
-                <td>
-                  <div class="cell-main">{{ tenant.primary_contact_name || '-' }}</div>
-                  <div class="cell-sub">{{ tenant.primary_contact_email }}</div>
-                </td>
-                <td>{{ tenant.subscription_plan }}</td>
-                <td>
-                  <span class="status-pill" :class="tenant.status">
-                    {{ tenant.status }}
-                  </span>
-                </td>
-                <td>{{ formatDate(tenant.date_joined || tenant.created_at) }}</td>
-              </tr>
-              <tr v-if="tenants.length === 0">
-                <td colspan="5" class="empty-cell">No tenants found.</td>
-              </tr>
-            </tbody>
-          </table>
+    <section
+      v-if="activeTab === 'tenantsSummary'"
+      class="summary-grid"
+    >
+      <div class="summary-card">
+        <div class="summary-card-header">
+          <h2>Tenant Status Overview</h2>
+          <p>High-level snapshot of all hotels on the platform.</p>
         </div>
-
-        <footer v-if="selectedTenant" class="tenant-detail">
-          <div class="detail-main">
-            <h3>{{ selectedTenant.name }}</h3>
-            <p>
-              {{ selectedTenant.primary_contact_name }}
-              <span v-if="selectedTenant.primary_contact_email">
-                · {{ selectedTenant.primary_contact_email }}
-              </span>
-            </p>
-            <div class="detail-stats">
-              <div>
-                <span class="label">Rooms Defined</span>
-                <span class="value">{{ selectedTenant.rooms_defined ?? 0 }}</span>
-              </div>
-              <div>
-                <span class="label">Storage Used</span>
-                <span class="value">{{ (selectedTenant.storage_used_mb ?? 0).toFixed(1) }} MB</span>
-              </div>
-              <div>
-                <span class="label">Last Active</span>
-                <span class="value">{{ formatDateTime(selectedTenant.last_active_at) }}</span>
-              </div>
-            </div>
+        <div class="summary-stats-row">
+          <div class="mini-stat">
+            <span class="label">Total Tenants</span>
+            <span class="value">{{ dashboard?.totalTenants ?? tenants.length }}</span>
           </div>
-          <div class="detail-actions">
-            <button class="btn subtle" @click="impersonateTenant" disabled>
-              Impersonate (coming soon)
-            </button>
-            <button class="btn" @click="openUpdateTenant('update_plan')">
-              Change Plan
-            </button>
-            <button
-              class="btn danger"
-              @click="openUpdateTenant('update_status')"
+          <div class="mini-stat">
+            <span class="label">Active</span>
+            <span class="value">{{ tenantCountsByStatus.active || 0 }}</span>
+          </div>
+          <div class="mini-stat">
+            <span class="label">Trial</span>
+            <span class="value">{{ tenantCountsByStatus.trial || 0 }}</span>
+          </div>
+          <div class="mini-stat">
+            <span class="label">Pending</span>
+            <span class="value">{{ tenantCountsByStatus.pending || 0 }}</span>
+          </div>
+          <div class="mini-stat">
+            <span class="label">Suspended</span>
+            <span class="value">{{ tenantCountsByStatus.suspended || 0 }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-header">
+          <h2>Plans Mix</h2>
+          <p>Distribution of subscription plans across tenants.</p>
+        </div>
+        <div class="summary-stats-row">
+          <div
+            v-for="(count, plan) in tenantCountsByPlan"
+            :key="plan"
+            class="mini-stat"
+          >
+            <span class="label">{{ plan }}</span>
+            <span class="value">{{ count }}</span>
+          </div>
+          <div v-if="Object.keys(tenantCountsByPlan).length === 0" class="empty-cell">
+            No tenants loaded yet.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section
+      v-if="activeTab === 'tenantsDirectory'"
+      id="tenants-directory"
+      class="card tenants-card"
+    >
+      <header class="card-header">
+        <div>
+          <h2>Tenants</h2>
+          <p>Manage all hotels on the platform</p>
+        </div>
+        <div class="card-filters">
+          <select v-model="tenantStatus" @change="loadTenants" class="filter-input">
+            <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="trial">Trial</option>
+            <option value="pending">Pending</option>
+            <option value="suspended">Suspended</option>
+          </select>
+          <input
+            v-model="tenantSearch"
+            @keyup.enter="loadTenants"
+            class="filter-input"
+            type="search"
+            placeholder="Search hotels or contacts..."
+          />
+          <button class="btn" @click="loadTenants">Refresh</button>
+        </div>
+      </header>
+
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Hotel Name</th>
+              <th>Primary Contact</th>
+              <th>Plan</th>
+              <th>Status</th>
+              <th>Date Joined</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="tenant in tenants"
+              :key="tenant.id"
+              :class="{ selected: selectedTenant && selectedTenant.id === tenant.id }"
+              @click="selectTenant(tenant)"
             >
-              {{ selectedTenant.status === 'suspended' ? 'Activate Tenant' : 'Suspend Tenant' }}
-            </button>
-          </div>
-        </footer>
-      </section>
+              <td>{{ tenant.name }}</td>
+              <td>
+                <div class="cell-main">{{ tenant.primary_contact_name || '-' }}</div>
+                <div class="cell-sub">{{ tenant.primary_contact_email }}</div>
+              </td>
+              <td>{{ tenant.subscription_plan }}</td>
+              <td>
+                <span class="status-pill" :class="tenant.status">
+                  {{ tenant.status }}
+                </span>
+              </td>
+              <td>{{ formatDate(tenant.date_joined || tenant.created_at) }}</td>
+              <td>
+                <NuxtLink
+                  class="btn xs"
+                  :to="`/admin/super/tenants/${tenant.id}`"
+                  @click.stop
+                >
+                  View
+                </NuxtLink>
+              </td>
+            </tr>
+            <tr v-if="tenants.length === 0">
+              <td colspan="5" class="empty-cell">No tenants found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      <!-- Registration Requests + Activity Feed -->
-      <section class="side-column">
-        <div class="card requests-card">
-          <header class="card-header">
+      <footer v-if="selectedTenant" class="tenant-detail">
+        <div class="detail-main">
+          <h3>{{ selectedTenant.name }}</h3>
+          <p>
+            {{ selectedTenant.primary_contact_name }}
+            <span v-if="selectedTenant.primary_contact_email">
+              · {{ selectedTenant.primary_contact_email }}
+            </span>
+          </p>
+          <div class="detail-stats">
             <div>
-              <h2>Registration Requests</h2>
-              <p>Invite-only and approval queue</p>
+              <span class="label">Rooms Defined</span>
+              <span class="value">{{ selectedTenant.rooms_defined ?? 0 }}</span>
             </div>
-            <div class="card-filters">
-              <select v-model="requestStatus" @change="loadRequests" class="filter-input">
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
-              <button class="btn" @click="loadRequests">Refresh</button>
+            <div>
+              <span class="label">Storage Used</span>
+              <span class="value">{{ (selectedTenant.storage_used_mb ?? 0).toFixed(1) }} MB</span>
             </div>
-          </header>
-
-          <div class="table-wrapper compact">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Hotel</th>
-                  <th>Contact</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="request in requests" :key="request.id">
-                  <td>
-                    <div class="cell-main">{{ request.hotel_name }}</div>
-                    <div class="cell-sub">{{ formatDate(request.created_at) }}</div>
-                  </td>
-                  <td>
-                    <div class="cell-main">{{ request.name }}</div>
-                    <div class="cell-sub">{{ request.email }}</div>
-                  </td>
-                  <td>
-                    <span class="status-pill" :class="request.status">
-                      {{ request.status }}
-                    </span>
-                  </td>
-                  <td>
-                    <div class="row-actions">
-                      <button
-                        v-if="request.status === 'pending'"
-                        class="btn xs"
-                        @click="approveRequest(request)"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        v-if="request.status === 'pending'"
-                        class="btn xs danger"
-                        @click="rejectRequest(request)"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="requests.length === 0">
-                  <td colspan="4" class="empty-cell">No requests found.</td>
-                </tr>
-              </tbody>
-            </table>
+            <div>
+              <span class="label">Last Active</span>
+              <span class="value">{{ formatDateTime(selectedTenant.last_active_at) }}</span>
+            </div>
           </div>
         </div>
+        <div class="detail-actions">
+          <button class="btn subtle" @click="impersonateTenant" disabled>
+            Impersonate (coming soon)
+          </button>
+          <button class="btn" @click="openUpdateTenant('update_plan')">
+            Change Plan
+          </button>
+          <button
+            class="btn danger"
+            @click="openUpdateTenant('update_status')"
+          >
+            {{ selectedTenant.status === 'suspended' ? 'Activate Tenant' : 'Suspend Tenant' }}
+          </button>
+        </div>
+      </footer>
+    </section>
 
-        <div class="card activity-card">
-          <header class="card-header">
-            <div>
-              <h2>Global Activity</h2>
-              <p>High-level events across the platform</p>
+    <section
+      v-if="activeTab === 'onboardingSummary'"
+      class="summary-grid"
+    >
+      <div class="summary-card">
+        <div class="summary-card-header">
+          <h2>Onboarding Funnel</h2>
+          <p>Pipeline of access requests from the landing page.</p>
+        </div>
+        <div class="summary-stats-row">
+          <div class="mini-stat">
+            <span class="label">Total Requests</span>
+            <span class="value">{{ requests.length }}</span>
+          </div>
+          <div class="mini-stat">
+            <span class="label">Pending</span>
+            <span class="value">{{ onboardingCounts.pending }}</span>
+          </div>
+          <div class="mini-stat">
+            <span class="label">Approved</span>
+            <span class="value">{{ onboardingCounts.approved }}</span>
+          </div>
+          <div class="mini-stat">
+            <span class="label">Rejected</span>
+            <span class="value">{{ onboardingCounts.rejected }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-header">
+          <h2>Recent Requests</h2>
+          <p>Most recent hotels that requested access.</p>
+        </div>
+        <ul class="summary-list">
+          <li
+            v-for="request in requests.slice(0, 5)"
+            :key="request.id"
+            class="summary-list-item"
+          >
+            <div class="cell-main">{{ request.hotel_name }}</div>
+            <div class="cell-sub">
+              {{ request.name }} · {{ formatDate(request.created_at) }} · {{ request.status }}
             </div>
-            <button class="btn" @click="loadActivity">Refresh</button>
-          </header>
+          </li>
+          <li v-if="requests.length === 0" class="empty-cell">No requests yet.</li>
+        </ul>
+      </div>
+    </section>
 
-          <div class="activity-list">
-            <div v-for="event in activity" :key="event.id" class="activity-item">
-              <div class="activity-type" :class="event.type">
-                {{ event.type }}
-              </div>
-              <div class="activity-body">
-                <div class="activity-title">{{ event.title }}</div>
-                <div class="activity-meta">
-                  <span>{{ formatDateTime(event.created_at) }}</span>
-                  <span v-if="event.metadata?.hotel_name">
-                    · {{ event.metadata.hotel_name }}
-                  </span>
+    <section
+      v-if="activeTab === 'onboardingQueue'"
+      class="card requests-card"
+    >
+      <header class="card-header">
+        <div>
+          <h2>Registration Requests</h2>
+          <p>Invite-only and approval queue</p>
+        </div>
+        <div class="card-filters">
+          <select v-model="requestStatus" @change="loadRequests" class="filter-input">
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <button class="btn" @click="loadRequests">Refresh</button>
+        </div>
+      </header>
+
+      <div class="table-wrapper compact">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Hotel</th>
+              <th>Contact</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="request in requests" :key="request.id">
+              <td>
+                <div class="cell-main">{{ request.hotel_name }}</div>
+                <div class="cell-sub">{{ formatDate(request.created_at) }}</div>
+              </td>
+              <td>
+                <div class="cell-main">{{ request.name }}</div>
+                <div class="cell-sub">{{ request.email }}</div>
+              </td>
+              <td>
+                <span class="status-pill" :class="request.status">
+                  {{ request.status }}
+                </span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button
+                    v-if="request.status === 'pending'"
+                    class="btn xs"
+                    @click="approveRequest(request)"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    v-if="request.status === 'pending'"
+                    class="btn xs danger"
+                    @click="rejectRequest(request)"
+                  >
+                    Reject
+                  </button>
                 </div>
-              </div>
+              </td>
+            </tr>
+            <tr v-if="requests.length === 0">
+              <td colspan="4" class="empty-cell">No requests found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section
+      v-if="activeTab === 'activity'"
+      class="card activity-card"
+    >
+      <header class="card-header">
+        <div>
+          <h2>Global Activity</h2>
+          <p>High-level events across the platform</p>
+        </div>
+        <button class="btn" @click="loadActivity">Refresh</button>
+      </header>
+
+      <div class="activity-list">
+        <div v-for="event in activity" :key="event.id" class="activity-item">
+          <div class="activity-type" :class="event.type">
+            {{ event.type }}
+          </div>
+          <div class="activity-body">
+            <div class="activity-title">{{ event.title }}</div>
+            <div class="activity-meta">
+              <span>{{ formatDateTime(event.created_at) }}</span>
+              <span v-if="event.metadata?.hotel_name">
+                · {{ event.metadata.hotel_name }}
+              </span>
             </div>
-            <div v-if="activity.length === 0" class="empty-cell">No recent activity.</div>
           </div>
         </div>
-      </section>
-    </div>
+        <div v-if="activity.length === 0" class="empty-cell">No recent activity.</div>
+      </div>
+    </section>
 
     <div v-if="showUpdateModal && selectedTenant" class="modal-backdrop">
       <div class="modal">
@@ -280,11 +469,13 @@
 </template>
 
 <script setup lang="ts">
-const { $fetch, $supabase } = useNuxtApp() as any
+const { $supabase, $axios } = useNuxtApp() as any
+const route = useRoute()
+const router = useRouter()
 
 definePageMeta({
   middleware: ['auth', 'super-admin'],
-  layout: 'dashboard'
+  layout: 'super-admin'
 })
 
 interface DashboardData {
@@ -294,7 +485,14 @@ interface DashboardData {
   systemHealth: {
     status: 'green' | 'red'
     errorCountLastHour: number
+    errorRateLast24h?: number
   }
+  newTenantsLast30Days?: number
+  totalRooms?: number
+  totalInventoryItems?: number
+  mrr?: number
+  subscriptionBreakdown?: Record<string, number>
+  churnRateLast30Days?: number
 }
 
 interface Tenant {
@@ -335,6 +533,15 @@ interface ActivityEvent {
 
 const authToken = ref<string | null>(null)
 
+const activeTab = ref<
+  'overview' |
+  'tenantsSummary' |
+  'tenantsDirectory' |
+  'onboardingSummary' |
+  'onboardingQueue' |
+  'activity'
+>('overview')
+
 const loadingDashboard = ref(false)
 const loadingTenants = ref(false)
 const loadingRequests = ref(false)
@@ -365,11 +572,117 @@ const authHeaders = computed(() => {
     : {}
 })
 
+const tabFromHash = (hash: string | null | undefined): typeof activeTab.value => {
+  const clean = hash ? hash.replace('#', '') : ''
+  switch (clean) {
+    case 'overview':
+      return 'overview'
+    case 'tenants':
+    case 'tenants-directory':
+    case 'tenantsDirectory':
+      return 'tenantsDirectory'
+    case 'tenants-summary':
+    case 'tenantsSummary':
+      return 'tenantsSummary'
+    case 'onboarding':
+    case 'onboarding-summary':
+    case 'onboardingSummary':
+    case 'requests':
+      return 'onboardingSummary'
+    case 'onboarding-queue':
+    case 'onboardingQueue':
+      return 'onboardingQueue'
+    case 'activity':
+      return 'activity'
+    default:
+      return 'overview'
+  }
+}
+
+const hashFromTab = (tab: typeof activeTab.value): string => {
+  switch (tab) {
+    case 'overview':
+      return '#overview'
+    case 'tenantsSummary':
+      return '#tenants-summary'
+    case 'tenantsDirectory':
+      return '#tenants'
+    case 'onboardingSummary':
+      return '#requests'
+    case 'onboardingQueue':
+      return '#onboarding-queue'
+    case 'activity':
+      return '#activity'
+  }
+}
+
+const setActiveTab = (tab: typeof activeTab.value) => {
+  activeTab.value = tab
+  const hash = hashFromTab(tab)
+  if (route.hash !== hash) {
+    router.replace({ hash })
+  }
+}
+
+watch(
+  () => route.hash,
+  (newHash) => {
+    activeTab.value = tabFromHash(newHash)
+  },
+  { immediate: true }
+)
+
+const tenantCountsByStatus = computed(() => {
+  const counts: Record<string, number> = {
+    active: 0,
+    trial: 0,
+    pending: 0,
+    suspended: 0
+  }
+
+  for (const tenant of tenants.value) {
+    const status = tenant.status || 'pending'
+    if (!(status in counts)) {
+      counts[status] = 0
+    }
+    counts[status] += 1
+  }
+
+  return counts
+})
+
+const tenantCountsByPlan = computed(() => {
+  const counts: Record<string, number> = {}
+
+  for (const tenant of tenants.value) {
+    const plan = tenant.subscription_plan || 'unknown'
+    counts[plan] = (counts[plan] || 0) + 1
+  }
+
+  return counts
+})
+
+const onboardingCounts = computed(() => {
+  return requests.value.reduce(
+    (acc, request) => {
+      if (request.status === 'approved') {
+        acc.approved += 1
+      } else if (request.status === 'rejected') {
+        acc.rejected += 1
+      } else {
+        acc.pending += 1
+      }
+      return acc
+    },
+    { pending: 0, approved: 0, rejected: 0 }
+  )
+})
+
 const loadDashboard = async () => {
   if (!authToken.value) return
   loadingDashboard.value = true
   try {
-    const res = await $fetch('/api/super/dashboard', {
+    const { data: res } = await $axios.get('/api/super/dashboard', {
       headers: authHeaders.value
     })
     if (res && res.success) {
@@ -386,9 +699,9 @@ const loadTenants = async () => {
   if (!authToken.value) return
   loadingTenants.value = true
   try {
-    const res = await $fetch('/api/super/tenants', {
+    const { data: res } = await $axios.get('/api/super/tenants', {
       headers: authHeaders.value,
-      query: {
+      params: {
         status: tenantStatus.value || undefined,
         search: tenantSearch.value || undefined,
         page: 1,
@@ -409,9 +722,9 @@ const loadRequests = async () => {
   if (!authToken.value) return
   loadingRequests.value = true
   try {
-    const res = await $fetch('/api/super/access-requests', {
+    const { data: res } = await $axios.get('/api/super/access-requests', {
       headers: authHeaders.value,
-      query: {
+      params: {
         status: requestStatus.value,
         page: 1,
         limit: 25
@@ -431,9 +744,9 @@ const loadActivity = async () => {
   if (!authToken.value) return
   loadingActivity.value = true
   try {
-    const res = await $fetch('/api/super/activity', {
+    const { data: res } = await $axios.get('/api/super/activity', {
       headers: authHeaders.value,
-      query: { limit: 50 }
+      params: { limit: 50 }
     })
     if (res && res.success) {
       activity.value = res.data.events as ActivityEvent[]
@@ -470,15 +783,13 @@ const submitUpdate = async () => {
   if (!authToken.value || !selectedTenant.value) return
   updating.value = true
   try {
-    const res = await $fetch(`/api/super/tenants/${selectedTenant.value.id}`, {
-      method: 'PATCH',
-      headers: authHeaders.value,
-      body: {
-        action: updateAction.value,
-        status: updateAction.value === 'update_status' ? updateStatus.value : undefined,
-        subscription_plan: updateAction.value === 'update_plan' ? updatePlan.value : undefined,
-        notes: updateNotes.value || undefined
-      }
+    const { data: res } = await $axios.patch(`/api/super/tenants/${selectedTenant.value.id}`, {
+      action: updateAction.value,
+      status: updateAction.value === 'update_status' ? updateStatus.value : undefined,
+      subscription_plan: updateAction.value === 'update_plan' ? updatePlan.value : undefined,
+      notes: updateNotes.value || undefined
+    }, {
+      headers: authHeaders.value
     })
     if (res && res.success) {
       const updated = res.data as Tenant
@@ -500,8 +811,7 @@ const approveRequest = async (request: AccessRequest) => {
   if (!authToken.value) return
   if (!confirm(`Approve access request for ${request.hotel_name}?`)) return
   try {
-    await $fetch(`/api/super/access-requests/${request.id}/approve`, {
-      method: 'POST',
+    await $axios.post(`/api/super/access-requests/${request.id}/approve`, null, {
       headers: authHeaders.value
     })
     await Promise.all([loadDashboard(), loadTenants(), loadRequests(), loadActivity()])
@@ -515,10 +825,10 @@ const rejectRequest = async (request: AccessRequest) => {
   const reason = prompt(`Reject access request for ${request.hotel_name} (optional reason):`)
   if (reason === null) return
   try {
-    await $fetch(`/api/super/access-requests/${request.id}/reject`, {
-      method: 'POST',
-      headers: authHeaders.value,
-      body: { reason: reason || undefined }
+    await $axios.post(`/api/super/access-requests/${request.id}/reject`, {
+      reason: reason || undefined
+    }, {
+      headers: authHeaders.value
     })
     await Promise.all([loadDashboard(), loadRequests(), loadActivity()])
   } catch (error) {
