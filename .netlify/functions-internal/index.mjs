@@ -1517,24 +1517,32 @@ const _lazy_jQDxER = () => Promise.resolve().then(function () { return demoReque
 const _lazy_dlbk4e = () => Promise.resolve().then(function () { return categories_get$1; });
 const _lazy_Cegxv9 = () => Promise.resolve().then(function () { return items_get$1; });
 const _lazy_A9_iSs = () => Promise.resolve().then(function () { return items_post$1; });
-const _lazy_l2sd9W = () => Promise.resolve().then(function () { return _id__patch$5; });
+const _lazy_l2sd9W = () => Promise.resolve().then(function () { return _id__patch$7; });
 const _lazy_bTR2Zu = () => Promise.resolve().then(function () { return transactions_get$1; });
 const _lazy_I3J5Mu = () => Promise.resolve().then(function () { return transactions_post$1; });
 const _lazy__eAuJ8 = () => Promise.resolve().then(function () { return purchaseOrders_get$1; });
 const _lazy_33BGXH = () => Promise.resolve().then(function () { return purchaseOrders_post$1; });
-const _lazy_SOGLjd = () => Promise.resolve().then(function () { return approve_post$1; });
+const _lazy_SOGLjd = () => Promise.resolve().then(function () { return approve_post$3; });
 const _lazy_hYTtGl = () => Promise.resolve().then(function () { return menuCategories_get$1; });
 const _lazy_yOGuel = () => Promise.resolve().then(function () { return menuItems__id__patch$1; });
 const _lazy_Kt1t_e = () => Promise.resolve().then(function () { return menuItems_get$1; });
 const _lazy_IUmhRb = () => Promise.resolve().then(function () { return menuItems_post$1; });
 const _lazy_blervC = () => Promise.resolve().then(function () { return _id__delete$1; });
-const _lazy_qGL93M = () => Promise.resolve().then(function () { return _id__patch$3; });
+const _lazy_qGL93M = () => Promise.resolve().then(function () { return _id__patch$5; });
 const _lazy_qUNSpd = () => Promise.resolve().then(function () { return orders__id__patch$1; });
 const _lazy_H0FyjL = () => Promise.resolve().then(function () { return orders_get$1; });
 const _lazy_zkThyt = () => Promise.resolve().then(function () { return orders_post$1; });
-const _lazy_FCvNK3 = () => Promise.resolve().then(function () { return _id__patch$1; });
+const _lazy_FCvNK3 = () => Promise.resolve().then(function () { return _id__patch$3; });
 const _lazy_DxqCh1 = () => Promise.resolve().then(function () { return tables_get$1; });
 const _lazy_Bd5poG = () => Promise.resolve().then(function () { return sendInvitation_post$1; });
+const _lazy_i5sGcG = () => Promise.resolve().then(function () { return accessRequests_get$1; });
+const _lazy_CbVvIe = () => Promise.resolve().then(function () { return approve_post$1; });
+const _lazy_DwAPGa = () => Promise.resolve().then(function () { return reject_post$1; });
+const _lazy_wtczLp = () => Promise.resolve().then(function () { return activity_get$1; });
+const _lazy_c46E7X = () => Promise.resolve().then(function () { return dashboard_get$1; });
+const _lazy_wpoaUC = () => Promise.resolve().then(function () { return tenants_get$1; });
+const _lazy_WjX9cZ = () => Promise.resolve().then(function () { return _id__get$1; });
+const _lazy_9a40sP = () => Promise.resolve().then(function () { return _id__patch$1; });
 const _lazy_h3Sq2s = () => Promise.resolve().then(function () { return vendors_get$1; });
 const _lazy_7Vc5ea = () => Promise.resolve().then(function () { return renderer$1; });
 
@@ -1562,6 +1570,14 @@ const handlers = [
   { route: '/api/restaurant/orders/:id', handler: _lazy_FCvNK3, lazy: true, middleware: false, method: "patch" },
   { route: '/api/restaurant/tables', handler: _lazy_DxqCh1, lazy: true, middleware: false, method: "get" },
   { route: '/api/send-invitation', handler: _lazy_Bd5poG, lazy: true, middleware: false, method: "post" },
+  { route: '/api/super/access-requests', handler: _lazy_i5sGcG, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/access-requests/:id/approve', handler: _lazy_CbVvIe, lazy: true, middleware: false, method: "post" },
+  { route: '/api/super/access-requests/:id/reject', handler: _lazy_DwAPGa, lazy: true, middleware: false, method: "post" },
+  { route: '/api/super/activity', handler: _lazy_wtczLp, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/dashboard', handler: _lazy_c46E7X, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/tenants', handler: _lazy_wpoaUC, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/tenants/:id', handler: _lazy_WjX9cZ, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/tenants/:id', handler: _lazy_9a40sP, lazy: true, middleware: false, method: "patch" },
   { route: '/api/vendors', handler: _lazy_h3Sq2s, lazy: true, middleware: false, method: "get" },
   { route: '/__nuxt_error', handler: _lazy_7Vc5ea, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_island/**', handler: _SxA8c9, lazy: false, middleware: false, method: undefined },
@@ -2166,7 +2182,7 @@ const items_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
   default: items_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const _id__patch$4 = defineEventHandler(async (event) => {
+const _id__patch$6 = defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig();
     const supabase = createClient(
@@ -2238,9 +2254,9 @@ const _id__patch$4 = defineEventHandler(async (event) => {
   }
 });
 
-const _id__patch$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const _id__patch$7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: _id__patch$4
+  default: _id__patch$6
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const transactions_get = defineEventHandler(async (event) => {
@@ -2543,7 +2559,7 @@ const purchaseOrders_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.def
   default: purchaseOrders_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const approve_post = defineEventHandler(async (event) => {
+const approve_post$2 = defineEventHandler(async (event) => {
   var _a, _b;
   try {
     const config = useRuntimeConfig();
@@ -2684,9 +2700,9 @@ const approve_post = defineEventHandler(async (event) => {
   }
 });
 
-const approve_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const approve_post$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: approve_post
+  default: approve_post$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const menuCategories_get = defineEventHandler(async (event) => {
@@ -2971,7 +2987,7 @@ const _id__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
   default: _id__delete
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const _id__patch$2 = defineEventHandler(async (event) => {
+const _id__patch$4 = defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig();
     const supabase = createClient(
@@ -3036,9 +3052,9 @@ const _id__patch$2 = defineEventHandler(async (event) => {
   }
 });
 
-const _id__patch$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const _id__patch$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: _id__patch$2
+  default: _id__patch$4
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const orders__id__patch = defineEventHandler(async (event) => {
@@ -3312,7 +3328,7 @@ const orders_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
   default: orders_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const _id__patch = defineEventHandler(async (event) => {
+const _id__patch$2 = defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig();
     const supabase = createClient(
@@ -3406,9 +3422,9 @@ const _id__patch = defineEventHandler(async (event) => {
   }
 });
 
-const _id__patch$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const _id__patch$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: _id__patch
+  default: _id__patch$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const tables_get = defineEventHandler(async (event) => {
@@ -3569,234 +3585,92 @@ const sendInvitation_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.def
   default: sendInvitation_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const vendors_get = defineEventHandler(async (event) => {
-  try {
-    const config = useRuntimeConfig();
-    const supabase = createClient(
-      config.supabaseUrl,
-      config.supabaseServiceKey
-    );
-    const { data, error } = await supabase.from("vendors").select("*").order("vendor_name");
-    if (error) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: error.message
-      });
-    }
-    return {
-      success: true,
-      data
-    };
-  } catch (error) {
+const verifySuperAdmin = async (event) => {
+  var _a, _b, _c, _d;
+  const authHeader = ((_b = (_a = event.node) == null ? void 0 : _a.req) == null ? void 0 : _b.headers["authorization"]) || ((_d = (_c = event.node) == null ? void 0 : _c.req) == null ? void 0 : _d.headers["Authorization"]);
+  if (!authHeader || Array.isArray(authHeader)) {
     throw createError({
-      statusCode: 500,
-      statusMessage: error instanceof Error ? error.message : "An unexpected error occurred"
+      statusCode: 401,
+      statusMessage: "Missing authorization header"
     });
   }
-});
-
-const vendors_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: vendors_get
-}, Symbol.toStringTag, { value: 'Module' }));
-
-function renderPayloadResponse(ssrContext) {
-  return {
-    body: stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers) ,
-    statusCode: getResponseStatus(ssrContext.event),
-    statusMessage: getResponseStatusText(ssrContext.event),
-    headers: {
-      "content-type": "application/json;charset=utf-8" ,
-      "x-powered-by": "Nuxt"
-    }
-  };
-}
-function renderPayloadJsonScript(opts) {
-  const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : "";
-  const payload = {
-    "type": "application/json",
-    "innerHTML": contents,
-    "data-nuxt-data": appId,
-    "data-ssr": !(opts.ssrContext.noSSR)
-  };
-  {
-    payload.id = "__NUXT_DATA__";
-  }
-  if (opts.src) {
-    payload["data-src"] = opts.src;
-  }
-  const config = uneval(opts.ssrContext.config);
-  return [
-    payload,
-    {
-      innerHTML: `window.__NUXT__={};window.__NUXT__.config=${config}`
-    }
-  ];
-}
-function splitPayload(ssrContext) {
-  const { data, prerenderedAt, ...initial } = ssrContext.payload;
-  return {
-    initial: { ...initial, prerenderedAt },
-    payload: { data, prerenderedAt }
-  };
-}
-
-const renderSSRHeadOptions = {"omitLineBreaks":false};
-
-globalThis.__buildAssetsURL = buildAssetsURL;
-globalThis.__publicAssetsURL = publicAssetsURL;
-const HAS_APP_TELEPORTS = !!(appTeleportAttrs.id);
-const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : "";
-const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : "";
-const PAYLOAD_URL_RE = /^[^?]*\/_payload.json(?:\?.*)?$/ ;
-const renderer = defineRenderHandler(async (event) => {
-  const nitroApp = useNitroApp();
-  const ssrError = event.path.startsWith("/__nuxt_error") ? getQuery$1(event) : null;
-  if (ssrError && !("__unenv__" in event.node.req)) {
+  const [scheme, token] = authHeader.split(" ");
+  if (scheme !== "Bearer" || !token) {
     throw createError({
-      statusCode: 404,
-      statusMessage: "Page Not Found: /__nuxt_error"
+      statusCode: 401,
+      statusMessage: "Invalid authorization header"
     });
   }
-  const ssrContext = createSSRContext(event);
-  const headEntryOptions = { mode: "server" };
-  ssrContext.head.push(appHead, headEntryOptions);
-  if (ssrError) {
-    ssrError.statusCode &&= Number.parseInt(ssrError.statusCode);
-    setSSRError(ssrContext, ssrError);
-  }
-  const isRenderingPayload = PAYLOAD_URL_RE.test(ssrContext.url);
-  if (isRenderingPayload) {
-    const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf("/")) || "/";
-    ssrContext.url = url;
-    event._path = event.node.req.url = url;
-  }
-  const routeOptions = getRouteRules(event);
-  if (routeOptions.ssr === false) {
-    ssrContext.noSSR = true;
-  }
-  const renderer = await getRenderer(ssrContext);
-  const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
-    if (ssrContext._renderResponse && error.message === "skipping render") {
-      return {};
-    }
-    const _err = !ssrError && ssrContext.payload?.error || error;
-    await ssrContext.nuxt?.hooks.callHook("app:error", _err);
-    throw _err;
-  });
-  const inlinedStyles = [];
-  await ssrContext.nuxt?.hooks.callHook("app:rendered", { ssrContext, renderResult: _rendered });
-  if (ssrContext._renderResponse) {
-    return ssrContext._renderResponse;
-  }
-  if (ssrContext.payload?.error && !ssrError) {
-    throw ssrContext.payload.error;
-  }
-  if (isRenderingPayload) {
-    const response = renderPayloadResponse(ssrContext);
-    return response;
-  }
-  const NO_SCRIPTS = routeOptions.noScripts;
-  const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext);
-  if (ssrContext._preloadManifest && !NO_SCRIPTS) {
-    ssrContext.head.push({
-      link: [
-        { rel: "preload", as: "fetch", fetchpriority: "low", crossorigin: "anonymous", href: buildAssetsURL(`builds/meta/${ssrContext.runtimeConfig.app.buildId}.json`) }
-      ]
-    }, { ...headEntryOptions, tagPriority: "low" });
-  }
-  if (inlinedStyles.length) {
-    ssrContext.head.push({ style: inlinedStyles });
-  }
-  const link = [];
-  for (const resource of Object.values(styles)) {
-    if ("inline" in getQuery(resource.file)) {
-      continue;
-    }
-    link.push({ rel: "stylesheet", href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: "" });
-  }
-  if (link.length) {
-    ssrContext.head.push({ link }, headEntryOptions);
-  }
-  if (!NO_SCRIPTS) {
-    ssrContext.head.push({
-      link: getPreloadLinks(ssrContext, renderer.rendererContext)
-    }, headEntryOptions);
-    ssrContext.head.push({
-      link: getPrefetchLinks(ssrContext, renderer.rendererContext)
-    }, headEntryOptions);
-    ssrContext.head.push({
-      script: renderPayloadJsonScript({ ssrContext, data: ssrContext.payload }) 
-    }, {
-      ...headEntryOptions,
-      // this should come before another end of body scripts
-      tagPosition: "bodyClose",
-      tagPriority: "high"
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.public.supabaseKey
+  );
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  if (error || !user) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Invalid or expired token"
     });
   }
-  if (!routeOptions.noScripts) {
-    const tagPosition = "head";
-    ssrContext.head.push({
-      script: Object.values(scripts).map((resource) => ({
-        type: resource.module ? "module" : null,
-        src: renderer.rendererContext.buildAssetsURL(resource.file),
-        defer: resource.module ? null : true,
-        // if we are rendering script tag payloads that import an async payload
-        // we need to ensure this resolves before executing the Nuxt entry
-        tagPosition,
-        crossorigin: ""
-      }))
-    }, headEntryOptions);
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("id, is_super_admin").eq("id", user.id).maybeSingle();
+  if (profileError || !profile) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Profile not found"
+    });
   }
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(ssrContext.head, renderSSRHeadOptions);
-  const htmlContext = {
-    htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([headTags]),
-    bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
-    bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
-    body: [
-      replaceIslandTeleports(ssrContext, _rendered.html) ,
-      APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportAttrs.id}`]]) : "") + APP_TELEPORT_CLOSE_TAG
-    ],
-    bodyAppend: [bodyTags]
-  };
-  await nitroApp.hooks.callHook("render:html", htmlContext, { event });
+  if (!profile.is_super_admin) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Super admin access required"
+    });
+  }
+  return profile;
+};
+
+const accessRequests_get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const query = getQuery$1(event);
+  const {
+    status = "pending",
+    page = 1,
+    limit = 25
+  } = query;
+  const pageNumber = parseInt(String(page)) || 1;
+  const pageSize = Math.min(parseInt(String(limit)) || 25, 100);
+  const from = (pageNumber - 1) * pageSize;
+  const to = from + pageSize - 1;
+  let builder = supabase.from("demo_requests").select("*", { count: "exact" }).order("created_at", { ascending: false }).range(from, to);
+  if (status && typeof status === "string") {
+    builder = builder.eq("status", status);
+  }
+  const { data, error, count } = await builder;
+  if (error) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: error.message
+    });
+  }
   return {
-    body: renderHTMLDocument(htmlContext),
-    statusCode: getResponseStatus(event),
-    statusMessage: getResponseStatusText(event),
-    headers: {
-      "content-type": "text/html;charset=utf-8",
-      "x-powered-by": "Nuxt"
+    success: true,
+    data: {
+      requests: data || [],
+      total: count || 0,
+      page: pageNumber,
+      limit: pageSize
     }
   };
 });
-function normalizeChunks(chunks) {
-  const result = [];
-  for (const _chunk of chunks) {
-    const chunk = _chunk?.trim();
-    if (chunk) {
-      result.push(chunk);
-    }
-  }
-  return result;
-}
-function joinTags(tags) {
-  return tags.join("");
-}
-function joinAttrs(chunks) {
-  if (chunks.length === 0) {
-    return "";
-  }
-  return " " + chunks.join(" ");
-}
-function renderHTMLDocument(html) {
-  return `<!DOCTYPE html><html${joinAttrs(html.htmlAttrs)}><head>${joinTags(html.head)}</head><body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body></html>`;
-}
 
-const renderer$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const accessRequests_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: renderer
+  default: accessRequests_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
 var __defProp = Object.defineProperty;
@@ -4189,5 +4063,653 @@ const emailTemplates = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProp
   __proto__: null,
   createAdminNotificationEmail: createAdminNotificationEmail,
   createInvitationEmail: createInvitationEmail
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const approve_post = defineEventHandler(async (event) => {
+  const superAdmin = await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const params = getRouterParams(event);
+  const id = params.id;
+  if (!id) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Request ID is required"
+    });
+  }
+  const { data: request, error: fetchError } = await supabase.from("demo_requests").select("*").eq("id", id).maybeSingle();
+  if (fetchError || !request) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: (fetchError == null ? void 0 : fetchError.message) || "Request not found"
+    });
+  }
+  if (request.status === "rejected") {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Cannot approve a rejected request"
+    });
+  }
+  const { data: existingTenant } = await supabase.from("tenants").select("id").eq("demo_request_id", request.id).maybeSingle();
+  const tenantPayload = {
+    name: request.hotel_name,
+    primary_contact_name: request.name,
+    primary_contact_email: request.email,
+    status: "trial",
+    subscription_plan: "trial",
+    demo_request_id: request.id,
+    date_joined: (/* @__PURE__ */ new Date()).toISOString()
+  };
+  if (existingTenant) {
+    await supabase.from("tenants").update(tenantPayload).eq("id", existingTenant.id);
+  } else {
+    await supabase.from("tenants").insert(tenantPayload);
+  }
+  const expiryDate = /* @__PURE__ */ new Date();
+  expiryDate.setDate(expiryDate.getDate() + 7);
+  const { error: updateError } = await supabase.from("demo_requests").update({
+    status: "approved",
+    invitation_sent_at: (/* @__PURE__ */ new Date()).toISOString(),
+    invitation_expires_at: expiryDate.toISOString(),
+    updated_at: (/* @__PURE__ */ new Date()).toISOString(),
+    notes: request.notes
+  }).eq("id", request.id);
+  if (updateError) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: updateError.message
+    });
+  }
+  const baseUrl = process.env.NUXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const invitationLink = `${baseUrl}/signup?token=${request.invitation_token}`;
+  try {
+    const emailService = createEmailService();
+    const invitationTemplate = createInvitationEmail({
+      name: request.name,
+      email: request.email,
+      hotelName: request.hotel_name,
+      invitationLink,
+      expiryDate: expiryDate.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      })
+    });
+    await emailService.sendEmail({
+      to: request.email,
+      toName: request.name,
+      template: invitationTemplate
+    });
+  } catch (emailError) {
+    console.error("Failed to send invitation email (super admin approve):", emailError);
+  }
+  await supabase.from("activity_logs").insert({
+    user_id: superAdmin.id,
+    action: "access_request_approved",
+    entity_type: "tenant",
+    entity_id: request.id,
+    metadata: {
+      hotel_name: request.hotel_name,
+      email: request.email
+    }
+  });
+  return {
+    success: true,
+    message: "Request approved and invitation sent",
+    invitationLink,
+    expiresAt: expiryDate.toISOString()
+  };
+});
+
+const approve_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: approve_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const reject_post = defineEventHandler(async (event) => {
+  const superAdmin = await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const params = getRouterParams(event);
+  const id = params.id;
+  if (!id) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Request ID is required"
+    });
+  }
+  const body = await readBody(event);
+  const { reason } = body || {};
+  const { data: request, error: fetchError } = await supabase.from("demo_requests").select("*").eq("id", id).maybeSingle();
+  if (fetchError || !request) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: (fetchError == null ? void 0 : fetchError.message) || "Request not found"
+    });
+  }
+  const { error: updateError } = await supabase.from("demo_requests").update({
+    status: "rejected",
+    notes: reason || request.notes,
+    updated_at: (/* @__PURE__ */ new Date()).toISOString()
+  }).eq("id", request.id);
+  if (updateError) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: updateError.message
+    });
+  }
+  await supabase.from("activity_logs").insert({
+    user_id: superAdmin.id,
+    action: "access_request_rejected",
+    entity_type: "system",
+    entity_id: request.id,
+    metadata: {
+      hotel_name: request.hotel_name,
+      email: request.email,
+      reason: reason || null
+    }
+  });
+  return {
+    success: true,
+    message: "Request rejected"
+  };
+});
+
+const reject_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: reject_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const activity_get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const query = getQuery$1(event);
+  const { limit = 50 } = query;
+  const max = Math.min(parseInt(String(limit)) || 50, 200);
+  const { data, error } = await supabase.from("activity_logs").select("*").order("created_at", { ascending: false }).limit(max);
+  if (error) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: error.message
+    });
+  }
+  const events = (data || []).map((log) => {
+    var _a;
+    let type = log.action;
+    let title = log.action;
+    if (log.entity_type === "tenant" && log.action === "tenant_status_updated") {
+      type = "tenant_status";
+      title = "Tenant status updated";
+    } else if (log.entity_type === "tenant" && log.action === "tenant_plan_updated") {
+      type = "tenant_plan";
+      title = "Tenant plan updated";
+    } else if (log.entity_type === "tenant" && log.action === "access_request_approved") {
+      type = "tenant_created";
+      title = "New tenant created";
+    } else if (log.entity_type === "system" && ((_a = log.action) == null ? void 0 : _a.toLowerCase().includes("error"))) {
+      type = "system_error";
+      title = "System error";
+    }
+    return {
+      id: log.id,
+      type,
+      title,
+      action: log.action,
+      entity_type: log.entity_type,
+      entity_id: log.entity_id,
+      metadata: log.metadata,
+      created_at: log.created_at
+    };
+  });
+  return {
+    success: true,
+    data: {
+      events
+    }
+  };
+});
+
+const activity_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: activity_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const dashboard_get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const now = /* @__PURE__ */ new Date();
+  const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1e3);
+  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1e3);
+  const [{ count: tenantsCount }, { count: pendingRequestsCount }, { count: activeUsersCount }, { count: errorCount }] = await Promise.all([
+    supabase.from("tenants").select("*", { count: "exact", head: true }),
+    supabase.from("demo_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("activity_logs").select("id", { count: "exact", head: true }).gte("created_at", fifteenMinutesAgo.toISOString()),
+    supabase.from("activity_logs").select("id", { count: "exact", head: true }).gte("created_at", oneHourAgo.toISOString()).or("entity_type.eq.system,action.ilike.%error%")
+  ]);
+  const errorThreshold = 5;
+  const systemHealthStatus = (errorCount || 0) >= errorThreshold ? "red" : "green";
+  return {
+    success: true,
+    data: {
+      totalTenants: tenantsCount || 0,
+      pendingRequests: pendingRequestsCount || 0,
+      activeUsers: activeUsersCount || 0,
+      systemHealth: {
+        status: systemHealthStatus,
+        errorCountLastHour: errorCount || 0
+      }
+    }
+  };
+});
+
+const dashboard_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: dashboard_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const tenants_get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const query = getQuery$1(event);
+  const { status, search, page = 1, limit = 25 } = query;
+  const pageNumber = parseInt(String(page)) || 1;
+  const pageSize = Math.min(parseInt(String(limit)) || 25, 100);
+  const from = (pageNumber - 1) * pageSize;
+  const to = from + pageSize - 1;
+  let builder = supabase.from("tenants").select("*", { count: "exact" }).order("created_at", { ascending: false }).range(from, to);
+  if (status && typeof status === "string") {
+    builder = builder.eq("status", status);
+  }
+  if (search && typeof search === "string") {
+    builder = builder.or(
+      `name.ilike.%${search}%,primary_contact_email.ilike.%${search}%,primary_contact_name.ilike.%${search}%`
+    );
+  }
+  const { data, error, count } = await builder;
+  if (error) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: error.message
+    });
+  }
+  return {
+    success: true,
+    data: {
+      tenants: data || [],
+      total: count || 0,
+      page: pageNumber,
+      limit: pageSize
+    }
+  };
+});
+
+const tenants_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: tenants_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _id__get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const params = getRouterParams(event);
+  const id = params.id;
+  if (!id) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant ID is required"
+    });
+  }
+  const { data, error } = await supabase.from("tenants").select("*").eq("id", id).maybeSingle();
+  if (error) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: error.message
+    });
+  }
+  if (!data) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: "Tenant not found"
+    });
+  }
+  return {
+    success: true,
+    data
+  };
+});
+
+const _id__get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _id__get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _id__patch = defineEventHandler(async (event) => {
+  const superAdmin = await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const params = getRouterParams(event);
+  const id = params.id;
+  if (!id) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant ID is required"
+    });
+  }
+  const body = await readBody(event);
+  const { action, status, subscription_plan, notes } = body || {};
+  if (!action) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Action is required"
+    });
+  }
+  const updates = {};
+  if (action === "update_status") {
+    if (!status) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Status is required for update_status action"
+      });
+    }
+    updates.status = status;
+  }
+  if (action === "update_plan") {
+    if (!subscription_plan) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "subscription_plan is required for update_plan action"
+      });
+    }
+    updates.subscription_plan = subscription_plan;
+  }
+  if (notes !== void 0) {
+    updates.notes = notes;
+  }
+  if (Object.keys(updates).length === 0) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "No updates to apply"
+    });
+  }
+  updates.updated_at = (/* @__PURE__ */ new Date()).toISOString();
+  const { data, error } = await supabase.from("tenants").update(updates).eq("id", id).select("*").maybeSingle();
+  if (error) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: error.message
+    });
+  }
+  await supabase.from("activity_logs").insert({
+    user_id: superAdmin.id,
+    action: action === "update_status" ? "tenant_status_updated" : "tenant_plan_updated",
+    entity_type: "tenant",
+    entity_id: id,
+    metadata: updates
+  });
+  return {
+    success: true,
+    data
+  };
+});
+
+const _id__patch$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _id__patch
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const vendors_get = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const { data, error } = await supabase.from("vendors").select("*").order("vendor_name");
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error instanceof Error ? error.message : "An unexpected error occurred"
+    });
+  }
+});
+
+const vendors_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: vendors_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+function renderPayloadResponse(ssrContext) {
+  return {
+    body: stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers) ,
+    statusCode: getResponseStatus(ssrContext.event),
+    statusMessage: getResponseStatusText(ssrContext.event),
+    headers: {
+      "content-type": "application/json;charset=utf-8" ,
+      "x-powered-by": "Nuxt"
+    }
+  };
+}
+function renderPayloadJsonScript(opts) {
+  const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : "";
+  const payload = {
+    "type": "application/json",
+    "innerHTML": contents,
+    "data-nuxt-data": appId,
+    "data-ssr": !(opts.ssrContext.noSSR)
+  };
+  {
+    payload.id = "__NUXT_DATA__";
+  }
+  if (opts.src) {
+    payload["data-src"] = opts.src;
+  }
+  const config = uneval(opts.ssrContext.config);
+  return [
+    payload,
+    {
+      innerHTML: `window.__NUXT__={};window.__NUXT__.config=${config}`
+    }
+  ];
+}
+function splitPayload(ssrContext) {
+  const { data, prerenderedAt, ...initial } = ssrContext.payload;
+  return {
+    initial: { ...initial, prerenderedAt },
+    payload: { data, prerenderedAt }
+  };
+}
+
+const renderSSRHeadOptions = {"omitLineBreaks":false};
+
+globalThis.__buildAssetsURL = buildAssetsURL;
+globalThis.__publicAssetsURL = publicAssetsURL;
+const HAS_APP_TELEPORTS = !!(appTeleportAttrs.id);
+const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : "";
+const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : "";
+const PAYLOAD_URL_RE = /^[^?]*\/_payload.json(?:\?.*)?$/ ;
+const renderer = defineRenderHandler(async (event) => {
+  const nitroApp = useNitroApp();
+  const ssrError = event.path.startsWith("/__nuxt_error") ? getQuery$1(event) : null;
+  if (ssrError && !("__unenv__" in event.node.req)) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: "Page Not Found: /__nuxt_error"
+    });
+  }
+  const ssrContext = createSSRContext(event);
+  const headEntryOptions = { mode: "server" };
+  ssrContext.head.push(appHead, headEntryOptions);
+  if (ssrError) {
+    ssrError.statusCode &&= Number.parseInt(ssrError.statusCode);
+    setSSRError(ssrContext, ssrError);
+  }
+  const isRenderingPayload = PAYLOAD_URL_RE.test(ssrContext.url);
+  if (isRenderingPayload) {
+    const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf("/")) || "/";
+    ssrContext.url = url;
+    event._path = event.node.req.url = url;
+  }
+  const routeOptions = getRouteRules(event);
+  if (routeOptions.ssr === false) {
+    ssrContext.noSSR = true;
+  }
+  const renderer = await getRenderer(ssrContext);
+  const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
+    if (ssrContext._renderResponse && error.message === "skipping render") {
+      return {};
+    }
+    const _err = !ssrError && ssrContext.payload?.error || error;
+    await ssrContext.nuxt?.hooks.callHook("app:error", _err);
+    throw _err;
+  });
+  const inlinedStyles = [];
+  await ssrContext.nuxt?.hooks.callHook("app:rendered", { ssrContext, renderResult: _rendered });
+  if (ssrContext._renderResponse) {
+    return ssrContext._renderResponse;
+  }
+  if (ssrContext.payload?.error && !ssrError) {
+    throw ssrContext.payload.error;
+  }
+  if (isRenderingPayload) {
+    const response = renderPayloadResponse(ssrContext);
+    return response;
+  }
+  const NO_SCRIPTS = routeOptions.noScripts;
+  const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext);
+  if (ssrContext._preloadManifest && !NO_SCRIPTS) {
+    ssrContext.head.push({
+      link: [
+        { rel: "preload", as: "fetch", fetchpriority: "low", crossorigin: "anonymous", href: buildAssetsURL(`builds/meta/${ssrContext.runtimeConfig.app.buildId}.json`) }
+      ]
+    }, { ...headEntryOptions, tagPriority: "low" });
+  }
+  if (inlinedStyles.length) {
+    ssrContext.head.push({ style: inlinedStyles });
+  }
+  const link = [];
+  for (const resource of Object.values(styles)) {
+    if ("inline" in getQuery(resource.file)) {
+      continue;
+    }
+    link.push({ rel: "stylesheet", href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: "" });
+  }
+  if (link.length) {
+    ssrContext.head.push({ link }, headEntryOptions);
+  }
+  if (!NO_SCRIPTS) {
+    ssrContext.head.push({
+      link: getPreloadLinks(ssrContext, renderer.rendererContext)
+    }, headEntryOptions);
+    ssrContext.head.push({
+      link: getPrefetchLinks(ssrContext, renderer.rendererContext)
+    }, headEntryOptions);
+    ssrContext.head.push({
+      script: renderPayloadJsonScript({ ssrContext, data: ssrContext.payload }) 
+    }, {
+      ...headEntryOptions,
+      // this should come before another end of body scripts
+      tagPosition: "bodyClose",
+      tagPriority: "high"
+    });
+  }
+  if (!routeOptions.noScripts) {
+    const tagPosition = "head";
+    ssrContext.head.push({
+      script: Object.values(scripts).map((resource) => ({
+        type: resource.module ? "module" : null,
+        src: renderer.rendererContext.buildAssetsURL(resource.file),
+        defer: resource.module ? null : true,
+        // if we are rendering script tag payloads that import an async payload
+        // we need to ensure this resolves before executing the Nuxt entry
+        tagPosition,
+        crossorigin: ""
+      }))
+    }, headEntryOptions);
+  }
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(ssrContext.head, renderSSRHeadOptions);
+  const htmlContext = {
+    htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
+    head: normalizeChunks([headTags]),
+    bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
+    bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
+    body: [
+      replaceIslandTeleports(ssrContext, _rendered.html) ,
+      APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportAttrs.id}`]]) : "") + APP_TELEPORT_CLOSE_TAG
+    ],
+    bodyAppend: [bodyTags]
+  };
+  await nitroApp.hooks.callHook("render:html", htmlContext, { event });
+  return {
+    body: renderHTMLDocument(htmlContext),
+    statusCode: getResponseStatus(event),
+    statusMessage: getResponseStatusText(event),
+    headers: {
+      "content-type": "text/html;charset=utf-8",
+      "x-powered-by": "Nuxt"
+    }
+  };
+});
+function normalizeChunks(chunks) {
+  const result = [];
+  for (const _chunk of chunks) {
+    const chunk = _chunk?.trim();
+    if (chunk) {
+      result.push(chunk);
+    }
+  }
+  return result;
+}
+function joinTags(tags) {
+  return tags.join("");
+}
+function joinAttrs(chunks) {
+  if (chunks.length === 0) {
+    return "";
+  }
+  return " " + chunks.join(" ");
+}
+function renderHTMLDocument(html) {
+  return `<!DOCTYPE html><html${joinAttrs(html.htmlAttrs)}><head>${joinTags(html.head)}</head><body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body></html>`;
+}
+
+const renderer$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: renderer
 }, Symbol.toStringTag, { value: 'Module' }));
 //# sourceMappingURL=index.mjs.map

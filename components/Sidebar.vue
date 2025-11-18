@@ -124,6 +124,18 @@
         <span class="icon">👥</span>
         <span>Staff</span>
       </NuxtLink>
+
+      <div v-if="profile?.is_super_admin" class="nav-section">
+        <div class="nav-section-title">Platform</div>
+        <NuxtLink
+          to="/admin/super"
+          class="nav-item super-admin-link"
+          active-class="active"
+        >
+          <span class="icon">🛡️</span>
+          <span>Super Admin</span>
+        </NuxtLink>
+      </div>
     </nav>
 
     <div class="sidebar-footer">
@@ -243,6 +255,17 @@ const handleSignOut = async () => {
   letter-spacing: 0.05em;
   margin-bottom: var(--spacing-sm);
   padding: 0 var(--spacing-md);
+}
+
+.super-admin-link {
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  background: linear-gradient(to right, #020617, #111827);
+  color: #fef9c3;
+}
+
+.super-admin-link.active {
+  background: linear-gradient(to right, #111827, #020617);
+  color: #fbbf24;
 }
 
 .sidebar-footer {

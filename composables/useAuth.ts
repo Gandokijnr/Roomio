@@ -79,6 +79,7 @@ export const useAuth = () => {
 
   const hasRole = (roles: string[]) => {
     if (!profile.value) return false
+    if (profile.value.is_super_admin || profile.value.role === 'super_admin') return true
     return roles.includes(profile.value.role)
   }
 

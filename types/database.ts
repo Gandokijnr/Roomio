@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'manager' | 'receptionist' | 'accountant' | 'housekeeping'
+export type UserRole = 'super_admin' | 'admin' | 'manager' | 'receptionist' | 'accountant' | 'housekeeping'
 export type RoomStatus = 'available' | 'occupied' | 'reserved' | 'maintenance' | 'cleaning' | 'out_of_service' | 'needs_cleaning' | 'assigned_housekeeper'
 export type ReservationStatus = 'pending' | 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled' | 'no_show'
 export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded'
@@ -22,6 +22,7 @@ export interface Profile {
   phone?: string
   role: UserRole
   is_active: boolean
+  is_super_admin: boolean
   avatar_url?: string
   created_at: string
   updated_at: string
