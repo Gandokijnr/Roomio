@@ -1522,9 +1522,11 @@ const _lazy_yOGuel = () => Promise.resolve().then(function () { return menuItems
 const _lazy_Kt1t_e = () => Promise.resolve().then(function () { return menuItems_get$1; });
 const _lazy_IUmhRb = () => Promise.resolve().then(function () { return menuItems_post$1; });
 const _lazy_blervC = () => Promise.resolve().then(function () { return _id__delete$1; });
-const _lazy_qGL93M = () => Promise.resolve().then(function () { return _id__patch$1; });
+const _lazy_qGL93M = () => Promise.resolve().then(function () { return _id__patch$3; });
+const _lazy_qUNSpd = () => Promise.resolve().then(function () { return orders__id__patch$1; });
 const _lazy_H0FyjL = () => Promise.resolve().then(function () { return orders_get$1; });
 const _lazy_zkThyt = () => Promise.resolve().then(function () { return orders_post$1; });
+const _lazy_FCvNK3 = () => Promise.resolve().then(function () { return _id__patch$1; });
 const _lazy_DxqCh1 = () => Promise.resolve().then(function () { return tables_get$1; });
 const _lazy_Bd5poG = () => Promise.resolve().then(function () { return sendInvitation_post$1; });
 const _lazy_7Vc5ea = () => Promise.resolve().then(function () { return renderer$1; });
@@ -1541,8 +1543,10 @@ const handlers = [
   { route: '/api/restaurant/menu-items', handler: _lazy_IUmhRb, lazy: true, middleware: false, method: "post" },
   { route: '/api/restaurant/menu-items/:id', handler: _lazy_blervC, lazy: true, middleware: false, method: "delete" },
   { route: '/api/restaurant/menu-items/:id', handler: _lazy_qGL93M, lazy: true, middleware: false, method: "patch" },
+  { route: '/api/restaurant/orders-:id', handler: _lazy_qUNSpd, lazy: true, middleware: false, method: "patch" },
   { route: '/api/restaurant/orders', handler: _lazy_H0FyjL, lazy: true, middleware: false, method: "get" },
   { route: '/api/restaurant/orders', handler: _lazy_zkThyt, lazy: true, middleware: false, method: "post" },
+  { route: '/api/restaurant/orders/:id', handler: _lazy_FCvNK3, lazy: true, middleware: false, method: "patch" },
   { route: '/api/restaurant/tables', handler: _lazy_DxqCh1, lazy: true, middleware: false, method: "get" },
   { route: '/api/send-invitation', handler: _lazy_Bd5poG, lazy: true, middleware: false, method: "post" },
   { route: '/__nuxt_error', handler: _lazy_7Vc5ea, lazy: true, middleware: false, method: undefined },
@@ -2430,7 +2434,7 @@ const _id__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
   default: _id__delete
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const _id__patch = defineEventHandler(async (event) => {
+const _id__patch$2 = defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig();
     const supabase = createClient(
@@ -2495,9 +2499,84 @@ const _id__patch = defineEventHandler(async (event) => {
   }
 });
 
-const _id__patch$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const _id__patch$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: _id__patch
+  default: _id__patch$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const orders__id__patch = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(config.supabaseUrl, config.supabaseServiceKey);
+    const params = getRouterParams(event);
+    const id = params.id;
+    if (!id) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Order ID is required"
+      });
+    }
+    const body = await readBody(event);
+    const updatePayload = {};
+    const updatableFields = [
+      "order_status",
+      "payment_status",
+      "tax_amount",
+      "service_charge",
+      "discount_amount",
+      "payment_method",
+      "special_instructions",
+      "customer_notes",
+      "table_number",
+      "room_number",
+      "total_amount"
+    ];
+    for (const field of updatableFields) {
+      if (field in body) {
+        updatePayload[field] = body[field];
+      }
+    }
+    if (Object.keys(updatePayload).length === 0) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "No valid fields provided for update"
+      });
+    }
+    const { data, error } = await supabase.from("restaurant_orders").update(updatePayload).eq("id", id).select(
+      `*,
+        guest:guests(id, first_name, last_name, email, phone),
+        reservation:reservations(id, reservation_number),
+        items:restaurant_order_items(
+          id,
+          quantity,
+          unit_price,
+          total_price,
+          modifications,
+          item_status,
+          menu_item:menu_items(id, name, description)
+        )`
+    ).single();
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const orders__id__patch$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: orders__id__patch
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const orders_get = defineEventHandler(async (event) => {
@@ -2681,6 +2760,84 @@ const orders_post = defineEventHandler(async (event) => {
 const orders_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: orders_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _id__patch = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const params = getRouterParams(event);
+    const id = params.id;
+    if (!id) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Order ID is required"
+      });
+    }
+    const body = await readBody(event);
+    const updatePayload = {};
+    const updatableFields = [
+      "order_status",
+      "payment_status",
+      "tax_amount",
+      "service_charge",
+      "discount_amount",
+      "payment_method",
+      "special_instructions",
+      "customer_notes",
+      "table_number",
+      "room_number",
+      "total_amount"
+    ];
+    for (const field of updatableFields) {
+      if (field in body) {
+        updatePayload[field] = body[field];
+      }
+    }
+    if (Object.keys(updatePayload).length === 0) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "No valid fields provided for update"
+      });
+    }
+    const { data, error } = await supabase.from("restaurant_orders").update(updatePayload).eq("id", id).select(
+      `*,
+        guest:guests(id, first_name, last_name, email, phone),
+        reservation:reservations(id, reservation_number),
+        items:restaurant_order_items(
+          id,
+          quantity,
+          unit_price,
+          total_price,
+          modifications,
+          item_status,
+          menu_item:menu_items(id, name, description)
+        )`
+    ).single();
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const _id__patch$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _id__patch
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const tables_get = defineEventHandler(async (event) => {
