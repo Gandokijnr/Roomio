@@ -175,7 +175,6 @@
               >
                 <option value="">All Orders</option>
                 <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
                 <option value="preparing">Preparing</option>
                 <option value="ready">Ready</option>
                 <option value="served">Served</option>
@@ -378,7 +377,7 @@ const selectedOrder = ref(null)
 // Stats
 const stats = computed(() => {
   const activeOrders = orders.value.filter(order => 
-    ['pending', 'confirmed', 'preparing', 'ready'].includes(order.order_status)
+    ['pending', 'preparing', 'ready', 'served'].includes(order.order_status)
   ).length
 
   const todayOrders = orders.value.filter(order => {
@@ -440,7 +439,6 @@ const formatOrderType = (type) => {
 const formatStatus = (status) => {
   const statuses = {
     pending: 'Pending',
-    confirmed: 'Confirmed',
     preparing: 'Preparing',
     ready: 'Ready',
     served: 'Served',
@@ -463,7 +461,6 @@ const getOrderTypeClass = (type) => {
 const getStatusClass = (status) => {
   const classes = {
     pending: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-blue-100 text-blue-800',
     preparing: 'bg-orange-100 text-orange-800',
     ready: 'bg-green-100 text-green-800',
     served: 'bg-gray-100 text-gray-800',
@@ -481,7 +478,7 @@ const getCustomerName = (order) => {
 }
 
 const canUpdateStatus = (status) => {
-  return ['pending', 'confirmed', 'preparing', 'ready'].includes(status)
+  return ['pending', 'preparing', 'ready', 'served'].includes(status)
 }
 
 const viewOrder = (order) => {

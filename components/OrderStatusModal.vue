@@ -137,7 +137,6 @@ const newStatus = ref('pending')
 
 const statusOptions = [
   { value: 'pending', label: 'Pending' },
-  { value: 'confirmed', label: 'Confirmed' },
   { value: 'preparing', label: 'Preparing' },
   { value: 'ready', label: 'Ready' },
   { value: 'served', label: 'Served' },
@@ -174,7 +173,6 @@ const formatLocation = (order) => {
 const formatStatus = (status) => {
   const statuses = {
     pending: 'Pending',
-    confirmed: 'Confirmed',
     preparing: 'Preparing',
     ready: 'Ready',
     served: 'Served',
@@ -187,7 +185,6 @@ const formatStatus = (status) => {
 const getStatusPillClass = (status) => {
   const classes = {
     pending: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-blue-100 text-blue-800',
     preparing: 'bg-orange-100 text-orange-800',
     ready: 'bg-green-100 text-green-800',
     served: 'bg-gray-100 text-gray-800',

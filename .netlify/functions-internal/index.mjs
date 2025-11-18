@@ -2725,6 +2725,19 @@ const orders_post = defineEventHandler(async (event) => {
         statusMessage: itemsError.message
       });
     }
+    if ((order.order_type === "dine_in" || order.order_type === "bar") && order.table_number) {
+      try {
+        const { error: tableError } = await supabase.from("restaurant_tables").update({
+          status: "occupied",
+          is_active: true
+        }).eq("table_number", order.table_number);
+        if (tableError) {
+          console.error("Error updating table status for new order:", tableError.message);
+        }
+      } catch (tableUpdateError) {
+        console.error("Unexpected error updating table status for new order:", tableUpdateError.message || tableUpdateError);
+      }
+    }
     const { data: completeOrder, error: fetchError } = await supabase.from("restaurant_orders").select(`
         *,
         guest:guests(id, first_name, last_name, email, phone),
@@ -2822,6 +2835,27 @@ const _id__patch = defineEventHandler(async (event) => {
         statusCode: 400,
         statusMessage: error.message
       });
+    }
+    try {
+      if (data && data.table_number && (data.order_type === "dine_in" || data.order_type === "bar")) {
+        const tableNumber = data.table_number;
+        const activeStatuses = ["pending", "preparing", "ready", "served"];
+        const { data: activeOrders, error: activeOrdersError } = await supabase.from("restaurant_orders").select("id, order_status").eq("table_number", tableNumber).in("order_status", activeStatuses).limit(1);
+        if (activeOrdersError) {
+          console.error("Error checking active orders for table:", activeOrdersError.message);
+        } else {
+          const hasActiveOrders = Array.isArray(activeOrders) && activeOrders.length > 0;
+          const { error: tableError } = await supabase.from("restaurant_tables").update({
+            status: hasActiveOrders ? "occupied" : "available",
+            is_active: true
+          }).eq("table_number", tableNumber);
+          if (tableError) {
+            console.error("Error updating table status for order update:", tableError.message);
+          }
+        }
+      }
+    } catch (tableUpdateError) {
+      console.error("Unexpected error syncing table status for order update:", tableUpdateError.message || tableUpdateError);
     }
     return {
       success: true,

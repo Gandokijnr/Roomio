@@ -227,7 +227,6 @@ const formatOrderType = (type) => {
 const formatStatus = (status) => {
   const statuses = {
     pending: 'Pending',
-    confirmed: 'Confirmed',
     preparing: 'Preparing',
     ready: 'Ready',
     served: 'Served',
@@ -240,7 +239,6 @@ const formatStatus = (status) => {
 const getStatusClass = (status) => {
   const classes = {
     pending: 'text-yellow-700',
-    confirmed: 'text-blue-700',
     preparing: 'text-orange-700',
     ready: 'text-green-700',
     served: 'text-gray-700',

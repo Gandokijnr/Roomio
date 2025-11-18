@@ -114,6 +114,25 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // Sync table status for dine-in and bar orders
+    if ((order.order_type === 'dine_in' || order.order_type === 'bar') && order.table_number) {
+      try {
+        const { error: tableError } = await supabase
+          .from('restaurant_tables')
+          .update({
+            status: 'occupied',
+            is_active: true
+          })
+          .eq('table_number', order.table_number)
+
+        if (tableError) {
+          console.error('Error updating table status for new order:', tableError.message)
+        }
+      } catch (tableUpdateError: any) {
+        console.error('Unexpected error updating table status for new order:', tableUpdateError.message || tableUpdateError)
+      }
+    }
+
     // Fetch the complete order with items
     const { data: completeOrder, error: fetchError } = await supabase
       .from('restaurant_orders')
