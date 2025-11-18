@@ -204,6 +204,8 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'saved'])
 
+const { profile } = useAuth()
+
 const loading = ref(false)
 
 const form = ref({
@@ -235,6 +237,11 @@ const handleSubmit = async () => {
     return
   }
 
+  if (!profile.value?.id) {
+    alert('Your user profile is not loaded. Please refresh the page and try again.')
+    return
+  }
+
   loading.value = true
   
   try {
@@ -249,7 +256,8 @@ const handleSubmit = async () => {
       notes: form.value.notes,
       batch_number: form.value.batch_number,
       expiry_date: form.value.expiry_date || null,
-      reference_type: 'manual_adjustment'
+      reference_type: 'manual_adjustment',
+      processed_by: profile.value?.id
     }
     
     const { data } = await $fetch('/api/inventory/transactions', {

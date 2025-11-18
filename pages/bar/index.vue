@@ -265,7 +265,16 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ getOrderLocation(order) }}
+                  <div class="flex items-center space-x-2">
+                    <span>{{ getOrderLocation(order) }}</span>
+                    <span
+                      v-if="order.table_number && getTableStatus(order.table_number)"
+                      :class="getTableStatusClass(getTableStatus(order.table_number))"
+                      class="inline-flex px-2 py-0.5 text-[10px] font-medium rounded-full"
+                    >
+                      {{ formatTableStatus(getTableStatus(order.table_number)) }}
+                    </span>
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {{ order.items?.length || 0 }} drinks
@@ -379,6 +388,7 @@ definePageMeta({
 const orders = ref([])
 const beverageItems = ref([])
 const popularDrinks = ref([])
+const tables = ref([])
 const statusFilter = ref('')
 
 // Modal states
@@ -478,6 +488,33 @@ const getOrderLocation = (order) => {
   return 'Bar Counter'
 }
 
+const getTableStatus = (tableNumber) => {
+  if (!tableNumber) return null
+  const table = tables.value.find((t) => t.table_number === tableNumber)
+  return table?.status || null
+}
+
+const formatTableStatus = (status) => {
+  if (!status) return ''
+  const statuses = {
+    available: 'Available',
+    occupied: 'Occupied',
+    reserved: 'Reserved',
+    blocked: 'Blocked'
+  }
+  return statuses[status] || status
+}
+
+const getTableStatusClass = (status) => {
+  const classes = {
+    available: 'bg-green-100 text-green-800',
+    occupied: 'bg-red-100 text-red-800',
+    reserved: 'bg-yellow-100 text-yellow-800',
+    blocked: 'bg-gray-200 text-gray-700'
+  }
+  return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
 const canUpdateStatus = (status) => {
   return ['pending', 'confirmed', 'preparing', 'ready'].includes(status)
 }
@@ -509,6 +546,15 @@ const fetchOrders = async () => {
   }
 }
 
+const fetchTables = async () => {
+  try {
+    const { data } = await $fetch('/api/restaurant/tables')
+    tables.value = data || []
+  } catch (error) {
+    console.error('Error fetching tables:', error)
+  }
+}
+
 const fetchBeverageItems = async () => {
   try {
     const { data } = await $fetch('/api/restaurant/menu-items', {
@@ -537,7 +583,8 @@ onMounted(async () => {
   await Promise.all([
     fetchOrders(),
     fetchBeverageItems(),
-    fetchPopularDrinks()
+    fetchPopularDrinks(),
+    fetchTables()
   ])
 })
 

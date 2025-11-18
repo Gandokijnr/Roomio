@@ -321,16 +321,20 @@ definePageMeta({
 // Reactive data
 const selectedPeriod = ref('today')
 const metrics = ref({
-  totalRevenue: 450000,
-  revenueGrowth: 12.5,
-  totalOrders: 156,
-  ordersGrowth: 8.3,
-  averageOrderValue: 2885,
-  aovGrowth: 4.2,
+  totalRevenue: 0,
+  revenueGrowth: 0,
+  totalOrders: 0,
+  ordersGrowth: 0,
+  averageOrderValue: 0,
+  aovGrowth: 0,
   avgPrepTime: 18,
   prepTimeChange: -2,
   averageRating: 4.3
 })
+
+const orders = ref([])
+const loading = ref(false)
+const error = ref('')
 
 const topSellingItems = ref([
   { id: 1, rank: 1, name: 'Jollof Rice & Chicken', category: 'Main Course', quantity_sold: 45, revenue: 67500 },
@@ -340,22 +344,9 @@ const topSellingItems = ref([
   { id: 5, rank: 5, name: 'Suya Platter', category: 'Appetizer', quantity_sold: 25, revenue: 25000 }
 ])
 
-const orderStatusBreakdown = ref([
-  { status: 'completed', count: 120, percentage: 77 },
-  { status: 'pending', count: 15, percentage: 10 },
-  { status: 'preparing', count: 12, percentage: 8 },
-  { status: 'cancelled', count: 9, percentage: 5 }
-])
+const orderStatusBreakdown = ref([])
 
-const peakHours = ref([
-  { hour: 12, orders: 25 },
-  { hour: 13, orders: 32 },
-  { hour: 14, orders: 18 },
-  { hour: 18, orders: 28 },
-  { hour: 19, orders: 35 },
-  { hour: 20, orders: 22 },
-  { hour: 21, orders: 15 }
-])
+const peakHours = ref([])
 
 const ratingBreakdown = ref([
   { stars: 5, count: 89, percentage: 68 },
@@ -391,9 +382,113 @@ const exportReport = () => {
   console.log('Exporting report for period:', selectedPeriod.value)
 }
 
+const getPeriodRange = (period) => {
+  const now = new Date()
+  const start = new Date(now)
+
+  switch (period) {
+    case 'week':
+      start.setDate(start.getDate() - 6)
+      break
+    case 'month':
+      start.setDate(1)
+      break
+    case 'quarter': {
+      const currentMonth = start.getMonth()
+      const quarterStartMonth = currentMonth - (currentMonth % 3)
+      start.setMonth(quarterStartMonth, 1)
+      break
+    }
+    case 'year':
+      start.setMonth(0, 1)
+      break
+    case 'today':
+    default:
+      start.setHours(0, 0, 0, 0)
+      break
+  }
+
+  const dateFrom = start.toISOString()
+  const dateTo = now.toISOString()
+
+  return { dateFrom, dateTo }
+}
+
+const computeMetrics = () => {
+  const totalOrders = orders.value.length
+  const totalRevenue = orders.value.reduce((sum, order) => sum + (order.total_amount || 0), 0)
+  const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
+
+  metrics.value = {
+    ...metrics.value,
+    totalRevenue,
+    totalOrders,
+    averageOrderValue,
+    revenueGrowth: 0,
+    ordersGrowth: 0,
+    aovGrowth: 0
+  }
+}
+
+const computeOrderStatusBreakdown = () => {
+  const counts = {}
+  for (const order of orders.value) {
+    const status = order.order_status || 'unknown'
+    counts[status] = (counts[status] || 0) + 1
+  }
+
+  const total = orders.value.length || 1
+  orderStatusBreakdown.value = Object.entries(counts).map(([status, count]) => ({
+    status,
+    count: count,
+    percentage: Math.round(((count) / total) * 100)
+  }))
+}
+
+const computePeakHours = () => {
+  const hourCounts = {}
+  for (const order of orders.value) {
+    if (!order.order_time) continue
+    const hour = new Date(order.order_time).getHours()
+    const key = String(hour)
+    hourCounts[key] = (hourCounts[key] || 0) + 1
+  }
+
+  peakHours.value = Object.entries(hourCounts)
+    .map(([hour, count]) => ({ hour: Number(hour), orders: count }))
+    .sort((a, b) => a.hour - b.hour)
+}
+
+const loadReports = async () => {
+  loading.value = true
+  error.value = ''
+  try {
+    const { dateFrom, dateTo } = getPeriodRange(selectedPeriod.value)
+    const { data } = await $fetch('/api/restaurant/orders', {
+      query: {
+        date_from: dateFrom,
+        date_to: dateTo
+      }
+    })
+
+    orders.value = Array.isArray(data) ? data : []
+    computeMetrics()
+    computeOrderStatusBreakdown()
+    computePeakHours()
+  } catch (err) {
+    console.error('Error loading restaurant reports:', err)
+    error.value = 'Failed to load reports. Please try again.'
+  } finally {
+    loading.value = false
+  }
+}
+
 // Watch for period changes to update data
-watch(selectedPeriod, (newPeriod) => {
-  console.log('Period changed to:', newPeriod)
-  // Here you would fetch new data based on the selected period
+watch(selectedPeriod, () => {
+  loadReports()
+})
+
+onMounted(() => {
+  loadReports()
 })
 </script>

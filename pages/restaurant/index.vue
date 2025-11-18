@@ -228,8 +228,17 @@
                   <div class="text-sm font-medium text-gray-900">
                     {{ order.order_number }}
                   </div>
-                  <div class="text-sm text-gray-500">
-                    {{ order.table_number ? `Table ${order.table_number}` : order.room_number ? `Room ${order.room_number}` : 'Takeaway' }}
+                  <div class="text-sm text-gray-500 flex items-center space-x-2">
+                    <span>
+                      {{ order.table_number ? `Table ${order.table_number}` : order.room_number ? `Room ${order.room_number}` : 'Takeaway' }}
+                    </span>
+                    <span
+                      v-if="order.table_number && getTableStatus(order.table_number)"
+                      :class="getTableStatusClass(getTableStatus(order.table_number))"
+                      class="inline-flex px-2 py-0.5 text-[10px] font-medium rounded-full"
+                    >
+                      {{ formatTableStatus(getTableStatus(order.table_number)) }}
+                    </span>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -466,6 +475,33 @@ const getStatusClass = (status) => {
     served: 'bg-gray-100 text-gray-800',
     completed: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800'
+  }
+  return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
+const getTableStatus = (tableNumber) => {
+  if (!tableNumber) return null
+  const table = tables.value.find((t) => t.table_number === tableNumber)
+  return table?.status || null
+}
+
+const formatTableStatus = (status) => {
+  if (!status) return ''
+  const statuses = {
+    available: 'Available',
+    occupied: 'Occupied',
+    reserved: 'Reserved',
+    blocked: 'Blocked'
+  }
+  return statuses[status] || status
+}
+
+const getTableStatusClass = (status) => {
+  const classes = {
+    available: 'bg-green-100 text-green-800',
+    occupied: 'bg-red-100 text-red-800',
+    reserved: 'bg-yellow-100 text-yellow-800',
+    blocked: 'bg-gray-200 text-gray-700'
   }
   return classes[status] || 'bg-gray-100 text-gray-800'
 }
