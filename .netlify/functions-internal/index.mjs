@@ -3,7 +3,7 @@ import { Server } from 'node:http';
 import { resolve, dirname, join } from 'node:path';
 import nodeCrypto from 'node:crypto';
 import { parentPort, threadId } from 'node:worker_threads';
-import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, getQuery as getQuery$1, readBody, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, getResponseStatusText } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/h3/dist/index.mjs';
+import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, getQuery as getQuery$1, readBody, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, getRouterParams, getResponseStatusText } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/h3/dist/index.mjs';
 import { escapeHtml } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/@vue/shared/dist/shared.cjs.js';
 import { createClient } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/@supabase/supabase-js/dist/main/index.js';
 import { createRenderer, getRequestDependencies, getPreloadLinks, getPrefetchLinks } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/vue-bundle-renderer/dist/runtime.mjs';
@@ -1517,7 +1517,12 @@ const _lazy_jQDxER = () => Promise.resolve().then(function () { return demoReque
 const _lazy_dlbk4e = () => Promise.resolve().then(function () { return categories_get$1; });
 const _lazy_Cegxv9 = () => Promise.resolve().then(function () { return items_get$1; });
 const _lazy_A9_iSs = () => Promise.resolve().then(function () { return items_post$1; });
+const _lazy_hYTtGl = () => Promise.resolve().then(function () { return menuCategories_get$1; });
+const _lazy_yOGuel = () => Promise.resolve().then(function () { return menuItems__id__patch$1; });
 const _lazy_Kt1t_e = () => Promise.resolve().then(function () { return menuItems_get$1; });
+const _lazy_IUmhRb = () => Promise.resolve().then(function () { return menuItems_post$1; });
+const _lazy_blervC = () => Promise.resolve().then(function () { return _id__delete$1; });
+const _lazy_qGL93M = () => Promise.resolve().then(function () { return _id__patch$1; });
 const _lazy_H0FyjL = () => Promise.resolve().then(function () { return orders_get$1; });
 const _lazy_zkThyt = () => Promise.resolve().then(function () { return orders_post$1; });
 const _lazy_DxqCh1 = () => Promise.resolve().then(function () { return tables_get$1; });
@@ -1530,7 +1535,12 @@ const handlers = [
   { route: '/api/inventory/categories', handler: _lazy_dlbk4e, lazy: true, middleware: false, method: "get" },
   { route: '/api/inventory/items', handler: _lazy_Cegxv9, lazy: true, middleware: false, method: "get" },
   { route: '/api/inventory/items', handler: _lazy_A9_iSs, lazy: true, middleware: false, method: "post" },
+  { route: '/api/restaurant/menu-categories', handler: _lazy_hYTtGl, lazy: true, middleware: false, method: "get" },
+  { route: '/api/restaurant/menu-items-:id', handler: _lazy_yOGuel, lazy: true, middleware: false, method: "patch" },
   { route: '/api/restaurant/menu-items', handler: _lazy_Kt1t_e, lazy: true, middleware: false, method: "get" },
+  { route: '/api/restaurant/menu-items', handler: _lazy_IUmhRb, lazy: true, middleware: false, method: "post" },
+  { route: '/api/restaurant/menu-items/:id', handler: _lazy_blervC, lazy: true, middleware: false, method: "delete" },
+  { route: '/api/restaurant/menu-items/:id', handler: _lazy_qGL93M, lazy: true, middleware: false, method: "patch" },
   { route: '/api/restaurant/orders', handler: _lazy_H0FyjL, lazy: true, middleware: false, method: "get" },
   { route: '/api/restaurant/orders', handler: _lazy_zkThyt, lazy: true, middleware: false, method: "post" },
   { route: '/api/restaurant/tables', handler: _lazy_DxqCh1, lazy: true, middleware: false, method: "get" },
@@ -2138,6 +2148,107 @@ const items_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
   default: items_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
+const menuCategories_get = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const { data, error } = await supabase.from("menu_categories").select("*").eq("is_active", true).order("name");
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const menuCategories_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: menuCategories_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const menuItems__id__patch = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const params = getRouterParams(event);
+    const id = params.id;
+    if (!id) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Menu item ID is required"
+      });
+    }
+    const body = await readBody(event);
+    const updatePayload = {};
+    const updatableFields = [
+      "name",
+      "item_code",
+      "description",
+      "category_id",
+      "base_price",
+      "cost_price",
+      "profit_margin",
+      "item_type",
+      "preparation_time",
+      "calories",
+      "allergens",
+      "dietary_info",
+      "is_available",
+      "is_featured",
+      "availability_schedule",
+      "image_url",
+      "images",
+      "track_inventory",
+      "low_stock_threshold"
+    ];
+    for (const field of updatableFields) {
+      if (field in body) {
+        updatePayload[field] = body[field];
+      }
+    }
+    const { data, error } = await supabase.from("menu_items").update(updatePayload).eq("id", id).select(`
+        *,
+        category:menu_categories(id, name, category_type)
+      `).single();
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const menuItems__id__patch$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: menuItems__id__patch
+}, Symbol.toStringTag, { value: 'Module' }));
+
 const menuItems_get = defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig();
@@ -2201,6 +2312,192 @@ const menuItems_get = defineEventHandler(async (event) => {
 const menuItems_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: menuItems_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const menuItems_post = defineEventHandler(async (event) => {
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const body = await readBody(event);
+    const requiredFields = ["name", "category_id", "base_price", "item_type"];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: `${field} is required`
+        });
+      }
+    }
+    if (!body.item_code) {
+      const { data: lastItem } = await supabase.from("menu_items").select("item_code").order("created_at", { ascending: false }).limit(1);
+      let nextNumber = 1;
+      if (lastItem && lastItem.length > 0) {
+        const lastCode = lastItem[0].item_code;
+        const match = lastCode && lastCode.match(/MENU-(\d+)/);
+        if (match) {
+          nextNumber = parseInt(match[1]) + 1;
+        }
+      }
+      body.item_code = `MENU-${String(nextNumber).padStart(6, "0")}`;
+    }
+    const payload = {
+      item_code: body.item_code,
+      name: body.name,
+      description: (_a = body.description) != null ? _a : null,
+      category_id: body.category_id,
+      base_price: body.base_price,
+      cost_price: (_b = body.cost_price) != null ? _b : 0,
+      profit_margin: (_c = body.profit_margin) != null ? _c : null,
+      item_type: body.item_type,
+      preparation_time: (_d = body.preparation_time) != null ? _d : 15,
+      calories: (_e = body.calories) != null ? _e : null,
+      allergens: (_f = body.allergens) != null ? _f : [],
+      dietary_info: (_g = body.dietary_info) != null ? _g : [],
+      is_available: (_h = body.is_available) != null ? _h : true,
+      is_featured: (_i = body.is_featured) != null ? _i : false,
+      availability_schedule: (_j = body.availability_schedule) != null ? _j : null,
+      image_url: (_k = body.image_url) != null ? _k : null,
+      images: (_l = body.images) != null ? _l : [],
+      track_inventory: (_m = body.track_inventory) != null ? _m : true,
+      low_stock_threshold: (_n = body.low_stock_threshold) != null ? _n : 10
+    };
+    const { data, error } = await supabase.from("menu_items").insert(payload).select(`
+        *,
+        category:menu_categories(id, name, category_type)
+      `).single();
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const menuItems_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: menuItems_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _id__delete = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const params = getRouterParams(event);
+    const id = params.id;
+    if (!id) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Menu item ID is required"
+      });
+    }
+    const { error } = await supabase.from("menu_items").delete().eq("id", id);
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const _id__delete$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _id__delete
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const _id__patch = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const params = getRouterParams(event);
+    const id = params.id;
+    if (!id) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Menu item ID is required"
+      });
+    }
+    const body = await readBody(event);
+    const updatePayload = {};
+    const updatableFields = [
+      "name",
+      "item_code",
+      "description",
+      "category_id",
+      "base_price",
+      "cost_price",
+      "profit_margin",
+      "item_type",
+      "preparation_time",
+      "calories",
+      "allergens",
+      "dietary_info",
+      "is_available",
+      "is_featured",
+      "availability_schedule",
+      "image_url",
+      "images",
+      "track_inventory",
+      "low_stock_threshold"
+    ];
+    for (const field of updatableFields) {
+      if (field in body) {
+        updatePayload[field] = body[field];
+      }
+    }
+    const { data, error } = await supabase.from("menu_items").update(updatePayload).eq("id", id).select(`
+        *,
+        category:menu_categories(id, name, category_type)
+      `).single();
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const _id__patch$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _id__patch
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const orders_get = defineEventHandler(async (event) => {
