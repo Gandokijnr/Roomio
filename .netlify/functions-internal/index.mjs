@@ -1517,7 +1517,11 @@ const _lazy_jQDxER = () => Promise.resolve().then(function () { return demoReque
 const _lazy_dlbk4e = () => Promise.resolve().then(function () { return categories_get$1; });
 const _lazy_Cegxv9 = () => Promise.resolve().then(function () { return items_get$1; });
 const _lazy_A9_iSs = () => Promise.resolve().then(function () { return items_post$1; });
+const _lazy_l2sd9W = () => Promise.resolve().then(function () { return _id__patch$5; });
+const _lazy_bTR2Zu = () => Promise.resolve().then(function () { return transactions_get$1; });
 const _lazy_I3J5Mu = () => Promise.resolve().then(function () { return transactions_post$1; });
+const _lazy_33BGXH = () => Promise.resolve().then(function () { return purchaseOrders_post$1; });
+const _lazy_SOGLjd = () => Promise.resolve().then(function () { return approve_post$1; });
 const _lazy_hYTtGl = () => Promise.resolve().then(function () { return menuCategories_get$1; });
 const _lazy_yOGuel = () => Promise.resolve().then(function () { return menuItems__id__patch$1; });
 const _lazy_Kt1t_e = () => Promise.resolve().then(function () { return menuItems_get$1; });
@@ -1530,6 +1534,7 @@ const _lazy_zkThyt = () => Promise.resolve().then(function () { return orders_po
 const _lazy_FCvNK3 = () => Promise.resolve().then(function () { return _id__patch$1; });
 const _lazy_DxqCh1 = () => Promise.resolve().then(function () { return tables_get$1; });
 const _lazy_Bd5poG = () => Promise.resolve().then(function () { return sendInvitation_post$1; });
+const _lazy_h3Sq2s = () => Promise.resolve().then(function () { return vendors_get$1; });
 const _lazy_7Vc5ea = () => Promise.resolve().then(function () { return renderer$1; });
 
 const handlers = [
@@ -1538,7 +1543,11 @@ const handlers = [
   { route: '/api/inventory/categories', handler: _lazy_dlbk4e, lazy: true, middleware: false, method: "get" },
   { route: '/api/inventory/items', handler: _lazy_Cegxv9, lazy: true, middleware: false, method: "get" },
   { route: '/api/inventory/items', handler: _lazy_A9_iSs, lazy: true, middleware: false, method: "post" },
+  { route: '/api/inventory/items/:id', handler: _lazy_l2sd9W, lazy: true, middleware: false, method: "patch" },
+  { route: '/api/inventory/transactions', handler: _lazy_bTR2Zu, lazy: true, middleware: false, method: "get" },
   { route: '/api/inventory/transactions', handler: _lazy_I3J5Mu, lazy: true, middleware: false, method: "post" },
+  { route: '/api/purchase-orders', handler: _lazy_33BGXH, lazy: true, middleware: false, method: "post" },
+  { route: '/api/purchase-orders/:id/approve', handler: _lazy_SOGLjd, lazy: true, middleware: false, method: "post" },
   { route: '/api/restaurant/menu-categories', handler: _lazy_hYTtGl, lazy: true, middleware: false, method: "get" },
   { route: '/api/restaurant/menu-items-:id', handler: _lazy_yOGuel, lazy: true, middleware: false, method: "patch" },
   { route: '/api/restaurant/menu-items', handler: _lazy_Kt1t_e, lazy: true, middleware: false, method: "get" },
@@ -1551,6 +1560,7 @@ const handlers = [
   { route: '/api/restaurant/orders/:id', handler: _lazy_FCvNK3, lazy: true, middleware: false, method: "patch" },
   { route: '/api/restaurant/tables', handler: _lazy_DxqCh1, lazy: true, middleware: false, method: "get" },
   { route: '/api/send-invitation', handler: _lazy_Bd5poG, lazy: true, middleware: false, method: "post" },
+  { route: '/api/vendors', handler: _lazy_h3Sq2s, lazy: true, middleware: false, method: "get" },
   { route: '/__nuxt_error', handler: _lazy_7Vc5ea, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_island/**', handler: _SxA8c9, lazy: false, middleware: false, method: undefined },
   { route: '/**', handler: _lazy_7Vc5ea, lazy: true, middleware: false, method: undefined }
@@ -2154,6 +2164,137 @@ const items_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
   default: items_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
+const _id__patch$4 = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const params = getRouterParams(event);
+    const id = params.id;
+    if (!id) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Inventory item ID is required"
+      });
+    }
+    const body = await readBody(event);
+    const updatePayload = {};
+    const updatableFields = [
+      "name",
+      "item_code",
+      "description",
+      "category_id",
+      "unit_of_measure",
+      "current_stock",
+      "minimum_stock",
+      "maximum_stock",
+      "reorder_point",
+      "unit_cost",
+      "average_cost",
+      "last_purchase_price",
+      "primary_supplier_id",
+      "supplier_item_code",
+      "storage_location",
+      "storage_temperature",
+      "shelf_life_days",
+      "is_active"
+    ];
+    for (const field of updatableFields) {
+      if (field in body) {
+        updatePayload[field] = body[field];
+      }
+    }
+    if (Object.keys(updatePayload).length === 0) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "No valid fields provided for update"
+      });
+    }
+    updatePayload.updated_at = (/* @__PURE__ */ new Date()).toISOString();
+    const { data, error } = await supabase.from("inventory_items").update(updatePayload).eq("id", id).select(`
+        *,
+        category:inventory_categories(id, name, category_type),
+        supplier:vendors(id, vendor_name)
+      `).single();
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const _id__patch$5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: _id__patch$4
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const transactions_get = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const query = getQuery$1(event);
+    const {
+      inventory_item_id,
+      transaction_type,
+      limit: queryLimit = 50,
+      offset: queryOffset = 0
+    } = query;
+    if (!inventory_item_id) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "inventory_item_id is required"
+      });
+    }
+    const limit = parseInt(String(queryLimit));
+    const offset = parseInt(String(queryOffset));
+    let queryBuilder = supabase.from("inventory_transactions").select(`
+        *,
+        item:inventory_items(id, name, unit_of_measure),
+        supplier:vendors(id, vendor_name)
+      `).eq("inventory_item_id", inventory_item_id).order("created_at", { ascending: false }).range(offset, offset + limit - 1);
+    if (transaction_type) {
+      queryBuilder = queryBuilder.eq("transaction_type", transaction_type);
+    }
+    const { data, error } = await queryBuilder;
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const transactions_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: transactions_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
 const transactions_post = defineEventHandler(async (event) => {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i;
   try {
@@ -2231,6 +2372,252 @@ const transactions_post = defineEventHandler(async (event) => {
 const transactions_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: transactions_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const purchaseOrders_post = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const body = await readBody(event);
+    const {
+      supplier_id,
+      expected_delivery_date,
+      tax_amount = 0,
+      shipping_cost = 0,
+      notes,
+      items,
+      subtotal,
+      total_amount,
+      created_by
+    } = body || {};
+    if (!supplier_id || !Array.isArray(items) || items.length === 0) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "supplier_id and at least one item are required"
+      });
+    }
+    if (typeof subtotal !== "number" || typeof total_amount !== "number") {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "subtotal and total_amount must be numeric"
+      });
+    }
+    if (!created_by) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "created_by is required"
+      });
+    }
+    const invalidItem = items.find(
+      (item) => !item.inventory_item_id || typeof item.quantity_ordered !== "number" || typeof item.unit_price !== "number"
+    );
+    if (invalidItem) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Each item must have inventory_item_id, numeric quantity_ordered and unit_price"
+      });
+    }
+    const { data: purchaseOrder, error: poError } = await supabase.from("purchase_orders").insert({
+      supplier_id,
+      expected_delivery_date: expected_delivery_date || null,
+      status: "draft",
+      subtotal,
+      tax_amount,
+      shipping_cost,
+      total_amount,
+      notes: notes || null,
+      created_by
+    }).select("*").single();
+    if (poError || !purchaseOrder) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: (poError == null ? void 0 : poError.message) || "Failed to create purchase order"
+      });
+    }
+    const itemsPayload = items.map((item) => {
+      var _a;
+      return {
+        purchase_order_id: purchaseOrder.id,
+        inventory_item_id: item.inventory_item_id,
+        quantity_ordered: item.quantity_ordered,
+        quantity_received: 0,
+        unit_price: item.unit_price,
+        total_price: (_a = item.total_price) != null ? _a : item.quantity_ordered * item.unit_price,
+        notes: item.notes || null
+      };
+    });
+    const { error: itemsError } = await supabase.from("purchase_order_items").insert(itemsPayload);
+    if (itemsError) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: itemsError.message
+      });
+    }
+    return {
+      success: true,
+      data: {
+        ...purchaseOrder,
+        items: itemsPayload
+      }
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const purchaseOrders_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: purchaseOrders_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const approve_post = defineEventHandler(async (event) => {
+  var _a, _b;
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const params = getRouterParams(event);
+    const id = params.id;
+    if (!id) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Purchase order ID is required"
+      });
+    }
+    const body = await readBody(event);
+    const { approver_id } = body || {};
+    if (!approver_id) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "approver_id is required"
+      });
+    }
+    const { data: purchaseOrder, error: poError } = await supabase.from("purchase_orders").select(`
+        *,
+        items:purchase_order_items(
+          id,
+          inventory_item_id,
+          quantity_ordered,
+          unit_price,
+          total_price
+        )
+      `).eq("id", id).single();
+    if (poError || !purchaseOrder) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: (poError == null ? void 0 : poError.message) || "Purchase order not found"
+      });
+    }
+    const forbiddenStatuses = ["received", "partial_received", "cancelled"];
+    if (forbiddenStatuses.includes(purchaseOrder.status)) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: `Cannot approve a purchase order in status ${purchaseOrder.status}`
+      });
+    }
+    const items = purchaseOrder.items || [];
+    if (!Array.isArray(items) || items.length === 0) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Purchase order has no items to receive"
+      });
+    }
+    for (const item of items) {
+      const { inventory_item_id, quantity_ordered, unit_price, total_price } = item;
+      const { data: inventoryItem, error: itemError } = await supabase.from("inventory_items").select("id, current_stock, unit_cost, primary_supplier_id").eq("id", inventory_item_id).single();
+      if (itemError || !inventoryItem) {
+        throw createError({
+          statusCode: 404,
+          statusMessage: "Inventory item not found for one of the purchase order items"
+        });
+      }
+      const stock_before = (_a = inventoryItem.current_stock) != null ? _a : 0;
+      const quantity = quantity_ordered != null ? quantity_ordered : 0;
+      const stock_after = stock_before + quantity;
+      const unit_cost = typeof unit_price === "number" ? unit_price : (_b = inventoryItem.unit_cost) != null ? _b : 0;
+      const tx_total_cost = typeof total_price === "number" ? total_price : Math.abs(quantity) * (unit_cost != null ? unit_cost : 0);
+      const transaction_number = `PO-${purchaseOrder.po_number || purchaseOrder.id}-${item.id}`;
+      const transactionPayload = {
+        transaction_number,
+        transaction_type: "purchase",
+        inventory_item_id,
+        quantity,
+        unit_cost,
+        total_cost: tx_total_cost,
+        stock_before,
+        stock_after,
+        reference_type: "purchase_order",
+        reference_id: purchaseOrder.id,
+        supplier_id: purchaseOrder.supplier_id,
+        notes: purchaseOrder.notes || null,
+        batch_number: null,
+        expiry_date: null,
+        processed_by: approver_id
+      };
+      const { error: txError } = await supabase.from("inventory_transactions").insert(transactionPayload);
+      if (txError) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: txError.message
+        });
+      }
+      const { error: updateError } = await supabase.from("inventory_items").update({
+        current_stock: stock_after,
+        unit_cost,
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      }).eq("id", inventory_item_id);
+      if (updateError) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: updateError.message
+        });
+      }
+    }
+    const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+    const { data: updatedOrder, error: updatePoError } = await supabase.from("purchase_orders").update({
+      status: "received",
+      approved_by: approver_id,
+      received_by: approver_id,
+      actual_delivery_date: today
+    }).eq("id", id).select(`
+        *,
+        items:purchase_order_items(
+          id,
+          inventory_item_id,
+          quantity_ordered,
+          unit_price,
+          total_price
+        )
+      `).single();
+    if (updatePoError || !updatedOrder) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: (updatePoError == null ? void 0 : updatePoError.message) || "Failed to update purchase order status"
+      });
+    }
+    return {
+      success: true,
+      data: updatedOrder
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const approve_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: approve_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const menuCategories_get = defineEventHandler(async (event) => {
@@ -3111,6 +3498,37 @@ const sendInvitation_post = defineEventHandler(async (event) => {
 const sendInvitation_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: sendInvitation_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const vendors_get = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const { data, error } = await supabase.from("vendors").select("*").order("vendor_name");
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error instanceof Error ? error.message : "An unexpected error occurred"
+    });
+  }
+});
+
+const vendors_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: vendors_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function renderPayloadResponse(ssrContext) {

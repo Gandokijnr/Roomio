@@ -285,6 +285,8 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'saved'])
 
+const { profile } = useAuth()
+
 const loading = ref(false)
 
 const form = ref({
@@ -369,6 +371,11 @@ const handleSubmit = async () => {
     return
   }
 
+  if (!profile.value?.id) {
+    alert('Your user profile is not loaded. Please refresh the page and try again.')
+    return
+  }
+
   loading.value = true
   
   try {
@@ -376,7 +383,8 @@ const handleSubmit = async () => {
       ...form.value,
       subtotal: orderSubtotal.value,
       total_amount: orderTotal.value,
-      status: 'draft'
+      status: 'draft',
+      created_by: profile.value.id
     }
     
     const { data } = await $fetch('/api/purchase-orders', {
