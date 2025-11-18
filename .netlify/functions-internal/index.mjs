@@ -1520,6 +1520,7 @@ const _lazy_A9_iSs = () => Promise.resolve().then(function () { return items_pos
 const _lazy_l2sd9W = () => Promise.resolve().then(function () { return _id__patch$5; });
 const _lazy_bTR2Zu = () => Promise.resolve().then(function () { return transactions_get$1; });
 const _lazy_I3J5Mu = () => Promise.resolve().then(function () { return transactions_post$1; });
+const _lazy__eAuJ8 = () => Promise.resolve().then(function () { return purchaseOrders_get$1; });
 const _lazy_33BGXH = () => Promise.resolve().then(function () { return purchaseOrders_post$1; });
 const _lazy_SOGLjd = () => Promise.resolve().then(function () { return approve_post$1; });
 const _lazy_hYTtGl = () => Promise.resolve().then(function () { return menuCategories_get$1; });
@@ -1546,6 +1547,7 @@ const handlers = [
   { route: '/api/inventory/items/:id', handler: _lazy_l2sd9W, lazy: true, middleware: false, method: "patch" },
   { route: '/api/inventory/transactions', handler: _lazy_bTR2Zu, lazy: true, middleware: false, method: "get" },
   { route: '/api/inventory/transactions', handler: _lazy_I3J5Mu, lazy: true, middleware: false, method: "post" },
+  { route: '/api/purchase-orders', handler: _lazy__eAuJ8, lazy: true, middleware: false, method: "get" },
   { route: '/api/purchase-orders', handler: _lazy_33BGXH, lazy: true, middleware: false, method: "post" },
   { route: '/api/purchase-orders/:id/approve', handler: _lazy_SOGLjd, lazy: true, middleware: false, method: "post" },
   { route: '/api/restaurant/menu-categories', handler: _lazy_hYTtGl, lazy: true, middleware: false, method: "get" },
@@ -2374,6 +2376,71 @@ const transactions_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defin
   default: transactions_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
+const purchaseOrders_get = defineEventHandler(async (event) => {
+  try {
+    const config = useRuntimeConfig();
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey
+    );
+    const query = getQuery$1(event);
+    const scope = query.scope || "all";
+    const status = query.status;
+    const supplierId = query.supplier_id;
+    let poQuery = supabase.from("purchase_orders").select(
+      `
+        id,
+        po_number,
+        supplier_id,
+        status,
+        order_date,
+        expected_delivery_date,
+        actual_delivery_date,
+        subtotal,
+        tax_amount,
+        shipping_cost,
+        total_amount,
+        created_at,
+        supplier:vendors(id, vendor_name)
+      `,
+      { count: "exact" }
+    );
+    if (scope === "pending") {
+      poQuery = poQuery.neq("status", "received").neq("status", "cancelled");
+    }
+    if (status) {
+      poQuery = poQuery.eq("status", status);
+    }
+    if (supplierId) {
+      poQuery = poQuery.eq("supplier_id", supplierId);
+    }
+    const { data, count, error } = await poQuery.order("order_date", { ascending: false });
+    if (error) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: error.message
+      });
+    }
+    return {
+      success: true,
+      scope,
+      pendingCount: scope === "pending" ? count || 0 : 0,
+      totalCount: count || 0,
+      data: data || []
+    };
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message || "Internal server error"
+    });
+  }
+});
+
+const purchaseOrders_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: purchaseOrders_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
 const purchaseOrders_post = defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig();
@@ -2530,7 +2597,7 @@ const approve_post = defineEventHandler(async (event) => {
         statusMessage: "Purchase order has no items to receive"
       });
     }
-    for (const item of items) {
+    for (const [index, item] of items.entries()) {
       const { inventory_item_id, quantity_ordered, unit_price, total_price } = item;
       const { data: inventoryItem, error: itemError } = await supabase.from("inventory_items").select("id, current_stock, unit_cost, primary_supplier_id").eq("id", inventory_item_id).single();
       if (itemError || !inventoryItem) {
@@ -2544,7 +2611,9 @@ const approve_post = defineEventHandler(async (event) => {
       const stock_after = stock_before + quantity;
       const unit_cost = typeof unit_price === "number" ? unit_price : (_b = inventoryItem.unit_cost) != null ? _b : 0;
       const tx_total_cost = typeof total_price === "number" ? total_price : Math.abs(quantity) * (unit_cost != null ? unit_cost : 0);
-      const transaction_number = `PO-${purchaseOrder.po_number || purchaseOrder.id}-${item.id}`;
+      const basePoNumber = purchaseOrder.po_number || "PO";
+      const lineSuffix = `L${String(index + 1).padStart(3, "0")}`;
+      const transaction_number = `${basePoNumber}-${lineSuffix}`;
       const transactionPayload = {
         transaction_number,
         transaction_type: "purchase",

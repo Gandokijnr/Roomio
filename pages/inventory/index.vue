@@ -26,6 +26,12 @@
               Create Purchase Order
             </button>
             <button
+              @click="navigateTo('/inventory/purchase-orders')"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-royal-gold-500"
+            >
+              View Purchase Orders
+            </button>
+            <button
               @click="navigateTo('/expenses/vendors')"
               class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-royal-gold-500"
             >
@@ -83,7 +89,7 @@
           <div class="p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <CurrencyDollarIcon class="h-6 w-6 text-green-400" />
+                <div class="h-6 w-6 text-lg text-green-400">₦</div>
               </div>
               <div class="ml-5 w-0 flex-1">
                 <dl>
@@ -431,6 +437,8 @@ const showTransactionHistoryModal = ref(false)
 const selectedItem = ref(null)
 
 // Stats
+const pendingOrdersCount = ref(0)
+
 const stats = computed(() => {
   const totalItems = inventoryItems.value.length
   const lowStockItems = inventoryItems.value.filter(item => 
@@ -439,13 +447,12 @@ const stats = computed(() => {
   const totalValue = inventoryItems.value.reduce((sum, item) => 
     sum + (item.current_stock * item.unit_cost), 0
   )
-  const pendingOrders = 0 // This would come from purchase orders
 
   return {
     totalItems,
     lowStockItems,
     totalValue,
-    pendingOrders
+    pendingOrders: pendingOrdersCount.value
   }
 })
 
@@ -585,7 +592,8 @@ const handleStockAdjusted = () => {
 
 const handlePurchaseOrderCreated = () => {
   showPurchaseOrderModal.value = false
-  // Optionally refresh data or show success message
+  // Refresh pending orders count after creating a new purchase order
+  fetchPendingOrders()
 }
 
 // API calls
@@ -616,12 +624,24 @@ const fetchSuppliers = async () => {
   }
 }
 
+const fetchPendingOrders = async () => {
+  try {
+    const { pendingCount } = await $fetch('/api/purchase-orders', {
+      params: { scope: 'pending' }
+    })
+    pendingOrdersCount.value = pendingCount || 0
+  } catch (error) {
+    console.error('Error fetching pending purchase orders:', error)
+  }
+}
+
 // Initialize data
 onMounted(async () => {
   await Promise.all([
     fetchInventoryItems(),
     fetchCategories(),
-    fetchSuppliers()
+    fetchSuppliers(),
+    fetchPendingOrders()
   ])
 })
 

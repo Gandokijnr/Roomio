@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // For each item, create an inventory transaction and update stock
-    for (const item of items) {
+    for (const [index, item] of items.entries()) {
       const { inventory_item_id, quantity_ordered, unit_price, total_price } = item
 
       // Load inventory item
@@ -95,7 +95,11 @@ export default defineEventHandler(async (event) => {
         ? total_price
         : Math.abs(quantity) * (unit_cost ?? 0)
 
-      const transaction_number = `PO-${purchaseOrder.po_number || purchaseOrder.id}-${item.id}`
+      // transaction_number is limited to VARCHAR(50) in inventory_transactions
+      // Use the PO number plus a short line suffix instead of full UUIDs
+      const basePoNumber = purchaseOrder.po_number || 'PO'
+      const lineSuffix = `L${String(index + 1).padStart(3, '0')}`
+      const transaction_number = `${basePoNumber}-${lineSuffix}`
 
       const transactionPayload = {
         transaction_number,
