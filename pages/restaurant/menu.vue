@@ -23,6 +23,13 @@
             </p>
           </div>
           <div class="flex items-center gap-3">
+            <NuxtLink
+              to="/restaurant"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-royal-gold-500"
+            >
+              <ArrowLeftIcon class="h-4 w-4 mr-2" />
+              Restaurant Operations
+            </NuxtLink>
             <input
               v-model="search"
               type="text"
@@ -137,7 +144,7 @@ definePageMeta({
 })
 
 import MenuItemModal from '~/components/MenuItemModal.vue'
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import { PlusIcon, PencilIcon, TrashIcon, ArrowLeftIcon } from '@heroicons/vue/24/outline'
 
 const items = ref([])
 const categories = ref([])
