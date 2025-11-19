@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const baseUrl = process.env.NUXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NUXT_PUBLIC_BASE_URL || 'https://roommio.netlify.app'
   const invitationLink = `${baseUrl}/signup?token=${request.invitation_token}`
 
   const now = new Date()
