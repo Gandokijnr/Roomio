@@ -103,6 +103,26 @@
           </span>
         </div>
       </div>
+      <div
+        class="metric-card"
+        v-if="billingMetrics && billingMetrics.billing_hold_count !== undefined"
+      >
+        <div class="metric-label">Hotels in Billing Hold</div>
+        <div class="metric-value">{{ billingMetrics.billing_hold_count }}</div>
+      </div>
+      <div
+        class="metric-card"
+        v-if="billingMetrics && billingMetrics.payment_stats_24h"
+      >
+        <div class="metric-label">Paystack Success Rate (24h)</div>
+        <div class="metric-value">
+          {{ billingMetrics.payment_stats_24h.success_rate.toFixed(1) }}%
+        </div>
+        <div class="metric-sub">
+          {{ billingMetrics.payment_stats_24h.successes }} success ·
+          {{ billingMetrics.payment_stats_24h.failures }} failed
+        </div>
+      </div>
     </section>
 
     <section
@@ -495,6 +515,16 @@ interface DashboardData {
   churnRateLast30Days?: number
 }
 
+interface BillingMetrics {
+  billing_hold_count: number
+  payment_stats_24h: {
+    successes: number
+    failures: number
+    total: number
+    success_rate: number
+  }
+}
+
 interface Tenant {
   id: string
   name: string
@@ -543,11 +573,13 @@ const activeTab = ref<
 >('overview')
 
 const loadingDashboard = ref(false)
+const loadingBillingMetrics = ref(false)
 const loadingTenants = ref(false)
 const loadingRequests = ref(false)
 const loadingActivity = ref(false)
 
 const dashboard = ref<DashboardData | null>(null)
+const billingMetrics = ref<BillingMetrics | null>(null)
 
 const tenants = ref<Tenant[]>([])
 const tenantStatus = ref('')
@@ -692,6 +724,23 @@ const loadDashboard = async () => {
     console.error('Failed to load dashboard:', error)
   } finally {
     loadingDashboard.value = false
+  }
+}
+
+const loadBillingMetrics = async () => {
+  if (!authToken.value) return
+  loadingBillingMetrics.value = true
+  try {
+    const { data: res } = await $axios.get('/api/super/billing-metrics', {
+      headers: authHeaders.value
+    })
+    if (res && res.success) {
+      billingMetrics.value = res.data as BillingMetrics
+    }
+  } catch (error) {
+    console.error('Failed to load billing metrics:', error)
+  } finally {
+    loadingBillingMetrics.value = false
   }
 }
 
@@ -864,6 +913,7 @@ onMounted(async () => {
 
   await Promise.all([
     loadDashboard(),
+    loadBillingMetrics(),
     loadTenants(),
     loadRequests(),
     loadActivity()

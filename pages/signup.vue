@@ -1,105 +1,119 @@
 <template>
-  <div class="signup-page">
-    <div class="signup-container">
-      <div class="signup-header">
-        <h1>🏨 Roomio</h1>
-        <h2>Create Your Account</h2>
-        <p v-if="invitationValid">Welcome! You've been invited to join Roomio.</p>
-        <p v-else class="error-message">Invalid or expired invitation. Please request access first.</p>
-      </div>
-      
-      <div v-if="!invitationValid" class="invalid-invitation">
-        <div class="error-card">
-          <div class="error-icon">🔐</div>
-          <h3>Invitation Required</h3>
-          <p>
-            Roomio is an invitation-only platform for hotel owners. 
-            You need a valid invitation to create an account.
+  <div class="relative min-h-screen flex items-center bg-gradient-to-br from-black/35 to-black/55 justify-center p-6">
+    <div class="relative z-10 w-full max-w-md">
+      <div class="rounded-xl border border-black/5 bg-white/95 backdrop-blur-md shadow-xl p-8 md:p-10">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-semibold text-neutral-900 mb-1">Roomio</h1>
+          <h2 class="text-lg font-medium text-neutral-800 mb-2">Create your account</h2>
+          <p v-if="invitationValid" class="text-sm text-neutral-600">
+            Welcome! You've been invited to join Roomio.
           </p>
-          <NuxtLink to="/landing" class="btn btn-primary">
-            Request Access
-          </NuxtLink>
+          <p v-else class="text-sm text-red-600">
+            Invalid or expired invitation. Please request access first.
+          </p>
         </div>
-      </div>
-      
-      <div v-else class="signup-form-container">
-        <form @submit.prevent="handleSignup" class="signup-form">
-          <div class="invitation-info">
-            <div class="info-card">
-              <strong>Hotel:</strong> {{ invitationData?.hotel_name }}
-            </div>
-            <div class="info-card">
-              <strong>Contact:</strong> {{ invitationData?.name }}
-            </div>
+
+        <div v-if="!invitationValid" class="space-y-4">
+          <div class="rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-center space-y-3">
+            <div class="text-3xl">🔐</div>
+            <h3 class="text-base font-semibold text-red-700">Invitation required</h3>
+            <p class="text-sm text-red-700">
+              Roomio is an invitation-only platform for hotel owners. You need a
+              valid invitation to create an account.
+            </p>
+            <NuxtLink
+              to="/landing"
+              class="inline-flex items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-neutral-800"
+            >
+              Request Access
+            </NuxtLink>
           </div>
-          
-          <div class="form-group">
-            <label for="email">Email Address</label>
-            <input
-              id="email"
-              v-model="signupForm.email"
-              type="email"
-              readonly
-              class="form-input readonly"
-            />
-          </div>
-          
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input
-              id="password"
-              v-model="signupForm.password"
-              type="password"
-              placeholder="Create a strong password"
-              class="form-input"
-              required
-              minlength="8"
-            />
-            <div class="password-requirements">
-              <small>Password must be at least 8 characters long</small>
+        </div>
+
+        <div v-else class="space-y-6">
+          <div class="grid gap-3 text-sm text-neutral-800">
+            <div class="rounded-md bg-neutral-100 px-3 py-2 flex items-center justify-between">
+              <span class="font-bold text-neutral-700">Hotel</span>
+              <span class="text-neutral-900">{{ invitationData?.hotel_name }}</span>
+            </div>
+            <div class="rounded-md bg-neutral-100 px-3 py-2 flex items-center justify-between">
+              <span class="font-bold text-neutral-700">Contact</span>
+              <span class="text-neutral-900">{{ invitationData?.name }}</span>
             </div>
           </div>
-          
-          <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input
-              id="confirmPassword"
-              v-model="signupForm.confirmPassword"
-              type="password"
-              placeholder="Confirm your password"
-              class="form-input"
-              required
-            />
-          </div>
-          
-          <div class="form-group">
-            <label class="checkbox-label">
+
+          <form @submit.prevent="handleSignup" class="grid gap-5">
+            <div class="grid gap-2">
+              <label for="email" class="text-sm font-medium text-neutral-700">Email address</label>
               <input
+                id="email"
+                v-model="signupForm.email"
+                type="email"
+                readonly
+                class="form-input w-full rounded-md border-neutral-300 bg-neutral-50 text-neutral-600 focus:border-[var(--primary-500)] focus:ring-2 focus:ring-[rgba(212,175,55,0.25)]"
+              />
+            </div>
+
+            <div class="grid gap-2">
+              <label for="password" class="text-sm font-medium text-neutral-700">Password</label>
+              <input
+                id="password"
+                v-model="signupForm.password"
+                type="password"
+                placeholder="Create a strong password"
+                class="form-input w-full rounded-md border-neutral-300 focus:border-[var(--primary-500)] focus:ring-2 focus:ring-[rgba(212,175,55,0.25)]"
+                required
+                minlength="8"
+              />
+              <p class="text-xs text-neutral-500">Password must be at least 8 characters long.</p>
+            </div>
+
+            <div class="grid gap-2">
+              <label for="confirmPassword" class="text-sm font-medium text-neutral-700">Confirm password</label>
+              <input
+                id="confirmPassword"
+                v-model="signupForm.confirmPassword"
+                type="password"
+                placeholder="Confirm your password"
+                class="form-input w-full rounded-md border-neutral-300 focus:border-[var(--primary-500)] focus:ring-2 focus:ring-[rgba(212,175,55,0.25)]"
+                required
+              />
+            </div>
+
+            <div class="flex items-start gap-3 text-sm text-neutral-700">
+              <input
+                id="acceptTerms"
                 v-model="signupForm.acceptTerms"
                 type="checkbox"
                 required
+                class="mt-1 h-4 w-4 rounded border-neutral-300 text-[var(--primary-600)] focus:ring-[rgba(212,175,55,0.25)]"
               />
-              <span class="checkmark"></span>
-              I agree to the <a href="#" @click="openTerms">Terms of Service</a> 
-              and <a href="#" @click="openPrivacy">Privacy Policy</a>
-            </label>
+              <label for="acceptTerms" class="leading-relaxed">
+                I agree to the
+                <a href="#" @click.prevent="openTerms" class="text-[var(--primary-600)] hover:underline">Terms of Service</a>
+                and
+                <a href="#" @click.prevent="openPrivacy" class="text-[var(--primary-600)] hover:underline">Privacy Policy</a>.
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              :disabled="!isFormValid || loading"
+              class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[var(--primary-600)] px-6 py-3 text-white text-base font-medium shadow-md transition hover:bg-[var(--primary-700)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span v-if="loading">Creating account...</span>
+              <span v-else>Create Account</span>
+            </button>
+          </form>
+
+          <div class="pt-4 border-t border-neutral-200 text-center text-sm text-neutral-600">
+            <p>
+              Already have an account?
+              <NuxtLink to="/login" class="font-medium text-[var(--primary-600)] hover:underline">
+                Sign In
+              </NuxtLink>
+            </p>
           </div>
-          
-          <button
-            type="submit"
-            :disabled="!isFormValid || loading"
-            class="signup-button"
-          >
-            <span v-if="loading">Creating Account...</span>
-            <span v-else>Create Account</span>
-          </button>
-        </form>
-        
-        <div class="signup-footer">
-          <p>
-            Already have an account? 
-            <NuxtLink to="/login" class="login-link">Sign In</NuxtLink>
-          </p>
         </div>
       </div>
     </div>
@@ -182,7 +196,16 @@ const handleSignup = async () => {
     })
     
     if (error) {
-      alert('Signup failed: ' + error.message)
+      console.error('Signup failed:', error)
+      const message = (error as any).message || ''
+
+      if (message.toLowerCase().includes('user already registered') || message.toLowerCase().includes('duplicate key')) {
+        alert('An account already exists with this email. Please log in instead.')
+        await navigateTo('/login')
+      } else {
+        alert('Signup failed: ' + message)
+      }
+
       return
     }
     
@@ -217,230 +240,3 @@ onMounted(() => {
   validateInvitation()
 })
 </script>
-
-<style scoped>
-.signup-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #d4af37 0%, #b8931f 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
-
-.signup-container {
-  background: white;
-  border-radius: 1rem;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-  padding: 3rem;
-  width: 100%;
-  max-width: 500px;
-}
-
-.signup-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.signup-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.signup-header h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 0.5rem;
-}
-
-.signup-header p {
-  color: #6b7280;
-}
-
-.error-message {
-  color: #ef4444 !important;
-}
-
-.invalid-invitation {
-  text-align: center;
-}
-
-.error-card {
-  padding: 2rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 0.5rem;
-}
-
-.error-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.error-card h3 {
-  color: #dc2626;
-  margin-bottom: 1rem;
-}
-
-.error-card p {
-  color: #7f1d1d;
-  margin-bottom: 1.5rem;
-}
-
-.invitation-info {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.info-card {
-  flex: 1;
-  padding: 1rem;
-  background: #f8fafc;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 0.5rem;
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #d4af37;
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
-}
-
-.form-input.readonly {
-  background: #f9fafb;
-  color: #6b7280;
-}
-
-.password-requirements {
-  margin-top: 0.5rem;
-}
-
-.password-requirements small {
-  color: #6b7280;
-  font-size: 0.75rem;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  cursor: pointer;
-  font-size: 0.875rem;
-  line-height: 1.4;
-}
-
-.checkbox-label input[type="checkbox"] {
-  margin: 0;
-  width: auto;
-}
-
-.checkbox-label a {
-  color: #d4af37;
-  text-decoration: none;
-}
-
-.checkbox-label a:hover {
-  text-decoration: underline;
-}
-
-.signup-button {
-  width: 100%;
-  background: #d4af37;
-  color: white;
-  border: none;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.signup-button:hover:not(:disabled) {
-  background: #b8931f;
-  transform: translateY(-1px);
-}
-
-.signup-button:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.signup-footer {
-  text-align: center;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.login-link {
-  color: #d4af37;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.login-link:hover {
-  text-decoration: underline;
-}
-
-.btn {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  border: none;
-}
-
-.btn-primary {
-  background: #d4af37;
-  color: white;
-}
-
-.btn-primary:hover {
-  background: #b8931f;
-  transform: translateY(-1px);
-}
-
-/* Mobile Styles */
-@media (max-width: 768px) {
-  .signup-page {
-    padding: 1rem;
-  }
-  
-  .signup-container {
-    padding: 2rem;
-  }
-  
-  .invitation-info {
-    flex-direction: column;
-  }
-}
-</style>

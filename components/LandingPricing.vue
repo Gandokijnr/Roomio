@@ -3,12 +3,15 @@
     <div class="container mx-auto px-6">
       <!-- Section Header -->
       <div class="text-center mb-12">
-        <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+        <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
           Simple, Transparent Pricing
         </h2>
-        <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-          Choose the plan that fits your hotel size. All plans include 24/7 support, 
-          free setup, and a 30-day money-back guarantee.
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-2">
+          Choose the plan that fits your hotel size. All plans include 24/7 support 
+          and free white-glove onboarding.
+        </p>
+        <p class="text-sm font-semibold text-yellow-700">
+          14-day free trial. No credit card required to start.
         </p>
       </div>
       
@@ -159,7 +162,7 @@
       </div>
       
       <!-- Access Request Section -->
-      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-3xl p-8 lg:p-12 mb-16 text-white">
+      <div id="request-access" class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-3xl p-8 lg:p-12 mb-16 text-white">
         <div class="text-center mb-8">
           <h3 class="text-3xl lg:text-4xl font-bold mb-4">
             Request Exclusive Access
@@ -292,7 +295,7 @@ const pricingPlans = [
       'Mobile app access'
     ],
     buttonText: 'Start Free Trial',
-    guarantee: '30-day money-back guarantee',
+    guarantee: '14-day free trial. No credit card required to start.',
     featured: false
   },
   {
@@ -356,7 +359,7 @@ const faqs = [
   {
     id: 4,
     question: 'What if I need to cancel?',
-    answer: 'You can cancel anytime with 30 days notice. We also offer a 30-day money-back guarantee for new customers.'
+    answer: 'You can cancel your trial at any time. Payment is only required after your 14-day free trial ends to unlock your first paid month.'
   },
   {
     id: 5,
@@ -375,9 +378,10 @@ const togglePricing = () => {
 }
 
 const selectPlan = (plan: any) => {
-  // Handle plan selection
-  console.log('Selected plan:', plan.name)
-  // You could redirect to a signup page or open a modal here
+  const element = document.getElementById('request-access')
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' })
+  }
 }
 
 const contactSales = () => {

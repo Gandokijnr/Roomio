@@ -8,7 +8,7 @@
     <div class="relative z-10 w-full max-w-md">
       <div class="rounded-xl border border-black/5 bg-white/90 backdrop-blur-md shadow-xl p-8 md:p-10">
         <div class="text-center mb-8">
-          <h1 class="text-3xl font-semibold text-neutral-900 mb-2">🏨 Roomio</h1>
+          <h1 class="text-3xl font-semibold text-neutral-900 mb-2">Roomio</h1>
           <p class="text-sm text-neutral-600">Sign in to your account</p>
         </div>
 

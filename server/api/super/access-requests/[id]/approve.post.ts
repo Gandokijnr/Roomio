@@ -49,6 +49,9 @@ export default defineEventHandler(async (event) => {
     .eq('demo_request_id', request.id)
     .maybeSingle()
 
+  const trialEndDate = new Date()
+  trialEndDate.setDate(trialEndDate.getDate() + 14)
+
   const tenantPayload = {
     name: request.hotel_name,
     primary_contact_name: request.name,
@@ -56,7 +59,8 @@ export default defineEventHandler(async (event) => {
     status: 'trial',
     subscription_plan: 'trial',
     demo_request_id: request.id,
-    date_joined: new Date().toISOString()
+    date_joined: new Date().toISOString(),
+    trial_end_date: trialEndDate.toISOString()
   }
 
   if (existingTenant) {

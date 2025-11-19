@@ -10,6 +10,15 @@
       <div class="grid lg:grid-cols-2 gap-16 items-center">
         
         <div class="text-center lg:text-left">
+          <div class="mb-4 flex justify-center lg:justify-start">
+            <p class="inline-flex items-center gap-2 text-sm text-gray-900 bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-full shadow-sm">
+              <span>Already using Roomio?</span>
+              <NuxtLink to="/login" class="font-semibold text-yellow-700 hover:text-yellow-800 hover:underline">
+                Log in
+              </NuxtLink>
+            </p>
+          </div>
+
           <div class="mb-10">
             <h1 class="text-5xl lg:text-6xl font-bold tracking-tighter leading-tight mb-6">
               Transform Your Hotel Operations with 
@@ -22,7 +31,7 @@
             </p>
           </div>
           
-          <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10">
+          <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-4">
             <button 
               @click="scrollToDemo" 
               class="group bg-yellow-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-yellow-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex items-center justify-center gap-2 shadow-yellow-200 shadow-lg"
@@ -37,6 +46,9 @@
               See Features
             </button>
           </div>
+          <p class="text-xs text-gray-500 mb-10 text-center lg:text-left">
+            14-day free trial. No credit card required to start. Cancel anytime during your trial.
+          </p>
           
           <div>
             <p class="text-gray-500 text-sm mb-4 text-center lg:text-left">Trusted by leading hotels worldwide</p>

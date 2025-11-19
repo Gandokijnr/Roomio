@@ -46,6 +46,43 @@
         <div class="metric-label">Staff</div>
         <div class="metric-value">{{ metrics.staff.staffCount }}</div>
       </div>
+      <div class="metric-card" v-if="billing">
+        <div class="metric-label">Billing & Subscription</div>
+        <div class="metric-value">
+          {{ billing.current_plan?.name || tenant?.subscription_plan || 'Unknown plan' }}
+        </div>
+        <div class="metric-sub">
+          Status: <span class="font-semibold">{{ billing.status }}</span>
+        </div>
+        <div class="metric-sub" v-if="billing.trial_end_date">
+          Trial ended: {{ formatDate(billing.trial_end_date) }}
+        </div>
+        <div class="metric-sub" v-if="billing.subscription_start_date && billing.subscription_end_date">
+          Current period:
+          {{ formatDate(billing.subscription_start_date) }}
+          –
+          {{ formatDate(billing.subscription_end_date) }}
+        </div>
+        <div class="metric-sub" v-if="billing.last_payment">
+          Last payment:
+          <span :class="billing.last_payment.event_type === 'PAYMENT_SUCCESS' ? 'text-emerald-300' : 'text-rose-300'">
+            {{ billing.last_payment.event_type === 'PAYMENT_SUCCESS' ? 'Success' : 'Failed' }}
+          </span>
+          on {{ formatDateTime(billing.last_payment.created_at) }}
+        </div>
+        <div class="metric-sub" v-if="billing.paystack_customer_code">
+          Paystack customer: {{ billing.paystack_customer_code }}
+        </div>
+        <div class="metric-sub">
+          <button
+            type="button"
+            class="btn subtle"
+            @click="openAuditLogForTenant"
+          >
+            View audit log for this tenant
+          </button>
+        </div>
+      </div>
     </section>
 
     <section class="activity-section" v-if="activity.length">
@@ -74,6 +111,7 @@
       <button class="btn danger" @click="openUpdateTenant('update_status')">
         {{ tenant.status === 'suspended' ? 'Activate Tenant' : 'Suspend Tenant' }}
       </button>
+      <button class="btn subtle" @click="copyInviteLink">Copy invite link</button>
       <button class="btn subtle" disabled>Impersonate (coming soon)</button>
     </section>
 
@@ -178,6 +216,7 @@ const authToken = ref<string | null>(null)
 const tenant = ref<Tenant | null>(null)
 const metrics = ref<TenantMetrics | null>(null)
 const activity = ref<ActivityEvent[]>([])
+const billing = ref<any | null>(null)
 
 const showUpdateModal = ref(false)
 const updateAction = ref<'update_status' | 'update_plan'>('update_status')
@@ -197,8 +236,9 @@ const tenantId = computed(() => route.params.id as string)
 const loadTenant = async () => {
   if (!authToken.value || !tenantId.value) return
   try {
-    const { data: res } = await $axios.get(`/api/super/tenants/${tenantId.value}`, {
-      headers: authHeaders.value
+    const { data: res } = await $axios.get('/api/super/tenant-detail', {
+      headers: authHeaders.value,
+      params: { id: tenantId.value }
     })
     if (res && res.success) {
       tenant.value = res.data as Tenant
@@ -215,8 +255,9 @@ const loadTenant = async () => {
 const loadMetrics = async () => {
   if (!authToken.value || !tenantId.value) return
   try {
-    const { data: res } = await $axios.get(`/api/super/tenants/${tenantId.value}/metrics`, {
-      headers: authHeaders.value
+    const { data: res } = await $axios.get('/api/super/tenant-metrics', {
+      headers: authHeaders.value,
+      params: { id: tenantId.value }
     })
     if (res && res.success) {
       metrics.value = res.data as TenantMetrics
@@ -226,12 +267,27 @@ const loadMetrics = async () => {
   }
 }
 
+const loadBilling = async () => {
+  if (!authToken.value || !tenantId.value) return
+  try {
+    const { data: res } = await $axios.get('/api/super/tenant-billing', {
+      headers: authHeaders.value,
+      params: { id: tenantId.value }
+    })
+    if (res && res.success) {
+      billing.value = res.data
+    }
+  } catch (error) {
+    console.error('Failed to load tenant billing overview:', error)
+  }
+}
+
 const loadActivity = async () => {
   if (!authToken.value || !tenantId.value) return
   try {
-    const { data: res } = await $axios.get(`/api/super/tenants/${tenantId.value}/activity`, {
+    const { data: res } = await $axios.get('/api/super/tenant-activity', {
       headers: authHeaders.value,
-      params: { limit: 50 }
+      params: { id: tenantId.value, limit: 50 }
     })
     if (res && res.success) {
       activity.value = res.data.events as ActivityEvent[]
@@ -279,6 +335,31 @@ const submitUpdate = async () => {
   }
 }
 
+const openAuditLogForTenant = () => {
+  if (!tenant.value) return
+  router.push({ path: '/admin/super', hash: '#activity', query: { tenant_id: tenant.value.id } })
+}
+
+const copyInviteLink = async () => {
+  if (!authToken.value || !tenantId.value) return
+  try {
+    const { data: res } = await $axios.get('/api/super/tenant-invite-link', {
+      headers: authHeaders.value,
+      params: { id: tenantId.value }
+    })
+
+    if (res && res.success && res.data?.invitationLink) {
+      await navigator.clipboard.writeText(res.data.invitationLink)
+      alert(`Invitation link copied to clipboard:\n\n${res.data.invitationLink}`)
+    } else {
+      alert('Could not retrieve invitation link for this tenant.')
+    }
+  } catch (error) {
+    console.error('Failed to copy invite link:', error)
+    alert('Failed to fetch invitation link. Make sure this tenant came from an approved access request.')
+  }
+}
+
 const formatDate = (value?: string) => {
   if (!value) return '-'
   return new Date(value).toLocaleDateString('en-US', {
@@ -308,6 +389,7 @@ onMounted(async () => {
   await Promise.all([
     loadTenant(),
     loadMetrics(),
+    loadBilling(),
     loadActivity()
   ])
 })

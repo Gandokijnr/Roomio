@@ -277,10 +277,10 @@ const loadDashboardData = async () => {
     }
 
     if (canManageInventory()) {
+      // Fetch active inventory items and derive low-stock items client-side
       inventoryPromise = $supabase
         .from('inventory_items')
         .select('*')
-        .lte('current_stock', 'minimum_stock')
         .eq('is_active', true)
         .limit(10)
       promises.push(inventoryPromise)
@@ -361,8 +361,15 @@ const loadDashboardData = async () => {
     if (canManageInventory()) {
       const inventoryRes = fbResults[fbResultIndex++]
       if (inventoryRes?.data) {
-        inventoryAlerts.value = inventoryRes.data
-        stats.value.lowStockItems = inventoryRes.data.length
+        // Derive low stock items (current_stock <= minimum_stock)
+        const lowStock = inventoryRes.data.filter((item: any) =>
+          typeof item.current_stock === 'number' &&
+          typeof item.minimum_stock === 'number' &&
+          item.current_stock <= item.minimum_stock
+        )
+
+        inventoryAlerts.value = lowStock
+        stats.value.lowStockItems = lowStock.length
       }
     }
   } catch (error) {

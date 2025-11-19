@@ -1,9 +1,9 @@
 import process from 'node:process';globalThis._importMeta_={url:import.meta.url,env:process.env};import { tmpdir } from 'node:os';
 import { Server } from 'node:http';
 import { resolve, dirname, join } from 'node:path';
-import nodeCrypto from 'node:crypto';
+import nodeCrypto, { createHmac } from 'node:crypto';
 import { parentPort, threadId } from 'node:worker_threads';
-import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, getQuery as getQuery$1, readBody, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, getRouterParams, getResponseStatusText } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/h3/dist/index.mjs';
+import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, getQuery as getQuery$1, readBody, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, getRouterParams, readRawBody, getResponseStatusText } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/h3/dist/index.mjs';
 import { escapeHtml } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/@vue/shared/dist/shared.cjs.js';
 import { createClient } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/@supabase/supabase-js/dist/main/index.js';
 import { createRenderer, getRequestDependencies, getPreloadLinks, getPrefetchLinks } from 'file://C:/Users/Gandoki/Desktop/Roomio/node_modules/vue-bundle-renderer/dist/runtime.mjs';
@@ -651,10 +651,13 @@ const _inlineRuntimeConfig = {
   "public": {
     "supabaseUrl": "https://dsmfhrfqygzqgazicgsv.supabase.co",
     "supabaseKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzbWZocmZxeWd6cWdhemljZ3N2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5NTk1NDMsImV4cCI6MjA3NjUzNTU0M30.o3xk0Iqw-84vrT0qNXV50x5HCoudEJH6HyWddFCpGks",
+    "paystackPublicKey": "pk_live_aa389ce291c23d75050a44c1d9704de0ef1926fa",
     "authBackgroundUrl": "https://www.freepik.com/free-photo/sunset-pool_1035192.htm#fromView=search&page=1&position=1&uuid=1ec59f22-b43d-4db9-97cb-7a6b457d1195&query=hotel+view"
   },
   "supabaseUrl": "https://dsmfhrfqygzqgazicgsv.supabase.co",
-  "supabaseServiceKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzbWZocmZxeWd6cWdhemljZ3N2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk1OTU0MywiZXhwIjoyMDc2NTM1NTQzfQ.mZm5GqPLalXkUMMaMm62jfoWmZgeJzTlfYMLhk2wKUs"
+  "supabaseServiceKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzbWZocmZxeWd6cWdhemljZ3N2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk1OTU0MywiZXhwIjoyMDc2NTM1NTQzfQ.mZm5GqPLalXkUMMaMm62jfoWmZgeJzTlfYMLhk2wKUs",
+  "paystackSecretKey": "sk_live_bb783c79c08049e59aeb3adf501b8de734b1fdf4",
+  "paystackWebhookSecret": "http://localhost:3000/api/paystack/webhook"
 };
 const envOptions = {
   prefix: "NITRO_",
@@ -1189,6 +1192,80 @@ const _pXuHUk = eventHandler((event) => {
   return readAsset(id);
 });
 
+const logPlatformAuditEvent = async (params) => {
+  const config = useRuntimeConfig();
+  if (!config.supabaseUrl || !config.supabaseServiceKey) {
+    console.error("Missing Supabase config for audit logging");
+    return;
+  }
+  try {
+    const supabase = createClient(config.supabaseUrl, config.supabaseServiceKey);
+    await supabase.from("platform_audit_events").insert({
+      event_type: params.eventType,
+      tenant_id: params.tenantId || null,
+      user_id: params.userId || null,
+      details: params.details || {},
+      created_at: (/* @__PURE__ */ new Date()).toISOString()
+    });
+  } catch (error) {
+    console.error("Failed to write platform audit event", error);
+  }
+};
+
+const _oo1e2q = defineEventHandler(async (event) => {
+  const req = event.node.req;
+  const url = req.url || "";
+  if (url.startsWith("/api/super") || url.startsWith("/api/paystack") || url.startsWith("/webhooks/paystack") || url.startsWith("/api/auth")) {
+    return;
+  }
+  const authHeader = req.headers["authorization"] || req.headers["Authorization"];
+  if (!authHeader || Array.isArray(authHeader)) {
+    return;
+  }
+  const [scheme, token] = String(authHeader).split(" ");
+  if (scheme !== "Bearer" || !token) {
+    return;
+  }
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const {
+    data: { user },
+    error
+  } = await supabase.auth.getUser(token);
+  if (error || !user) {
+    return;
+  }
+  const { data: profile } = await supabase.from("profiles").select("id, tenant_id, is_super_admin").eq("id", user.id).maybeSingle();
+  if (!profile || profile.is_super_admin) {
+    return;
+  }
+  if (!profile.tenant_id) {
+    return;
+  }
+  const { data: tenant } = await supabase.from("tenants").select("id, status").eq("id", profile.tenant_id).maybeSingle();
+  if (!tenant) {
+    return;
+  }
+  if (tenant.status === "billing_hold") {
+    await logPlatformAuditEvent({
+      eventType: "BLOCKED_ACCESS",
+      tenantId: tenant.id,
+      userId: user.id,
+      details: {
+        route: url,
+        method: req.method
+      }
+    });
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Billing required to continue using Roomio"
+    });
+  }
+});
+
 const VueResolver = (_, value) => {
   return isRef(value) ? toValue(value) : value;
 };
@@ -1513,6 +1590,14 @@ async function getIslandContext(event) {
   return ctx;
 }
 
+const _lazy_sGlCL7 = () => Promise.resolve().then(function () { return cardSetup_post$1; });
+const _lazy_tv_JGK = () => Promise.resolve().then(function () { return history_get$1; });
+const _lazy__509po = () => Promise.resolve().then(function () { return initialize_post$1; });
+const _lazy_j4saOx = () => Promise.resolve().then(function () { return paystackVerify_post$1; });
+const _lazy_vbPXaq = () => Promise.resolve().then(function () { return selectPlan_post$1; });
+const _lazy_FbRTin = () => Promise.resolve().then(function () { return status_get$1; });
+const _lazy_qo_0ii = () => Promise.resolve().then(function () { return subscriptionRenewal_post$1; });
+const _lazy_kRnVwV = () => Promise.resolve().then(function () { return trialExpiry_post$1; });
 const _lazy_jQDxER = () => Promise.resolve().then(function () { return demoRequest_post$1; });
 const _lazy_dlbk4e = () => Promise.resolve().then(function () { return categories_get$1; });
 const _lazy_Cegxv9 = () => Promise.resolve().then(function () { return items_get$1; });
@@ -1520,6 +1605,7 @@ const _lazy_A9_iSs = () => Promise.resolve().then(function () { return items_pos
 const _lazy_l2sd9W = () => Promise.resolve().then(function () { return _id__patch$7; });
 const _lazy_bTR2Zu = () => Promise.resolve().then(function () { return transactions_get$1; });
 const _lazy_I3J5Mu = () => Promise.resolve().then(function () { return transactions_post$1; });
+const _lazy_BCUYVu = () => Promise.resolve().then(function () { return webhook_post$1; });
 const _lazy__eAuJ8 = () => Promise.resolve().then(function () { return purchaseOrders_get$1; });
 const _lazy_33BGXH = () => Promise.resolve().then(function () { return purchaseOrders_post$1; });
 const _lazy_SOGLjd = () => Promise.resolve().then(function () { return approve_post$3; });
@@ -1538,18 +1624,37 @@ const _lazy_Bd5poG = () => Promise.resolve().then(function () { return sendInvit
 const _lazy_i5sGcG = () => Promise.resolve().then(function () { return accessRequests_get$1; });
 const _lazy_CbVvIe = () => Promise.resolve().then(function () { return approve_post$1; });
 const _lazy_DwAPGa = () => Promise.resolve().then(function () { return reject_post$1; });
-const _lazy_wtczLp = () => Promise.resolve().then(function () { return activity_get$1; });
+const _lazy_wtczLp = () => Promise.resolve().then(function () { return activity_get$3; });
+const _lazy_xFdCdc = () => Promise.resolve().then(function () { return billingMetrics_get$1; });
 const _lazy_c46E7X = () => Promise.resolve().then(function () { return dashboard_get$1; });
+const _lazy_LZqzQ7 = () => Promise.resolve().then(function () { return tenantActivity_get$1; });
+const _lazy_cU3iqJ = () => Promise.resolve().then(function () { return tenantBilling_get$1; });
+const _lazy_J9WZpM = () => Promise.resolve().then(function () { return tenantDetail_get$1; });
+const _lazy_JzDhEe = () => Promise.resolve().then(function () { return tenantInviteLink_get$1; });
+const _lazy_HMkQ5N = () => Promise.resolve().then(function () { return tenantMetrics_get$1; });
 const _lazy_wpoaUC = () => Promise.resolve().then(function () { return tenants_get$1; });
 const _lazy_d8uoMu = () => Promise.resolve().then(function () { return _id__activity_get$1; });
 const _lazy_WjX9cZ = () => Promise.resolve().then(function () { return _id__get$1; });
 const _lazy_78ocNa = () => Promise.resolve().then(function () { return _id__metrics_get$1; });
 const _lazy_9a40sP = () => Promise.resolve().then(function () { return _id__patch$1; });
+const _lazy_t1a3H8 = () => Promise.resolve().then(function () { return activity_get$1; });
+const _lazy_nl9sFX = () => Promise.resolve().then(function () { return billing_get$1; });
+const _lazy_xEgvE0 = () => Promise.resolve().then(function () { return metrics_get$1; });
 const _lazy_h3Sq2s = () => Promise.resolve().then(function () { return vendors_get$1; });
+const _lazy_GNAorI = () => Promise.resolve().then(function () { return paystack_post$1; });
 const _lazy_7Vc5ea = () => Promise.resolve().then(function () { return renderer$1; });
 
 const handlers = [
   { route: '', handler: _pXuHUk, lazy: false, middleware: true, method: undefined },
+  { route: '', handler: _oo1e2q, lazy: false, middleware: true, method: undefined },
+  { route: '/api/billing/card-setup', handler: _lazy_sGlCL7, lazy: true, middleware: false, method: "post" },
+  { route: '/api/billing/history', handler: _lazy_tv_JGK, lazy: true, middleware: false, method: "get" },
+  { route: '/api/billing/initialize', handler: _lazy__509po, lazy: true, middleware: false, method: "post" },
+  { route: '/api/billing/paystack-verify', handler: _lazy_j4saOx, lazy: true, middleware: false, method: "post" },
+  { route: '/api/billing/select-plan', handler: _lazy_vbPXaq, lazy: true, middleware: false, method: "post" },
+  { route: '/api/billing/status', handler: _lazy_FbRTin, lazy: true, middleware: false, method: "get" },
+  { route: '/api/cron/subscription-renewal', handler: _lazy_qo_0ii, lazy: true, middleware: false, method: "post" },
+  { route: '/api/cron/trial-expiry', handler: _lazy_kRnVwV, lazy: true, middleware: false, method: "post" },
   { route: '/api/demo-request', handler: _lazy_jQDxER, lazy: true, middleware: false, method: "post" },
   { route: '/api/inventory/categories', handler: _lazy_dlbk4e, lazy: true, middleware: false, method: "get" },
   { route: '/api/inventory/items', handler: _lazy_Cegxv9, lazy: true, middleware: false, method: "get" },
@@ -1557,6 +1662,7 @@ const handlers = [
   { route: '/api/inventory/items/:id', handler: _lazy_l2sd9W, lazy: true, middleware: false, method: "patch" },
   { route: '/api/inventory/transactions', handler: _lazy_bTR2Zu, lazy: true, middleware: false, method: "get" },
   { route: '/api/inventory/transactions', handler: _lazy_I3J5Mu, lazy: true, middleware: false, method: "post" },
+  { route: '/api/paystack/webhook', handler: _lazy_BCUYVu, lazy: true, middleware: false, method: "post" },
   { route: '/api/purchase-orders', handler: _lazy__eAuJ8, lazy: true, middleware: false, method: "get" },
   { route: '/api/purchase-orders', handler: _lazy_33BGXH, lazy: true, middleware: false, method: "post" },
   { route: '/api/purchase-orders/:id/approve', handler: _lazy_SOGLjd, lazy: true, middleware: false, method: "post" },
@@ -1576,13 +1682,23 @@ const handlers = [
   { route: '/api/super/access-requests/:id/approve', handler: _lazy_CbVvIe, lazy: true, middleware: false, method: "post" },
   { route: '/api/super/access-requests/:id/reject', handler: _lazy_DwAPGa, lazy: true, middleware: false, method: "post" },
   { route: '/api/super/activity', handler: _lazy_wtczLp, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/billing-metrics', handler: _lazy_xFdCdc, lazy: true, middleware: false, method: "get" },
   { route: '/api/super/dashboard', handler: _lazy_c46E7X, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/tenant-activity', handler: _lazy_LZqzQ7, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/tenant-billing', handler: _lazy_cU3iqJ, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/tenant-detail', handler: _lazy_J9WZpM, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/tenant-invite-link', handler: _lazy_JzDhEe, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/tenant-metrics', handler: _lazy_HMkQ5N, lazy: true, middleware: false, method: "get" },
   { route: '/api/super/tenants', handler: _lazy_wpoaUC, lazy: true, middleware: false, method: "get" },
   { route: '/api/super/tenants/:id.activity', handler: _lazy_d8uoMu, lazy: true, middleware: false, method: "get" },
   { route: '/api/super/tenants/:id', handler: _lazy_WjX9cZ, lazy: true, middleware: false, method: "get" },
   { route: '/api/super/tenants/:id.metrics', handler: _lazy_78ocNa, lazy: true, middleware: false, method: "get" },
   { route: '/api/super/tenants/:id', handler: _lazy_9a40sP, lazy: true, middleware: false, method: "patch" },
+  { route: '/api/super/tenants/:id/activity', handler: _lazy_t1a3H8, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/tenants/:id/billing', handler: _lazy_nl9sFX, lazy: true, middleware: false, method: "get" },
+  { route: '/api/super/tenants/:id/metrics', handler: _lazy_xEgvE0, lazy: true, middleware: false, method: "get" },
   { route: '/api/vendors', handler: _lazy_h3Sq2s, lazy: true, middleware: false, method: "get" },
+  { route: '/webhooks/paystack', handler: _lazy_GNAorI, lazy: true, middleware: false, method: "post" },
   { route: '/__nuxt_error', handler: _lazy_7Vc5ea, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_island/**', handler: _SxA8c9, lazy: false, middleware: false, method: undefined },
   { route: '/**', handler: _lazy_7Vc5ea, lazy: true, middleware: false, method: undefined }
@@ -1914,6 +2030,604 @@ const styles = {};
 const styles$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: styles
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const verifyTenantUser = async (event) => {
+  var _a, _b, _c, _d;
+  const authHeader = ((_b = (_a = event.node) == null ? void 0 : _a.req) == null ? void 0 : _b.headers["authorization"]) || ((_d = (_c = event.node) == null ? void 0 : _c.req) == null ? void 0 : _d.headers["Authorization"]);
+  if (!authHeader || Array.isArray(authHeader)) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Missing authorization header"
+    });
+  }
+  const [scheme, token] = authHeader.split(" ");
+  if (scheme !== "Bearer" || !token) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Invalid authorization header"
+    });
+  }
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const {
+    data: { user },
+    error
+  } = await supabase.auth.getUser(token);
+  if (error || !user) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Invalid or expired token"
+    });
+  }
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("id, tenant_id, is_super_admin").eq("id", user.id).maybeSingle();
+  if (profileError || !profile) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Profile not found"
+    });
+  }
+  if (!profile.tenant_id && !profile.is_super_admin) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Tenant access required"
+    });
+  }
+  return { user, profile };
+};
+
+const cardSetup_post = defineEventHandler(async (event) => {
+  var _a, _b, _c;
+  const { profile } = await verifyTenantUser(event);
+  const body = await readBody(event);
+  const { plan_id } = body || {};
+  if (!plan_id) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "plan_id is required"
+    });
+  }
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const tenantId = profile.tenant_id;
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "No tenant associated with this user"
+    });
+  }
+  const { data: tenant, error: tenantError } = await supabase.from("tenants").select("*").eq("id", tenantId).maybeSingle();
+  if (tenantError || !tenant) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: (tenantError == null ? void 0 : tenantError.message) || "Tenant not found"
+    });
+  }
+  if (!tenant.primary_contact_email) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant is missing primary contact email"
+    });
+  }
+  if (!["trial", "billing_hold", "active"].includes(tenant.status)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant is not eligible for card setup"
+    });
+  }
+  const { data: plan, error: planError } = await supabase.from("plans").select("*").eq("id", plan_id).eq("is_active", true).maybeSingle();
+  if (planError || !plan) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: (planError == null ? void 0 : planError.message) || "Plan not found or inactive"
+    });
+  }
+  const baseUrl = process.env.NUXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const headers = {
+    Authorization: `Bearer ${config.paystackSecretKey}`,
+    "Content-Type": "application/json"
+  };
+  const defaultAmountKobo = 100;
+  const amountKobo = Number(config.paystackCardSetupAmountKobo || defaultAmountKobo);
+  try {
+    const response = await $fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers,
+      body: {
+        email: tenant.primary_contact_email,
+        amount: amountKobo,
+        currency: plan.currency || "NGN",
+        metadata: {
+          tenant_id: tenant.id,
+          plan_id: plan.id,
+          purpose: "card_setup"
+        },
+        callback_url: `${baseUrl}/billing/verify`
+      }
+    });
+    if (!(response == null ? void 0 : response.status)) {
+      throw createError({
+        statusCode: 502,
+        statusMessage: "Failed to initialize Paystack card setup transaction"
+      });
+    }
+    return {
+      success: true,
+      data: {
+        authorization_url: (_a = response.data) == null ? void 0 : _a.authorization_url,
+        access_code: (_b = response.data) == null ? void 0 : _b.access_code,
+        reference: (_c = response.data) == null ? void 0 : _c.reference
+      }
+    };
+  } catch (error) {
+    console.error("Paystack card-setup initialize error:", error);
+    if ((error == null ? void 0 : error.statusCode) && (error == null ? void 0 : error.statusMessage)) {
+      throw error;
+    }
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to initialize card setup"
+    });
+  }
+});
+
+const cardSetup_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: cardSetup_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const history_get = defineEventHandler(async (event) => {
+  const { profile } = await verifyTenantUser(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const tenantId = profile.tenant_id;
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "No tenant associated with this user"
+    });
+  }
+  const { data, error } = await supabase.from("platform_audit_events").select("id, event_type, details, created_at").eq("tenant_id", tenantId).in("event_type", ["PAYMENT_SUCCESS", "PAYMENT_FAILURE"]).order("created_at", { ascending: false }).limit(20);
+  if (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message
+    });
+  }
+  return {
+    success: true,
+    data: {
+      events: data || []
+    }
+  };
+});
+
+const history_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: history_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const initialize_post = defineEventHandler(async (event) => {
+  var _a, _b, _c;
+  const { profile } = await verifyTenantUser(event);
+  const body = await readBody(event);
+  const { plan_id } = body || {};
+  if (!plan_id) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "plan_id is required"
+    });
+  }
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const tenantId = profile.tenant_id;
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "No tenant associated with this user"
+    });
+  }
+  const { data: tenant, error: tenantError } = await supabase.from("tenants").select("*").eq("id", tenantId).maybeSingle();
+  if (tenantError || !tenant) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: (tenantError == null ? void 0 : tenantError.message) || "Tenant not found"
+    });
+  }
+  if (!tenant.primary_contact_email) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant is missing primary contact email"
+    });
+  }
+  if (!["trial", "billing_hold"].includes(tenant.status)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant is not eligible for billing initialization"
+    });
+  }
+  const { data: plan, error: planError } = await supabase.from("plans").select("*").eq("id", plan_id).eq("is_active", true).maybeSingle();
+  if (planError || !plan) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: (planError == null ? void 0 : planError.message) || "Plan not found or inactive"
+    });
+  }
+  const baseUrl = process.env.NUXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const headers = {
+    Authorization: `Bearer ${config.paystackSecretKey}`,
+    "Content-Type": "application/json"
+  };
+  const amountKobo = Math.round(Number(plan.price_monthly) * 100);
+  try {
+    const response = await $fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers,
+      body: {
+        email: tenant.primary_contact_email,
+        amount: amountKobo,
+        currency: plan.currency || "NGN",
+        metadata: {
+          tenant_id: tenant.id,
+          plan_id: plan.id,
+          purpose: "subscription_charge"
+        },
+        callback_url: `${baseUrl}/billing/verify`
+      }
+    });
+    if (!(response == null ? void 0 : response.status)) {
+      throw createError({
+        statusCode: 502,
+        statusMessage: "Failed to initialize Paystack transaction"
+      });
+    }
+    return {
+      success: true,
+      data: {
+        authorization_url: (_a = response.data) == null ? void 0 : _a.authorization_url,
+        access_code: (_b = response.data) == null ? void 0 : _b.access_code,
+        reference: (_c = response.data) == null ? void 0 : _c.reference
+      }
+    };
+  } catch (error) {
+    console.error("Paystack initialize error:", error);
+    if ((error == null ? void 0 : error.statusCode) && (error == null ? void 0 : error.statusMessage)) {
+      throw error;
+    }
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to initialize payment"
+    });
+  }
+});
+
+const initialize_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: initialize_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const paystackVerify_post = defineEventHandler(async (event) => {
+  const { profile } = await verifyTenantUser(event);
+  const body = await readBody(event);
+  const { reference } = body || {};
+  if (!reference) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "reference is required"
+    });
+  }
+  const config = useRuntimeConfig();
+  const headers = {
+    Authorization: `Bearer ${config.paystackSecretKey}`,
+    "Content-Type": "application/json"
+  };
+  try {
+    const response = await $fetch(
+      `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
+      {
+        method: "GET",
+        headers
+      }
+    );
+    return {
+      success: true,
+      data: {
+        paystack: (response == null ? void 0 : response.data) || null,
+        tenant_id: profile.tenant_id || null
+      }
+    };
+  } catch (error) {
+    console.error("Paystack verify error:", error);
+    if ((error == null ? void 0 : error.statusCode) && (error == null ? void 0 : error.statusMessage)) {
+      throw error;
+    }
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to verify payment status"
+    });
+  }
+});
+
+const paystackVerify_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: paystackVerify_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const selectPlan_post = defineEventHandler(async (event) => {
+  const { profile } = await verifyTenantUser(event);
+  const body = await readBody(event);
+  const { plan_id } = body || {};
+  if (!plan_id) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "plan_id is required"
+    });
+  }
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const tenantId = profile.tenant_id;
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "No tenant associated with this user"
+    });
+  }
+  const { data: plan, error: planError } = await supabase.from("plans").select("id, code, name, price_monthly, currency, is_active").eq("id", plan_id).maybeSingle();
+  if (planError || !plan) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: (planError == null ? void 0 : planError.message) || "Plan not found"
+    });
+  }
+  if (!plan.is_active) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Plan is not active"
+    });
+  }
+  const { error: updateError } = await supabase.from("tenants").update({
+    current_plan_id: plan.id,
+    updated_at: (/* @__PURE__ */ new Date()).toISOString()
+  }).eq("id", tenantId);
+  if (updateError) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: updateError.message
+    });
+  }
+  await logPlatformAuditEvent({
+    eventType: "PLAN_SELECTED",
+    tenantId,
+    userId: profile.id,
+    details: {
+      plan_id: plan.id,
+      plan_code: plan.code,
+      plan_name: plan.name,
+      price_monthly: plan.price_monthly,
+      currency: plan.currency
+    }
+  });
+  return {
+    success: true,
+    data: {
+      plan
+    }
+  };
+});
+
+const selectPlan_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: selectPlan_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const status_get = defineEventHandler(async (event) => {
+  const { profile } = await verifyTenantUser(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const tenantId = profile.tenant_id;
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "No tenant associated with this user"
+    });
+  }
+  const { data: tenant, error } = await supabase.from("tenants").select("*").eq("id", tenantId).maybeSingle();
+  if (error || !tenant) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: (error == null ? void 0 : error.message) || "Tenant not found"
+    });
+  }
+  const updatedTenant = tenant;
+  const { data: plans, error: plansError } = await supabase.from("plans").select("*").eq("is_active", true).order("sort_order", { ascending: true });
+  if (plansError) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: plansError.message
+    });
+  }
+  const currentPlan = updatedTenant.current_plan_id ? (plans == null ? void 0 : plans.find((p) => p.id === updatedTenant.current_plan_id)) || null : null;
+  return {
+    success: true,
+    data: {
+      tenant: {
+        id: updatedTenant.id,
+        status: updatedTenant.status,
+        trial_end_date: updatedTenant.trial_end_date,
+        subscription_end_date: updatedTenant.subscription_end_date,
+        current_plan_id: updatedTenant.current_plan_id
+      },
+      current_plan: currentPlan,
+      available_plans: plans || []
+    }
+  };
+});
+
+const status_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: status_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const subscriptionRenewal_post = defineEventHandler(async () => {
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const now = /* @__PURE__ */ new Date();
+  now.toISOString();
+  const { data: tenants, error } = await supabase.from("tenants").select("id, status, subscription_end_date, paystack_authorization_code, paystack_customer_code, current_plan_id, primary_contact_email, billing_retry_attempts, billing_retry_last_attempt").not("paystack_authorization_code", "is", null);
+  if (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message
+    });
+  }
+  const headers = {
+    Authorization: `Bearer ${config.paystackSecretKey}`,
+    "Content-Type": "application/json"
+  };
+  const processed = [];
+  const failed = [];
+  if (!tenants || tenants.length === 0) {
+    return {
+      success: true,
+      data: {
+        processed: 0,
+        failed: 0
+      }
+    };
+  }
+  for (const tenant of tenants) {
+    const subscriptionEnd = tenant.subscription_end_date ? new Date(tenant.subscription_end_date) : null;
+    const attempts = tenant.billing_retry_attempts || 0;
+    const lastAttempt = tenant.billing_retry_last_attempt ? new Date(tenant.billing_retry_last_attempt) : null;
+    let shouldCharge = false;
+    if (tenant.status === "active" && subscriptionEnd && subscriptionEnd <= now) {
+      shouldCharge = true;
+    }
+    const retryWindowMs = 24 * 60 * 60 * 1e3;
+    if (tenant.status === "billing_hold" && attempts < 3) {
+      if (!lastAttempt || now.getTime() - lastAttempt.getTime() >= retryWindowMs) {
+        shouldCharge = true;
+      }
+    }
+    if (!shouldCharge) {
+      continue;
+    }
+    if (!tenant.current_plan_id || !tenant.primary_contact_email) {
+      continue;
+    }
+    const { data: plan, error: planError } = await supabase.from("plans").select("*").eq("id", tenant.current_plan_id).maybeSingle();
+    if (planError || !plan) {
+      continue;
+    }
+    const amountKobo = Math.round(Number(plan.price_monthly) * 100);
+    try {
+      await $fetch("https://api.paystack.co/transaction/charge_authorization", {
+        method: "POST",
+        headers,
+        body: {
+          authorization_code: tenant.paystack_authorization_code,
+          email: tenant.primary_contact_email,
+          amount: amountKobo,
+          currency: plan.currency || "NGN",
+          metadata: {
+            tenant_id: tenant.id,
+            plan_id: plan.id,
+            purpose: "subscription_charge"
+          }
+        }
+      });
+      processed.push(tenant.id);
+    } catch (e) {
+      console.error("Failed to trigger subscription renewal charge", {
+        tenantId: tenant.id,
+        error: e
+      });
+      failed.push(tenant.id);
+    }
+  }
+  return {
+    success: true,
+    data: {
+      processed: processed.length,
+      failed: failed.length
+    }
+  };
+});
+
+const subscriptionRenewal_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: subscriptionRenewal_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const trialExpiry_post = defineEventHandler(async () => {
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const now = /* @__PURE__ */ new Date();
+  const cutoffIso = now.toISOString();
+  const { data: tenants, error } = await supabase.from("tenants").select("id, status, trial_end_date").eq("status", "trial").lt("trial_end_date", cutoffIso);
+  if (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message
+    });
+  }
+  const expired = tenants || [];
+  for (const tenant of expired) {
+    const { error: updateError } = await supabase.from("tenants").update({
+      status: "billing_hold",
+      updated_at: now.toISOString()
+    }).eq("id", tenant.id);
+    if (updateError) {
+      console.error("Failed to update tenant to billing_hold for trial expiry", {
+        tenantId: tenant.id,
+        error: updateError
+      });
+      continue;
+    }
+    await logPlatformAuditEvent({
+      eventType: "TRIAL_EXPIRED",
+      tenantId: tenant.id,
+      details: {
+        trial_end_date: tenant.trial_end_date,
+        processed_at: now.toISOString()
+      }
+    });
+  }
+  return {
+    success: true,
+    data: {
+      processed: expired.length
+    }
+  };
+});
+
+const trialExpiry_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: trialExpiry_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const demoRequest_post = defineEventHandler(async (event) => {
@@ -2394,6 +3108,210 @@ const transactions_post = defineEventHandler(async (event) => {
 const transactions_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: transactions_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const handlePaystackChargeSuccess = async (data) => {
+  var _a, _b, _c;
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const metadata = data.metadata || {};
+  const tenantId = metadata.tenant_id;
+  const planId = metadata.plan_id;
+  const purpose = metadata.purpose;
+  if (!tenantId || !planId) {
+    console.error("Paystack success missing tenant_id or plan_id in metadata");
+    return;
+  }
+  const now = /* @__PURE__ */ new Date();
+  const nowIso = now.toISOString();
+  if (purpose === "card_setup") {
+    const updates2 = {
+      current_plan_id: planId,
+      updated_at: nowIso,
+      billing_retry_attempts: 0,
+      billing_retry_last_attempt: null
+    };
+    if ((_a = data.authorization) == null ? void 0 : _a.authorization_code) {
+      updates2.paystack_authorization_code = data.authorization.authorization_code;
+    }
+    if ((_b = data.customer) == null ? void 0 : _b.customer_code) {
+      updates2.paystack_customer_code = data.customer.customer_code;
+    }
+    const { error: updateError2 } = await supabase.from("tenants").update(updates2).eq("id", tenantId);
+    if (updateError2) {
+      console.error("Failed to update tenant on Paystack card setup success:", updateError2);
+    }
+    await logPlatformAuditEvent({
+      eventType: "CARD_SETUP_SUCCESS",
+      tenantId,
+      details: {
+        gateway: "paystack",
+        plan_id: planId,
+        amount: data.amount,
+        currency: data.currency,
+        reference: data.reference,
+        status: data.status
+      }
+    });
+    return;
+  }
+  const updates = {
+    status: "active",
+    current_plan_id: planId,
+    subscription_end_date: new Date(
+      Date.now() + 30 * 24 * 60 * 60 * 1e3
+    ).toISOString(),
+    updated_at: nowIso,
+    billing_retry_attempts: 0,
+    billing_retry_last_attempt: nowIso
+  };
+  if ((_c = data.customer) == null ? void 0 : _c.customer_code) {
+    updates.paystack_customer_code = data.customer.customer_code;
+  }
+  const { error: updateError } = await supabase.from("tenants").update(updates).eq("id", tenantId);
+  if (updateError) {
+    console.error("Failed to update tenant on Paystack success:", updateError);
+  }
+  await logPlatformAuditEvent({
+    eventType: "PAYMENT_SUCCESS",
+    tenantId,
+    details: {
+      gateway: "paystack",
+      plan_id: planId,
+      amount: data.amount,
+      currency: data.currency,
+      reference: data.reference,
+      status: data.status
+    }
+  });
+};
+const handlePaystackChargeFailure = async (data) => {
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const metadata = data.metadata || {};
+  const tenantId = metadata.tenant_id;
+  const purpose = metadata.purpose;
+  if (!tenantId) {
+    console.error("Paystack failure missing tenant_id in metadata");
+    return;
+  }
+  if (purpose === "card_setup") {
+    await logPlatformAuditEvent({
+      eventType: "CARD_SETUP_FAILURE",
+      tenantId,
+      details: {
+        gateway: "paystack",
+        reference: data.reference,
+        amount: data.amount,
+        currency: data.currency,
+        status: data.status,
+        reason: data.gateway_response
+      }
+    });
+    return;
+  }
+  const now = /* @__PURE__ */ new Date();
+  const nowIso = now.toISOString();
+  const windowMs = 72 * 60 * 60 * 1e3;
+  const { data: tenant, error: tenantError } = await supabase.from("tenants").select("id, status, billing_retry_attempts, billing_retry_last_attempt").eq("id", tenantId).maybeSingle();
+  if (tenantError || !tenant) {
+    console.error("Failed to load tenant for Paystack failure handling", {
+      tenantId,
+      error: tenantError
+    });
+  }
+  let attempts = (tenant == null ? void 0 : tenant.billing_retry_attempts) || 0;
+  const lastAttempt = (tenant == null ? void 0 : tenant.billing_retry_last_attempt) ? new Date(tenant.billing_retry_last_attempt) : null;
+  if (lastAttempt && now.getTime() - lastAttempt.getTime() > windowMs) {
+    attempts = 0;
+  }
+  attempts += 1;
+  let newStatus = "billing_hold";
+  if (attempts >= 3) {
+    newStatus = "suspended";
+  }
+  const { error: updateError } = await supabase.from("tenants").update({
+    status: newStatus,
+    billing_retry_attempts: attempts,
+    billing_retry_last_attempt: nowIso,
+    updated_at: nowIso
+  }).eq("id", tenantId);
+  if (updateError) {
+    console.error("Failed to update tenant on Paystack failure:", updateError);
+  }
+  await logPlatformAuditEvent({
+    eventType: "PAYMENT_FAILURE",
+    tenantId,
+    details: {
+      gateway: "paystack",
+      reference: data.reference,
+      amount: data.amount,
+      currency: data.currency,
+      status: data.status,
+      reason: data.gateway_response,
+      billing_status: newStatus,
+      retry_attempts: attempts
+    }
+  });
+};
+
+const webhook_post = defineEventHandler(async (event) => {
+  const rawBody = await readRawBody(event);
+  if (!rawBody) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Empty webhook body"
+    });
+  }
+  const config = useRuntimeConfig();
+  const signature = event.node.req.headers["x-paystack-signature"] || event.node.req.headers["X-Paystack-Signature"];
+  if (!signature || Array.isArray(signature)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Missing Paystack signature"
+    });
+  }
+  if (!config.paystackWebhookSecret) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Missing Paystack webhook secret configuration"
+    });
+  }
+  const hash = createHmac("sha512", config.paystackWebhookSecret).update(rawBody).digest("hex");
+  if (hash !== signature) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Invalid webhook signature"
+    });
+  }
+  let payload;
+  try {
+    payload = JSON.parse(rawBody.toString());
+  } catch (error) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Invalid webhook JSON"
+    });
+  }
+  const eventName = payload.event;
+  const data = payload.data || {};
+  if (eventName === "charge.success" && data.status === "success") {
+    await handlePaystackChargeSuccess(data);
+  } else if (eventName === "charge.failed") {
+    await handlePaystackChargeFailure(data);
+  }
+  return { success: true };
+});
+
+const webhook_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: webhook_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const purchaseOrders_get = defineEventHandler(async (event) => {
@@ -4098,6 +5016,8 @@ const approve_post = defineEventHandler(async (event) => {
     });
   }
   const { data: existingTenant } = await supabase.from("tenants").select("id").eq("demo_request_id", request.id).maybeSingle();
+  const trialEndDate = /* @__PURE__ */ new Date();
+  trialEndDate.setDate(trialEndDate.getDate() + 14);
   const tenantPayload = {
     name: request.hotel_name,
     primary_contact_name: request.name,
@@ -4105,7 +5025,8 @@ const approve_post = defineEventHandler(async (event) => {
     status: "trial",
     subscription_plan: "trial",
     demo_request_id: request.id,
-    date_joined: (/* @__PURE__ */ new Date()).toISOString()
+    date_joined: (/* @__PURE__ */ new Date()).toISOString(),
+    trial_end_date: trialEndDate.toISOString()
   };
   if (existingTenant) {
     await supabase.from("tenants").update(tenantPayload).eq("id", existingTenant.id);
@@ -4231,7 +5152,7 @@ const reject_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePrope
   default: reject_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const activity_get = defineEventHandler(async (event) => {
+const activity_get$2 = defineEventHandler(async (event) => {
   await verifySuperAdmin(event);
   const config = useRuntimeConfig();
   const supabase = createClient(
@@ -4284,9 +5205,56 @@ const activity_get = defineEventHandler(async (event) => {
   };
 });
 
-const activity_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const activity_get$3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: activity_get
+  default: activity_get$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const billingMetrics_get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const now = /* @__PURE__ */ new Date();
+  const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1e3);
+  const cutoffIso = cutoff.toISOString();
+  const { count: billingHoldCount, error: tenantsError } = await supabase.from("tenants").select("id", { count: "exact", head: true }).eq("status", "billing_hold");
+  if (tenantsError) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: tenantsError.message
+    });
+  }
+  const { data: auditEvents, error: auditError } = await supabase.from("platform_audit_events").select("event_type, created_at").gte("created_at", cutoffIso).in("event_type", ["PAYMENT_SUCCESS", "PAYMENT_FAILURE"]);
+  if (auditError) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: auditError.message
+    });
+  }
+  const successes = (auditEvents || []).filter((e) => e.event_type === "PAYMENT_SUCCESS").length;
+  const failures = (auditEvents || []).filter((e) => e.event_type === "PAYMENT_FAILURE").length;
+  const total = successes + failures;
+  const successRate = total > 0 ? successes / total * 100 : 0;
+  return {
+    success: true,
+    data: {
+      billing_hold_count: billingHoldCount || 0,
+      payment_stats_24h: {
+        successes,
+        failures,
+        total,
+        success_rate: successRate
+      }
+    }
+  };
+});
+
+const billingMetrics_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: billingMetrics_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const dashboard_get = defineEventHandler(async (event) => {
@@ -4399,6 +5367,330 @@ const dashboard_get = defineEventHandler(async (event) => {
 const dashboard_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: dashboard_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const tenantActivity_get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const query = getQuery$1(event);
+  const id = query.id;
+  const tenantId = id && String(id);
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant ID is required"
+    });
+  }
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const { limit = 50 } = query;
+  const max = Math.min(parseInt(String(limit)) || 50, 200);
+  const { data, error } = await supabase.from("activity_logs").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(max);
+  if (error) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: error.message
+    });
+  }
+  const events = (data || []).map((log) => {
+    var _a;
+    let type = log.action;
+    let title = log.action;
+    if (log.entity_type === "tenant" && log.action === "tenant_status_updated") {
+      type = "tenant_status";
+      title = "Tenant status updated";
+    } else if (log.entity_type === "tenant" && log.action === "tenant_plan_updated") {
+      type = "tenant_plan";
+      title = "Tenant plan updated";
+    } else if (log.entity_type === "tenant" && log.action === "access_request_approved") {
+      type = "tenant_created";
+      title = "New tenant created";
+    } else if (log.entity_type === "system" && ((_a = log.action) == null ? void 0 : _a.toLowerCase().includes("error"))) {
+      type = "system_error";
+      title = "System error";
+    }
+    return {
+      id: log.id,
+      type,
+      title,
+      action: log.action,
+      entity_type: log.entity_type,
+      entity_id: log.entity_id,
+      metadata: log.metadata,
+      created_at: log.created_at
+    };
+  });
+  return {
+    success: true,
+    data: {
+      events
+    }
+  };
+});
+
+const tenantActivity_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: tenantActivity_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const tenantBilling_get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const query = getQuery$1(event);
+  const id = query.id;
+  const tenantId = id && String(id);
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant ID is required"
+    });
+  }
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const { data: tenant, error: tenantError } = await supabase.from("tenants").select("id, name, status, trial_end_date, subscription_end_date, paystack_customer_code, current_plan_id").eq("id", tenantId).maybeSingle();
+  if (tenantError || !tenant) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: (tenantError == null ? void 0 : tenantError.message) || "Tenant not found"
+    });
+  }
+  const { data: plan } = await supabase.from("plans").select("*").eq("id", tenant.current_plan_id).maybeSingle();
+  const { data: paymentEvents } = await supabase.from("platform_audit_events").select("id, event_type, details, created_at").eq("tenant_id", tenantId).in("event_type", ["PAYMENT_SUCCESS", "PAYMENT_FAILURE"]).order("created_at", { ascending: false }).limit(10);
+  const lastPayment = paymentEvents && paymentEvents.length > 0 ? paymentEvents[0] : null;
+  let subscriptionStartDate = null;
+  if (tenant.subscription_end_date) {
+    const end = new Date(tenant.subscription_end_date);
+    const start = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1e3);
+    subscriptionStartDate = start.toISOString();
+  }
+  return {
+    success: true,
+    data: {
+      tenant_id: tenant.id,
+      status: tenant.status,
+      trial_end_date: tenant.trial_end_date,
+      subscription_start_date: subscriptionStartDate,
+      subscription_end_date: tenant.subscription_end_date,
+      paystack_customer_code: tenant.paystack_customer_code,
+      current_plan: plan || null,
+      last_payment: lastPayment,
+      payment_events: paymentEvents || []
+    }
+  };
+});
+
+const tenantBilling_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: tenantBilling_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const tenantDetail_get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const query = getQuery$1(event);
+  const id = query.id;
+  const tenantId = id && String(id);
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant ID is required"
+    });
+  }
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const { data, error } = await supabase.from("tenants").select("*").eq("id", tenantId).maybeSingle();
+  if (error) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: error.message
+    });
+  }
+  if (!data) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: "Tenant not found"
+    });
+  }
+  return {
+    success: true,
+    data
+  };
+});
+
+const tenantDetail_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: tenantDetail_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const tenantInviteLink_get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const query = getQuery$1(event);
+  const tenantId = query.id;
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant ID is required"
+    });
+  }
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const { data: tenant, error: tenantError } = await supabase.from("tenants").select("id, demo_request_id").eq("id", tenantId).maybeSingle();
+  if (tenantError || !tenant) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: (tenantError == null ? void 0 : tenantError.message) || "Tenant not found"
+    });
+  }
+  if (!tenant.demo_request_id) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "No demo request associated with this tenant"
+    });
+  }
+  const { data: request, error: requestError } = await supabase.from("demo_requests").select("id, invitation_token, status, invitation_expires_at, email, name, hotel_name").eq("id", tenant.demo_request_id).maybeSingle();
+  if (requestError || !request) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: (requestError == null ? void 0 : requestError.message) || "Access request not found for this tenant"
+    });
+  }
+  if (!request.invitation_token) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "No invitation token generated for this request yet"
+    });
+  }
+  const baseUrl = process.env.NUXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const invitationLink = `${baseUrl}/signup?token=${request.invitation_token}`;
+  const now = /* @__PURE__ */ new Date();
+  const expiresAt = request.invitation_expires_at ? new Date(request.invitation_expires_at).toISOString() : null;
+  const isExpired = expiresAt ? new Date(expiresAt) < now : false;
+  return {
+    success: true,
+    data: {
+      invitationLink,
+      status: request.status,
+      expiresAt,
+      expired: isExpired,
+      email: request.email,
+      name: request.name,
+      hotelName: request.hotel_name
+    }
+  };
+});
+
+const tenantInviteLink_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: tenantInviteLink_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const tenantMetrics_get = defineEventHandler(async (event) => {
+  await verifySuperAdmin(event);
+  const query = getQuery$1(event);
+  const id = query.id;
+  const tenantId = id && String(id);
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant ID is required"
+    });
+  }
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const now = /* @__PURE__ */ new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1e3);
+  const thirtyDaysAgoDate = thirtyDaysAgo.toISOString().slice(0, 10);
+  const [
+    { count: totalRooms },
+    { count: activeRooms },
+    { data: reservationsRows, error: reservationsError },
+    { data: invoicesRows, error: invoicesError },
+    { count: fbOrdersLast30Days },
+    { count: staffCount }
+  ] = await Promise.all([
+    supabase.from("rooms").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId),
+    supabase.from("rooms").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId).in("status", ["available", "occupied", "reserved"]),
+    supabase.from("reservations").select("id, total_amount, check_in_date, check_out_date, status").eq("tenant_id", tenantId).gte("check_in_date", thirtyDaysAgoDate),
+    supabase.from("invoices").select("total_amount, issue_date").eq("tenant_id", tenantId).gte("issue_date", thirtyDaysAgoDate),
+    supabase.from("restaurant_orders").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("order_time", thirtyDaysAgo.toISOString()),
+    supabase.from("profiles").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId)
+  ]);
+  if (reservationsError) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: reservationsError.message
+    });
+  }
+  if (invoicesError) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: invoicesError.message
+    });
+  }
+  const reservations = reservationsRows || [];
+  const invoices = invoicesRows || [];
+  const reservationsLast30Days = reservations.length;
+  const revenueLast30Days = invoices.reduce((sum, invoice) => {
+    const amount = Number(invoice.total_amount) || 0;
+    return sum + amount;
+  }, 0);
+  let occupiedNights = 0;
+  const nowDateOnly = new Date(now.toISOString().slice(0, 10));
+  reservations.forEach((reservation) => {
+    if (!reservation.check_in_date || !reservation.check_out_date) return;
+    const checkIn = new Date(reservation.check_in_date);
+    const checkOut = new Date(reservation.check_out_date);
+    const rangeStart = checkIn < thirtyDaysAgo ? thirtyDaysAgo : checkIn;
+    const rangeEnd = checkOut > nowDateOnly ? nowDateOnly : checkOut;
+    const diffMs = rangeEnd.getTime() - rangeStart.getTime();
+    const nights = Math.max(0, Math.round(diffMs / (1e3 * 60 * 60 * 24)));
+    occupiedNights += nights;
+  });
+  const totalRoomNights = (totalRooms || 0) * 30;
+  const occupancyRate30Days = totalRoomNights > 0 ? occupiedNights / totalRoomNights : 0;
+  const reservationsRevenue = reservations.reduce((sum, reservation) => {
+    const amount = Number(reservation.total_amount) || 0;
+    return sum + amount;
+  }, 0);
+  const adr30Days = occupiedNights > 0 ? reservationsRevenue / occupiedNights : 0;
+  return {
+    success: true,
+    data: {
+      rooms: {
+        totalRooms: totalRooms || 0,
+        activeRooms: activeRooms || 0,
+        reservationsLast30Days,
+        occupancyRate30Days,
+        adr30Days
+      },
+      revenue: {
+        revenueLast30Days
+      },
+      fb: {
+        fbOrdersLast30Days: fbOrdersLast30Days || 0
+      },
+      staff: {
+        staffCount: staffCount || 0
+      }
+    }
+  };
+});
+
+const tenantMetrics_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: tenantMetrics_get
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const tenants_get = defineEventHandler(async (event) => {
@@ -4520,14 +5812,14 @@ const _id__get = defineEventHandler(async (event) => {
     config.supabaseServiceKey
   );
   const params = getRouterParams(event);
-  const id = params.id;
-  if (!id) {
+  const tenantId = params.id;
+  if (!tenantId) {
     throw createError({
       statusCode: 400,
       statusMessage: "Tenant ID is required"
     });
   }
-  const { data, error } = await supabase.from("tenants").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase.from("tenants").select("*").eq("id", tenantId).maybeSingle();
   if (error) {
     throw createError({
       statusCode: 400,
@@ -4728,6 +6020,223 @@ const _id__patch$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProper
   default: _id__patch
 }, Symbol.toStringTag, { value: 'Module' }));
 
+const activity_get = defineEventHandler(async (event) => {
+  var _a;
+  await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const tenantId = (_a = event.context.params) == null ? void 0 : _a.id;
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant ID is required"
+    });
+  }
+  const query = getQuery$1(event);
+  const { limit = 50 } = query;
+  const max = Math.min(parseInt(String(limit)) || 50, 200);
+  const { data, error } = await supabase.from("activity_logs").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(max);
+  if (error) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: error.message
+    });
+  }
+  const events = (data || []).map((log) => {
+    var _a2;
+    let type = log.action;
+    let title = log.action;
+    if (log.entity_type === "tenant" && log.action === "tenant_status_updated") {
+      type = "tenant_status";
+      title = "Tenant status updated";
+    } else if (log.entity_type === "tenant" && log.action === "tenant_plan_updated") {
+      type = "tenant_plan";
+      title = "Tenant plan updated";
+    } else if (log.entity_type === "tenant" && log.action === "access_request_approved") {
+      type = "tenant_created";
+      title = "New tenant created";
+    } else if (log.entity_type === "system" && ((_a2 = log.action) == null ? void 0 : _a2.toLowerCase().includes("error"))) {
+      type = "system_error";
+      title = "System error";
+    }
+    return {
+      id: log.id,
+      type,
+      title,
+      action: log.action,
+      entity_type: log.entity_type,
+      entity_id: log.entity_id,
+      metadata: log.metadata,
+      created_at: log.created_at
+    };
+  });
+  return {
+    success: true,
+    data: {
+      events
+    }
+  };
+});
+
+const activity_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: activity_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const billing_get = defineEventHandler(async (event) => {
+  var _a;
+  await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const tenantId = (_a = event.context.params) == null ? void 0 : _a.id;
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant id is required"
+    });
+  }
+  const { data: tenant, error: tenantError } = await supabase.from("tenants").select("id, name, status, trial_end_date, subscription_end_date, paystack_customer_code, current_plan_id").eq("id", tenantId).maybeSingle();
+  if (tenantError || !tenant) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: (tenantError == null ? void 0 : tenantError.message) || "Tenant not found"
+    });
+  }
+  const { data: plan } = await supabase.from("plans").select("*").eq("id", tenant.current_plan_id).maybeSingle();
+  const { data: paymentEvents } = await supabase.from("platform_audit_events").select("id, event_type, details, created_at").eq("tenant_id", tenantId).in("event_type", ["PAYMENT_SUCCESS", "PAYMENT_FAILURE"]).order("created_at", { ascending: false }).limit(10);
+  const lastPayment = paymentEvents && paymentEvents.length > 0 ? paymentEvents[0] : null;
+  let subscriptionStartDate = null;
+  if (tenant.subscription_end_date) {
+    const end = new Date(tenant.subscription_end_date);
+    const start = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1e3);
+    subscriptionStartDate = start.toISOString();
+  }
+  return {
+    success: true,
+    data: {
+      tenant_id: tenant.id,
+      status: tenant.status,
+      trial_end_date: tenant.trial_end_date,
+      subscription_start_date: subscriptionStartDate,
+      subscription_end_date: tenant.subscription_end_date,
+      paystack_customer_code: tenant.paystack_customer_code,
+      current_plan: plan || null,
+      last_payment: lastPayment,
+      payment_events: paymentEvents || []
+    }
+  };
+});
+
+const billing_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: billing_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const metrics_get = defineEventHandler(async (event) => {
+  var _a;
+  await verifySuperAdmin(event);
+  const config = useRuntimeConfig();
+  const supabase = createClient(
+    config.supabaseUrl,
+    config.supabaseServiceKey
+  );
+  const tenantId = (_a = event.context.params) == null ? void 0 : _a.id;
+  if (!tenantId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Tenant ID is required"
+    });
+  }
+  const now = /* @__PURE__ */ new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1e3);
+  const thirtyDaysAgoDate = thirtyDaysAgo.toISOString().slice(0, 10);
+  const [
+    { count: totalRooms },
+    { count: activeRooms },
+    { data: reservationsRows, error: reservationsError },
+    { data: invoicesRows, error: invoicesError },
+    { count: fbOrdersLast30Days },
+    { count: staffCount }
+  ] = await Promise.all([
+    supabase.from("rooms").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId),
+    supabase.from("rooms").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId).in("status", ["available", "occupied", "reserved"]),
+    supabase.from("reservations").select("id, total_amount, check_in_date, check_out_date, status").eq("tenant_id", tenantId).gte("check_in_date", thirtyDaysAgoDate),
+    supabase.from("invoices").select("total_amount, issue_date").eq("tenant_id", tenantId).gte("issue_date", thirtyDaysAgoDate),
+    supabase.from("restaurant_orders").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("order_time", thirtyDaysAgo.toISOString()),
+    supabase.from("profiles").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId)
+  ]);
+  if (reservationsError) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: reservationsError.message
+    });
+  }
+  if (invoicesError) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: invoicesError.message
+    });
+  }
+  const reservations = reservationsRows || [];
+  const invoices = invoicesRows || [];
+  const reservationsLast30Days = reservations.length;
+  const revenueLast30Days = invoices.reduce((sum, invoice) => {
+    const amount = Number(invoice.total_amount) || 0;
+    return sum + amount;
+  }, 0);
+  let occupiedNights = 0;
+  const nowDateOnly = new Date(now.toISOString().slice(0, 10));
+  reservations.forEach((reservation) => {
+    if (!reservation.check_in_date || !reservation.check_out_date) return;
+    const checkIn = new Date(reservation.check_in_date);
+    const checkOut = new Date(reservation.check_out_date);
+    const rangeStart = checkIn < thirtyDaysAgo ? thirtyDaysAgo : checkIn;
+    const rangeEnd = checkOut > nowDateOnly ? nowDateOnly : checkOut;
+    const diffMs = rangeEnd.getTime() - rangeStart.getTime();
+    const nights = Math.max(0, Math.round(diffMs / (1e3 * 60 * 60 * 24)));
+    occupiedNights += nights;
+  });
+  const totalRoomNights = (totalRooms || 0) * 30;
+  const occupancyRate30Days = totalRoomNights > 0 ? occupiedNights / totalRoomNights : 0;
+  const reservationsRevenue = reservations.reduce((sum, reservation) => {
+    const amount = Number(reservation.total_amount) || 0;
+    return sum + amount;
+  }, 0);
+  const adr30Days = occupiedNights > 0 ? reservationsRevenue / occupiedNights : 0;
+  return {
+    success: true,
+    data: {
+      rooms: {
+        totalRooms: totalRooms || 0,
+        activeRooms: activeRooms || 0,
+        reservationsLast30Days,
+        occupancyRate30Days,
+        adr30Days
+      },
+      revenue: {
+        revenueLast30Days
+      },
+      fb: {
+        fbOrdersLast30Days: fbOrdersLast30Days || 0
+      },
+      staff: {
+        staffCount: staffCount || 0
+      }
+    }
+  };
+});
+
+const metrics_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: metrics_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
 const vendors_get = defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig();
@@ -4757,6 +6266,59 @@ const vendors_get = defineEventHandler(async (event) => {
 const vendors_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: vendors_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const paystack_post = defineEventHandler(async (event) => {
+  const rawBody = await readRawBody(event);
+  if (!rawBody) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Empty webhook body"
+    });
+  }
+  const config = useRuntimeConfig();
+  const signature = event.node.req.headers["x-paystack-signature"] || event.node.req.headers["X-Paystack-Signature"];
+  if (!signature || Array.isArray(signature)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Missing Paystack signature"
+    });
+  }
+  if (!config.paystackWebhookSecret) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Missing Paystack webhook secret configuration"
+    });
+  }
+  const hash = createHmac("sha512", config.paystackWebhookSecret).update(rawBody).digest("hex");
+  if (hash !== signature) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Invalid webhook signature"
+    });
+  }
+  let payload;
+  try {
+    payload = JSON.parse(rawBody.toString());
+  } catch (error) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Invalid webhook JSON"
+    });
+  }
+  const eventName = payload.event;
+  const data = payload.data || {};
+  if (eventName === "charge.success" && data.status === "success") {
+    await handlePaystackChargeSuccess(data);
+  } else if (eventName === "charge.failed") {
+    await handlePaystackChargeFailure(data);
+  }
+  return { success: true };
+});
+
+const paystack_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: paystack_post
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function renderPayloadResponse(ssrContext) {

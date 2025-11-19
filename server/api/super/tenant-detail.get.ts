@@ -1,17 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
-import { verifySuperAdmin } from '../../../utils/verifySuperAdmin'
+import { verifySuperAdmin } from '../../utils/verifySuperAdmin'
 
 export default defineEventHandler(async (event) => {
   await verifySuperAdmin(event)
 
-  const config = useRuntimeConfig()
-  const supabase = createClient(
-    config.supabaseUrl!,
-    config.supabaseServiceKey!
-  )
-
-  const params = getRouterParams(event)
-  const tenantId = params.id as string | undefined
+  const query = getQuery(event)
+  const id = query.id as string | undefined
+  const tenantId = id && String(id)
 
   if (!tenantId) {
     throw createError({
@@ -19,6 +14,12 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Tenant ID is required'
     })
   }
+
+  const config = useRuntimeConfig()
+  const supabase = createClient(
+    config.supabaseUrl!,
+    config.supabaseServiceKey!
+  )
 
   const { data, error } = await supabase
     .from('tenants')
