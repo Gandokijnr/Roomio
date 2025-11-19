@@ -149,7 +149,7 @@
       </p>
       <button
         @click="showCreateModal = true"
-        class="px-4 py-2 text-white transition-colors bg-blue-500 rounded-md hover:bg-blue-600"
+        class="px-4 py-2 text-white transition-colors bg-yellow-500 rounded-md hover:bg-yellow-600"
       >
         Add First Guest
       </button>
