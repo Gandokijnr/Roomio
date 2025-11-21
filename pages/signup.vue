@@ -148,29 +148,26 @@ const isFormValid = computed(() => {
 
 const validateInvitation = async () => {
   const token = route.query.token as string
-  
+
   if (!token) {
     invitationValid.value = false
     return
   }
-  
+
   try {
-    const { data, error } = await $supabase
-      .from('demo_requests')
-      .select('*')
-      .eq('invitation_token', token)
-      .eq('status', 'approved')
-      .gte('invitation_expires_at', new Date().toISOString())
-      .single()
-    
-    if (error || !data) {
+    const response: any = await $fetch('/api/invitations/validate', {
+      method: 'GET',
+      query: { token }
+    })
+
+    if (!response || !response.valid || !response.data) {
       invitationValid.value = false
       return
     }
-    
+
     invitationValid.value = true
-    invitationData.value = data
-    signupForm.value.email = data.email
+    invitationData.value = response.data
+    signupForm.value.email = response.data.email
   } catch (error) {
     console.error('Invitation validation error:', error)
     invitationValid.value = false
