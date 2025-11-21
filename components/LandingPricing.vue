@@ -3,7 +3,7 @@
     <div class="container mx-auto px-6">
       <!-- Section Header -->
       <div class="text-center mb-12">
-        <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
+        <h2 class="text-3xl lg:text-5xl font-bold text-gray-900 mb-3">
           Simple, Transparent Pricing
         </h2>
         <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-2">
