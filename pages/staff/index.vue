@@ -191,7 +191,7 @@ definePageMeta({
 })
 
 const { $supabase } = useNuxtApp()
-const { hasRole } = useAuth()
+const { hasRole, profile } = useAuth()
 
 const loading = ref(true)
 const staff = ref<Profile[]>([])
@@ -211,10 +211,15 @@ const canManageStaff = computed(() => hasRole(['admin', 'manager']))
 const loadStaff = async () => {
   try {
     loading.value = true
-    const { data, error } = await $supabase
+    let query = $supabase
       .from('profiles')
       .select('*')
-      .order('full_name')
+
+    if (!profile.value?.is_super_admin && profile.value?.tenant_id) {
+      query = query.eq('tenant_id', profile.value.tenant_id)
+    }
+
+    const { data, error } = await query.order('full_name')
 
     if (error) throw error
     staff.value = data || []

@@ -23,6 +23,7 @@ export interface Profile {
   role: UserRole
   is_active: boolean
   is_super_admin: boolean
+  tenant_id?: string
   avatar_url?: string
   created_at: string
   updated_at: string

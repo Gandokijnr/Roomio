@@ -277,6 +277,7 @@ const props = defineProps<{ guest?: Guest | null }>()
 const emit = defineEmits<{ close: [], saved: [guestId: string] }>()
 
 const { $supabase } = useNuxtApp()
+const { profile } = useAuth()
 const loading = ref(false)
 const error = ref('')
 const activeTab = ref('basic')
@@ -396,7 +397,8 @@ const handleSubmit = async () => {
           loyalty_points: 0,
           total_stays: 0,
           total_spending: 0,
-          is_corporate: false
+          is_corporate: false,
+          tenant_id: profile.value?.tenant_id || null,
         }])
         .select('id')
         .single()
