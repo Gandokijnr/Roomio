@@ -1,25 +1,25 @@
 <template>
-  <div class="p-6 mx-auto max-w-7xl">
+  <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 py-6 sm:py-8">
     <!-- Header with Stats -->
-    <div class="flex items-start justify-between mb-8">
+    <div class="flex flex-col gap-4 mb-6 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="mb-2 text-3xl font-semibold text-gray-900">
+        <h1 class="text-2xl font-semibold text-neutral-900 sm:text-3xl mb-2">
           Guest Management
         </h1>
-        <p class="text-gray-600">
+        <p class="text-sm text-neutral-600 sm:text-base">
           Centralized database for all hotel guests and customer relationships
         </p>
       </div>
-      <div class="flex gap-4">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
         <button
           @click="exportGuests"
-          class="px-4 py-2 text-white transition-colors btn btn-secondary"
+          class="px-4 py-2 text-white transition-colors btn btn-secondary w-full sm:w-auto"
         >
           📊 Export Data
         </button>
         <button
           @click="showCreateModal = true"
-          class="px-4 py-2 text-white transition-colors btn btn-primary"
+          class="px-4 py-2 text-white transition-colors btn btn-primary w-full sm:w-auto"
         >
           + Add Guest
         </button>
@@ -27,7 +27,7 @@
     </div>
 
     <!-- Guest Statistics -->
-    <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-4">
+    <div class="grid grid-cols-1 gap-2 mb-8 md:grid-cols-4">
       <div class="p-6 bg-white border border-gray-200 rounded-lg">
         <div class="flex items-center justify-between">
           <div>
@@ -522,86 +522,3 @@ onMounted(() => {
   loadGuests();
 });
 </script>
-
-<style scoped>
-.guests-page {
-  max-width: 1400px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--spacing-xl);
-}
-
-.page-header h1 {
-  font-size: 2rem;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-xs);
-}
-
-.page-header p {
-  color: var(--neutral-600);
-  font-size: 0.938rem;
-}
-
-.filters-section {
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
-}
-
-.loading,
-.empty-state {
-  text-align: center;
-  padding: var(--spacing-2xl);
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: var(--spacing-md);
-}
-
-.guests-table {
-  padding: 0;
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-thead {
-  background: var(--neutral-50);
-  border-bottom: 2px solid var(--neutral-200);
-}
-
-th {
-  padding: var(--spacing-md);
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.813rem;
-  color: var(--neutral-700);
-  text-transform: uppercase;
-}
-
-tbody tr {
-  border-bottom: 1px solid var(--neutral-200);
-}
-
-tbody tr:hover {
-  background: var(--neutral-50);
-}
-
-td {
-  padding: var(--spacing-md);
-  font-size: 0.875rem;
-  color: var(--neutral-700);
-}
-
-.guest-name {
-  font-weight: 600;
-  color: var(--neutral-900);
-}
-</style>

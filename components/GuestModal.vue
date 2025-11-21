@@ -1,9 +1,22 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')">
-    <div class="modal-content card">
-      <div class="modal-header">
-        <h2>{{ guest ? 'Guest Profile' : 'Add New Guest' }}</h2>
-        <button @click="$emit('close')" class="btn-close">×</button>
+  <div
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 sm:px-6 py-4 sm:py-8"
+    @click.self="$emit('close')"
+  >
+    <div
+      class="card w-full max-w-4xl max-h-[90vh] overflow-y-auto p-0 sm:rounded-xl"
+    >
+      <div class="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-neutral-200">
+        <h2 class="text-lg font-semibold text-neutral-900 sm:text-xl">
+          {{ guest ? 'Guest Profile' : 'Add New Guest' }}
+        </h2>
+        <button
+          @click="$emit('close')"
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-700 text-xl leading-none hover:bg-neutral-200 transition"
+        >
+          ×
+        </button>
       </div>
 
       <!-- Guest Stats (for existing guests) -->
