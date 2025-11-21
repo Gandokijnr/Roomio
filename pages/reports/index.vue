@@ -1,33 +1,45 @@
 <template>
-  <div class="reports-page">
-    <div class="page-header">
-      <h1>Reports & Analytics</h1>
-      <p>View hotel performance metrics and reports</p>
+  <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div class="mb-6 sm:mb-8">
+      <h1 class="text-2xl sm:text-3xl font-semibold text-neutral-900">
+        Reports &amp; Analytics
+      </h1>
+      <p class="mt-1 text-sm text-neutral-600">
+        View hotel performance metrics and reports
+      </p>
     </div>
 
-    <div class="reports-grid">
-      <div class="report-card card">
-        <h3>Revenue Report</h3>
-        <div class="report-value">₦{{ reports.totalRevenue.toFixed(2) }}</div>
-        <p>Total revenue from bookings</p>
+    <div class="grid gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div class="card p-5 sm:p-6 text-center">
+        <h3 class="text-base font-semibold text-neutral-900 mb-2">Revenue Report</h3>
+        <div class="text-3xl font-bold text-primary-600 mb-1">
+          ₦{{ reports.totalRevenue.toFixed(2) }}
+        </div>
+        <p class="text-xs text-neutral-600">Total revenue from bookings</p>
       </div>
 
-      <div class="report-card card">
-        <h3>Occupancy Rate</h3>
-        <div class="report-value">{{ reports.occupancyRate }}%</div>
-        <p>Average room occupancy</p>
+      <div class="card p-5 sm:p-6 text-center">
+        <h3 class="text-base font-semibold text-neutral-900 mb-2">Occupancy Rate</h3>
+        <div class="text-3xl font-bold text-primary-600 mb-1">
+          {{ reports.occupancyRate }}%
+        </div>
+        <p class="text-xs text-neutral-600">Average room occupancy</p>
       </div>
 
-      <div class="report-card card">
-        <h3>Total Bookings</h3>
-        <div class="report-value">{{ reports.totalBookings }}</div>
-        <p>Total reservations made</p>
+      <div class="card p-5 sm:p-6 text-center">
+        <h3 class="text-base font-semibold text-neutral-900 mb-2">Total Bookings</h3>
+        <div class="text-3xl font-bold text-primary-600 mb-1">
+          {{ reports.totalBookings }}
+        </div>
+        <p class="text-xs text-neutral-600">Total reservations made</p>
       </div>
 
-      <div class="report-card card">
-        <h3>Avg. Stay Duration</h3>
-        <div class="report-value">{{ reports.avgStayDuration }} days</div>
-        <p>Average guest stay length</p>
+      <div class="card p-5 sm:p-6 text-center">
+        <h3 class="text-base font-semibold text-neutral-900 mb-2">Avg. Stay Duration</h3>
+        <div class="text-3xl font-bold text-primary-600 mb-1">
+          {{ reports.avgStayDuration }} days
+        </div>
+        <p class="text-xs text-neutral-600">Average guest stay length</p>
       </div>
     </div>
   </div>
@@ -87,53 +99,3 @@ onMounted(() => {
   loadReports()
 })
 </script>
-
-<style scoped>
-.reports-page {
-  max-width: 1400px;
-}
-
-.page-header {
-  margin-bottom: var(--spacing-xl);
-}
-
-.page-header h1 {
-  font-size: 2rem;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-xs);
-}
-
-.page-header p {
-  color: var(--neutral-600);
-  font-size: 0.938rem;
-}
-
-.reports-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-lg);
-}
-
-.report-card {
-  padding: var(--spacing-xl);
-  text-align: center;
-}
-
-.report-card h3 {
-  font-size: 1.125rem;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-md);
-}
-
-.report-value {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--primary-600);
-  margin-bottom: var(--spacing-sm);
-}
-
-.report-card p {
-  color: var(--neutral-600);
-  font-size: 0.875rem;
-}
-</style>
