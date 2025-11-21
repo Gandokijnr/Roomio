@@ -1,9 +1,9 @@
 <template>
   <section id="benefits" class="py-24 bg-white">
-    <div class="container mx-auto px-6">
+    <div class="container mx-auto px-3">
       <!-- Section Header -->
       <div class="text-center mb-16">
-        <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+        <h2 class="text-3xl lg:text-5xl font-bold text-gray-900 mb-6">
           Why Hotel Owners Choose Roomio
         </h2>
         <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -98,7 +98,7 @@
       </div>
       
       <!-- ROI Calculator -->
-      <div class="bg-gray-50 rounded-3xl p-8 lg:p-12 mb-20">
+      <div class="bg-gray-50 rounded-3xl p-4 lg:p-12 mb-20">
         <div class="grid lg:grid-cols-2 gap-12 items-start">
           <div>
             <h3 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
