@@ -78,7 +78,7 @@
                 <div class="text-gray-600 p-2 rounded-lg font-medium text-sm hover:bg-gray-100">Guests</div>
               </div>
 
-              <div class="w-3/4 p-6 space-y-6">
+              <div class="w-3/4 p-2 space-y-6">
                 <div class="grid grid-cols-2 gap-4">
                   <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div class="text-xs text-gray-500">Occupancy</div>
