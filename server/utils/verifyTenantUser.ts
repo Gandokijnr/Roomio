@@ -4,6 +4,7 @@ interface TenantProfile {
   id: string
   tenant_id: string | null
   is_super_admin?: boolean
+  role?: string
 }
 
 export const verifyTenantUser = async (event: any) => {
@@ -47,7 +48,7 @@ export const verifyTenantUser = async (event: any) => {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, tenant_id, is_super_admin')
+    .select('id, tenant_id, is_super_admin, role')
     .eq('id', user.id)
     .maybeSingle<TenantProfile>()
 
