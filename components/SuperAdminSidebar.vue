@@ -81,6 +81,7 @@ const handleSignOut = async () => {
   left: 0;
   top: 0;
   color: #e5e7eb;
+  transition: transform 0.2s ease;
 }
 
 .super-header {
@@ -202,5 +203,16 @@ const handleSignOut = async () => {
 
 .btn-signout:hover {
   background: rgba(30, 64, 175, 0.9);
+}
+
+@media (max-width: 1024px) {
+  .super-sidebar {
+    transform: translateX(-100%);
+    z-index: 40;
+  }
+
+  .super-sidebar.is-open {
+    transform: translateX(0);
+  }
 }
 </style>

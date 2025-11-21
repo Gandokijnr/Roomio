@@ -1325,6 +1325,18 @@ onMounted(async () => {
     gap: 0.5rem;
   }
 
+  .super-admin-tabs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .super-admin-tabs .tab-pill {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   .card-header {
     flex-direction: column;
     align-items: flex-start;
@@ -1333,6 +1345,33 @@ onMounted(async () => {
   .card-filters {
     width: 100%;
     flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .card-filters .filter-input,
+  .card-filters .btn {
+    width: 100%;
+  }
+
+  .tenant-detail {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detail-stats {
+    flex-wrap: wrap;
+  }
+
+  .detail-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .detail-actions .btn {
+    flex: 1 1 100%;
+    text-align: center;
   }
 }
 </style>
