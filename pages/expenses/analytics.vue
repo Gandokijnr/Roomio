@@ -1,99 +1,172 @@
 <template>
-  <div class="analytics-page">
-    <div class="page-header">
+  <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div class="flex flex-col gap-4 mb-6 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1>Expense Analytics</h1>
-        <p>Analyze spending patterns and trends</p>
+        <h1 class="text-2xl font-semibold text-neutral-900 sm:text-3xl">
+          Expense Analytics
+        </h1>
+        <p class="mt-1 text-sm text-neutral-600">
+          Analyze spending patterns and trends
+        </p>
       </div>
-      <div class="header-actions">
-        <button @click="exportReport" class="btn btn-outline">
-          📊 Export Report
+      <div class="w-full sm:w-auto flex justify-end">
+        <button
+          @click="exportReport"
+          class="btn btn-outline w-full sm:w-auto inline-flex items-center justify-center gap-2"
+        >
+          <span>📊</span>
+          <span>Export Report</span>
         </button>
       </div>
     </div>
 
     <!-- Date Range Filter -->
-    <div class="filters card">
-      <div class="filter-group">
-        <label>Period</label>
-        <select v-model="selectedPeriod" @change="updateDateRange" class="input">
-          <option value="this_month">This Month</option>
-          <option value="last_month">Last Month</option>
-          <option value="this_quarter">This Quarter</option>
-          <option value="this_year">This Year</option>
-          <option value="custom">Custom Range</option>
-        </select>
+    <div class="card mb-6 p-4 sm:p-5">
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="flex flex-col gap-2 w-full sm:w-auto">
+          <label class="text-sm font-medium text-neutral-700">Period</label>
+          <select
+            v-model="selectedPeriod"
+            @change="updateDateRange"
+            class="input w-full"
+          >
+            <option value="this_month">This Month</option>
+            <option value="last_month">Last Month</option>
+            <option value="this_quarter">This Quarter</option>
+            <option value="this_year">This Year</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+        <div
+          v-if="selectedPeriod === 'custom'"
+          class="flex flex-col gap-2 w-full sm:w-auto"
+        >
+          <label class="text-sm font-medium text-neutral-700">From</label>
+          <input type="date" v-model="dateRange.start" class="input w-full" />
+        </div>
+        <div
+          v-if="selectedPeriod === 'custom'"
+          class="flex flex-col gap-2 w-full sm:w-auto"
+        >
+          <label class="text-sm font-medium text-neutral-700">To</label>
+          <input type="date" v-model="dateRange.end" class="input w-full" />
+        </div>
+        <button
+          @click="loadAnalytics"
+          class="btn btn-primary mt-1 w-full sm:w-auto"
+        >
+          Refresh
+        </button>
       </div>
-      <div v-if="selectedPeriod === 'custom'" class="filter-group">
-        <label>From</label>
-        <input type="date" v-model="dateRange.start" class="input" />
-      </div>
-      <div v-if="selectedPeriod === 'custom'" class="filter-group">
-        <label>To</label>
-        <input type="date" v-model="dateRange.end" class="input" />
-      </div>
-      <button @click="loadAnalytics" class="btn btn-primary">Refresh</button>
     </div>
 
-    <div v-if="loading" class="loading">Loading analytics...</div>
+    <div v-if="loading" class="py-12 text-center text-sm text-neutral-600">
+      Loading analytics...
+    </div>
 
-    <div v-else>
+    <div v-else class="space-y-8">
       <!-- Summary Cards -->
-      <div class="summary-cards">
-        <div class="summary-card">
-          <div class="summary-icon">💰</div>
-          <div class="summary-content">
-            <div class="summary-label">Total Expenses</div>
-            <div class="summary-value">₦{{ formatAmount(summary.total) }}</div>
-            <div class="summary-change" :class="summary.totalChange >= 0 ? 'positive' : 'negative'">
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="card p-4 sm:p-5 flex gap-3 items-start">
+          <div class="text-3xl">
+            💰
+          </div>
+          <div class="flex-1 space-y-1">
+            <div class="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+              Total Expenses
+            </div>
+            <div class="text-xl font-semibold text-neutral-900">
+              ₦{{ formatAmount(summary.total) }}
+            </div>
+            <div
+              class="text-xs"
+              :class="summary.totalChange >= 0 ? 'text-success-600' : 'text-error-600'"
+            >
               {{ summary.totalChange >= 0 ? '↑' : '↓' }} {{ Math.abs(summary.totalChange) }}% vs previous period
             </div>
           </div>
         </div>
 
-        <div class="summary-card">
-          <div class="summary-icon">📝</div>
-          <div class="summary-content">
-            <div class="summary-label">Total Transactions</div>
-            <div class="summary-value">{{ summary.count }}</div>
-            <div class="summary-change">{{ summary.avgPerTransaction }} avg per transaction</div>
+        <div class="card p-4 sm:p-5 flex gap-3 items-start">
+          <div class="text-3xl">
+            📝
+          </div>
+          <div class="flex-1 space-y-1">
+            <div class="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+              Total Transactions
+            </div>
+            <div class="text-xl font-semibold text-neutral-900">
+              {{ summary.count }}
+            </div>
+            <div class="text-xs text-neutral-600">
+              {{ summary.avgPerTransaction }} avg per transaction
+            </div>
           </div>
         </div>
 
-        <div class="summary-card">
-          <div class="summary-icon">⏰</div>
-          <div class="summary-content">
-            <div class="summary-label">Unpaid Expenses</div>
-            <div class="summary-value text-error">₦{{ formatAmount(summary.unpaid) }}</div>
-            <div class="summary-change">{{ summary.unpaidCount }} transactions</div>
+        <div class="card p-4 sm:p-5 flex gap-3 items-start">
+          <div class="text-3xl">
+            ⏰
+          </div>
+          <div class="flex-1 space-y-1">
+            <div class="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+              Unpaid Expenses
+            </div>
+            <div class="text-xl font-semibold text-error-600">
+              ₦{{ formatAmount(summary.unpaid) }}
+            </div>
+            <div class="text-xs text-neutral-600">
+              {{ summary.unpaidCount }} transactions
+            </div>
           </div>
         </div>
 
-        <div class="summary-card">
-          <div class="summary-icon">📈</div>
-          <div class="summary-content">
-            <div class="summary-label">Average Daily</div>
-            <div class="summary-value">₦{{ formatAmount(summary.avgDaily) }}</div>
-            <div class="summary-change">Based on {{ summary.daysInPeriod }} days</div>
+        <div class="card p-4 sm:p-5 flex gap-3 items-start">
+          <div class="text-3xl">
+            📈
+          </div>
+          <div class="flex-1 space-y-1">
+            <div class="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+              Average Daily
+            </div>
+            <div class="text-xl font-semibold text-neutral-900">
+              ₦{{ formatAmount(summary.avgDaily) }}
+            </div>
+            <div class="text-xs text-neutral-600">
+              Based on {{ summary.daysInPeriod }} days
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Expense by Category -->
-      <div class="analytics-section">
-        <div class="section-header">
-          <h2>Expenses by Category</h2>
+      <div class="space-y-3">
+        <div>
+          <h2 class="text-lg font-semibold text-neutral-900">
+            Expenses by Category
+          </h2>
         </div>
-        <div class="category-breakdown card">
-          <div v-for="cat in categoryBreakdown" :key="cat.category" class="category-item">
-            <div class="category-info">
-              <div class="category-name">{{ formatCategory(cat.category) }}</div>
-              <div class="category-amount">₦{{ formatAmount(cat.amount) }}</div>
+        <div class="card p-4 sm:p-5">
+          <div
+            v-for="cat in categoryBreakdown"
+            :key="cat.category"
+            class="py-3 border-b border-neutral-200 last:border-b-0"
+          >
+            <div class="flex items-center justify-between mb-1">
+              <div class="font-medium text-neutral-900">
+                {{ formatCategory(cat.category) }}
+              </div>
+              <div class="font-semibold text-primary-600">
+                ₦{{ formatAmount(cat.amount) }}
+              </div>
             </div>
-            <div class="category-bar">
-              <div class="category-bar-fill" :style="{ width: cat.percentage + '%' }"></div>
+            <div class="h-2 bg-neutral-100 rounded-full overflow-hidden mb-1">
+              <div
+                class="h-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all"
+                :style="{ width: cat.percentage + '%' }"
+              ></div>
             </div>
-            <div class="category-stats">
+            <div class="flex items-center justify-between text-xs text-neutral-600">
               <span>{{ cat.percentage.toFixed(1) }}%</span>
               <span>{{ cat.count }} transactions</span>
             </div>
@@ -102,55 +175,87 @@
       </div>
 
       <!-- Top Vendors -->
-      <div class="analytics-section">
-        <div class="section-header">
-          <h2>Top Vendors by Spending</h2>
+      <div class="space-y-3">
+        <div>
+          <h2 class="text-lg font-semibold text-neutral-900">
+            Top Vendors by Spending
+          </h2>
         </div>
-        <div class="vendors-list card">
-          <div v-for="(vendor, index) in topVendors" :key="vendor.vendor_id" class="vendor-item">
-            <div class="vendor-rank">{{ index + 1 }}</div>
-            <div class="vendor-info">
-              <div class="vendor-name">{{ vendor.vendor_name }}</div>
-              <div class="vendor-meta">{{ vendor.transaction_count }} transactions</div>
+        <div class="card p-4 sm:p-5">
+          <div
+            v-for="(vendor, index) in topVendors"
+            :key="vendor.vendor_id"
+            class="flex items-center gap-4 py-3 border-b border-neutral-200 last:border-b-0"
+          >
+            <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-semibold text-xs">
+              {{ index + 1 }}
             </div>
-            <div class="vendor-amount">₦{{ formatAmount(vendor.total_amount) }}</div>
+            <div class="flex-1">
+              <div class="font-medium text-neutral-900">
+                {{ vendor.vendor_name }}
+              </div>
+              <div class="text-xs text-neutral-600">
+                {{ vendor.transaction_count }} transactions
+              </div>
+            </div>
+            <div class="font-semibold text-neutral-900 text-sm">
+              ₦{{ formatAmount(vendor.total_amount) }}
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Payment Status Distribution -->
-      <div class="analytics-section">
-        <div class="section-header">
-          <h2>Payment Status Distribution</h2>
+      <div class="space-y-3">
+        <div>
+          <h2 class="text-lg font-semibold text-neutral-900">
+            Payment Status Distribution
+          </h2>
         </div>
-        <div class="status-distribution card">
-          <div v-for="status in paymentStatusDistribution" :key="status.status" class="status-item">
-            <div class="status-info">
-              <span :class="['status-badge', `badge-${status.status}`]">{{ status.status }}</span>
-              <span class="status-count">{{ status.count }} expenses</span>
+        <div class="card p-4 sm:p-5">
+          <div
+            v-for="status in paymentStatusDistribution"
+            :key="status.status"
+            class="flex items-center justify-between py-3 border-b border-neutral-200 last:border-b-0"
+          >
+            <div class="flex items-center gap-3">
+              <span :class="['badge', `badge-${status.status}`]">{{ status.status }}</span>
+              <span class="text-sm text-neutral-600">{{ status.count }} expenses</span>
             </div>
-            <div class="status-amount">₦{{ formatAmount(status.amount) }}</div>
+            <div class="font-semibold text-neutral-900 text-sm">
+              ₦{{ formatAmount(status.amount) }}
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Monthly Trend -->
-      <div class="analytics-section">
-        <div class="section-header">
-          <h2>Monthly Expense Trend</h2>
+      <div class="space-y-3">
+        <div>
+          <h2 class="text-lg font-semibold text-neutral-900">
+            Monthly Expense Trend
+          </h2>
         </div>
-        <div class="trend-chart card">
-          <div class="chart-container">
-            <div v-for="month in monthlyTrend" :key="month.month" class="chart-bar">
-              <div class="bar-container">
-                <div 
-                  class="bar-fill" 
+        <div class="card p-4 sm:p-5">
+          <div class="flex gap-4 items-end h-72 py-2 overflow-x-auto">
+            <div
+              v-for="month in monthlyTrend"
+              :key="month.month"
+              class="flex-1 min-w-[64px] flex flex-col items-center gap-1"
+            >
+              <div class="w-full h-60 flex items-end">
+                <div
+                  class="w-full bg-gradient-to-b from-primary-500 to-primary-600 rounded-t-md transition-[height] duration-300 cursor-pointer hover:from-primary-600 hover:to-primary-700"
                   :style="{ height: (month.amount / maxMonthlyAmount * 100) + '%' }"
                   :title="`₦${formatAmount(month.amount)}`"
                 ></div>
               </div>
-              <div class="bar-label">{{ month.month }}</div>
-              <div class="bar-value">₦{{ formatAmount(month.amount) }}</div>
+              <div class="text-xs text-neutral-600 font-semibold">
+                {{ month.month }}
+              </div>
+              <div class="text-xs text-neutral-900 font-semibold">
+                ₦{{ formatAmount(month.amount) }}
+              </div>
             </div>
           </div>
         </div>
@@ -396,373 +501,3 @@ onMounted(() => {
   updateDateRange()
 })
 </script>
-
-<style scoped>
-.analytics-page {
-  max-width: 1400px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-xl);
-}
-
-.page-header h1 {
-  font-size: 2rem;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-xs);
-}
-
-.page-header p {
-  color: var(--neutral-600);
-  font-size: 0.938rem;
-}
-
-.filters {
-  display: flex;
-  gap: var(--spacing-md);
-  align-items: flex-end;
-  margin-bottom: var(--spacing-xl);
-  flex-wrap: wrap;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.filter-group label {
-  font-size: 0.813rem;
-  font-weight: 600;
-  color: var(--neutral-700);
-}
-
-.summary-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-2xl);
-}
-
-.summary-card {
-  background: white;
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--neutral-200);
-  display: flex;
-  gap: var(--spacing-md);
-}
-
-.summary-icon {
-  font-size: 2.5rem;
-}
-
-.summary-content {
-  flex: 1;
-}
-
-.summary-label {
-  font-size: 0.813rem;
-  color: var(--neutral-600);
-  margin-bottom: var(--spacing-xs);
-}
-
-.summary-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-xs);
-}
-
-.summary-change {
-  font-size: 0.75rem;
-  color: var(--neutral-600);
-}
-
-.summary-change.positive {
-  color: var(--success-600);
-}
-
-.summary-change.negative {
-  color: var(--error-600);
-}
-
-.text-error {
-  color: var(--error-600);
-}
-
-.analytics-section {
-  margin-bottom: var(--spacing-2xl);
-}
-
-.section-header {
-  margin-bottom: var(--spacing-md);
-}
-
-.section-header h2 {
-  font-size: 1.25rem;
-  color: var(--neutral-900);
-  font-weight: 600;
-}
-
-.category-breakdown {
-  padding: var(--spacing-lg);
-}
-
-.category-item {
-  padding: var(--spacing-md) 0;
-  border-bottom: 1px solid var(--neutral-200);
-}
-
-.category-item:last-child {
-  border-bottom: none;
-}
-
-.category-info {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: var(--spacing-xs);
-}
-
-.category-name {
-  font-weight: 600;
-  color: var(--neutral-900);
-}
-
-.category-amount {
-  font-weight: 700;
-  color: var(--primary-600);
-}
-
-.category-bar {
-  height: 8px;
-  background: var(--neutral-100);
-  border-radius: var(--radius-full);
-  margin-bottom: var(--spacing-xs);
-  overflow: hidden;
-}
-
-.category-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
-  transition: width 0.3s ease;
-}
-
-.category-stats {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: var(--neutral-600);
-}
-
-.vendors-list {
-  padding: var(--spacing-lg);
-}
-
-.vendor-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) 0;
-  border-bottom: 1px solid var(--neutral-200);
-}
-
-.vendor-item:last-child {
-  border-bottom: none;
-}
-
-.vendor-rank {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
-  background: var(--primary-100);
-  color: var(--primary-700);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.875rem;
-}
-
-.vendor-info {
-  flex: 1;
-}
-
-.vendor-name {
-  font-weight: 600;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-xs);
-}
-
-.vendor-meta {
-  font-size: 0.75rem;
-  color: var(--neutral-600);
-}
-
-.vendor-amount {
-  font-weight: 700;
-  font-size: 1.125rem;
-  color: var(--neutral-900);
-}
-
-.status-distribution {
-  padding: var(--spacing-lg);
-}
-
-.status-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-md) 0;
-  border-bottom: 1px solid var(--neutral-200);
-}
-
-.status-item:last-child {
-  border-bottom: none;
-}
-
-.status-info {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.status-badge {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-md);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.badge-unpaid {
-  background: var(--error-100);
-  color: var(--error-700);
-}
-
-.badge-partial {
-  background: var(--warning-100);
-  color: var(--warning-700);
-}
-
-.badge-paid {
-  background: var(--success-100);
-  color: var(--success-700);
-}
-
-.badge-overdue {
-  background: var(--error-100);
-  color: var(--error-700);
-}
-
-.status-count {
-  font-size: 0.875rem;
-  color: var(--neutral-600);
-}
-
-.status-amount {
-  font-weight: 700;
-  font-size: 1.125rem;
-  color: var(--neutral-900);
-}
-
-.trend-chart {
-  padding: var(--spacing-lg);
-}
-
-.chart-container {
-  display: flex;
-  gap: var(--spacing-md);
-  align-items: flex-end;
-  height: 300px;
-  padding: var(--spacing-md) 0;
-}
-
-.chart-bar {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.bar-container {
-  width: 100%;
-  height: 250px;
-  display: flex;
-  align-items: flex-end;
-}
-
-.bar-fill {
-  width: 100%;
-  background: linear-gradient(180deg, var(--primary-500), var(--primary-600));
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-  transition: height 0.3s ease;
-  cursor: pointer;
-}
-
-.bar-fill:hover {
-  background: linear-gradient(180deg, var(--primary-600), var(--primary-700));
-}
-
-.bar-label {
-  font-size: 0.75rem;
-  color: var(--neutral-600);
-  font-weight: 600;
-}
-
-.bar-value {
-  font-size: 0.75rem;
-  color: var(--neutral-900);
-  font-weight: 600;
-}
-
-.loading {
-  text-align: center;
-  padding: var(--spacing-2xl);
-}
-
-.input {
-  padding: var(--spacing-sm);
-  border: 1px solid var(--neutral-300);
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-}
-
-.input:focus {
-  outline: none;
-  border-color: var(--primary-500);
-}
-
-.btn {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  font-size: 0.875rem;
-}
-
-.btn-primary {
-  background: var(--primary-600);
-  color: white;
-}
-
-.btn-primary:hover {
-  background: var(--primary-700);
-}
-
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--neutral-300);
-  color: var(--neutral-700);
-}
-
-.btn-outline:hover {
-  background: var(--neutral-50);
-}
-</style>

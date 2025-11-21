@@ -60,7 +60,7 @@
     <!-- Filters -->
     <div class="card mb-6 p-4 sm:p-5">
       <div class="flex flex-wrap items-end gap-4">
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 w-full sm:w-auto">
           <label class="text-sm font-medium text-neutral-700">Date Range</label>
           <div class="flex items-center gap-2 md:flex-row flex-col">
             <input type="date" v-model="filters.startDate" class="input w-full" />
@@ -68,7 +68,7 @@
             <input type="date" v-model="filters.endDate" class="input w-full" />
           </div>
         </div>
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 w-full sm:w-auto">
           <label class="text-sm font-medium text-neutral-700">Category</label>
           <select v-model="filters.category" class="input w-full sm:min-w-[180px]">
             <option value="">All Categories</option>
@@ -77,7 +77,7 @@
             </option>
           </select>
         </div>
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 w-full sm:w-auto">
           <label class="text-sm font-medium text-neutral-700">Payment Status</label>
           <select v-model="filters.paymentStatus" class="input w-full sm:min-w-[160px]">
             <option value="">All Status</option>
