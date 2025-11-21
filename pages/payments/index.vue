@@ -1,79 +1,145 @@
 <template>
-  <div class="payments-page">
-    <div class="page-header">
+  <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div class="flex flex-col gap-4 mb-6 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1>Payments</h1>
-        <p>Track and manage payment transactions</p>
+        <h1 class="text-2xl font-semibold text-neutral-900 sm:text-3xl">
+          Payments
+        </h1>
+        <p class="mt-1 text-sm text-neutral-600">
+          Track and manage payment transactions
+        </p>
       </div>
-      <div class="header-actions">
-        <NuxtLink to="/expenses" class="btn btn-secondary">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <NuxtLink
+          to="/expenses"
+          class="btn btn-secondary px-4 py-2 w-full sm:w-auto"
+        >
           Manage Expenses
         </NuxtLink>
-        <button @click="showCreateModal = true" class="btn btn-primary">
+        <button
+          @click="showCreateModal = true"
+          class="btn btn-primary px-4 py-2 w-full sm:w-auto"
+        >
           + Record Payment
         </button>
       </div>
     </div>
 
     <!-- Quick Actions -->
-    <div class="quick-actions card">
-      <h3>Quick Actions</h3>
-      <div class="action-buttons">
-        <button @click="showCreateModal = true" class="action-btn">
-          <span class="icon">💳</span>
+    <div class="card mb-6 p-4 sm:p-6">
+      <h3 class="text-base font-semibold text-neutral-900 mb-3">Quick Actions</h3>
+      <div class="grid gap-3 sm:gap-4 md:grid-cols-3">
+        <button
+          @click="showCreateModal = true"
+          class="flex items-center gap-3 p-4 sm:p-5 rounded-md border-2 border-neutral-200 bg-neutral-50 hover:bg-neutral-100 hover:border-primary-500 transition transform hover:-translate-y-0.5 hover:shadow-md text-left w-full"
+        >
+          <span class="text-2xl flex-shrink-0">💳</span>
           <div>
-            <strong>Record Guest Payment</strong>
-            <p>Payment from reservation</p>
+            <strong class="block text-sm font-semibold text-neutral-900 mb-1">
+              Record Guest Payment
+            </strong>
+            <p class="text-xs text-neutral-600">
+              Payment from reservation
+            </p>
           </div>
         </button>
-        <NuxtLink to="/expenses" class="action-btn">
-          <span class="icon">📝</span>
+        <NuxtLink
+          to="/expenses"
+          class="flex items-center gap-3 p-4 sm:p-5 rounded-md border-2 border-neutral-200 bg-neutral-50 hover:bg-neutral-100 hover:border-primary-500 transition transform hover:-translate-y-0.5 hover:shadow-md text-left w-full"
+        >
+          <span class="text-2xl flex-shrink-0">📝</span>
           <div>
-            <strong>Record Expense</strong>
-            <p>Business expense or bill</p>
+            <strong class="block text-sm font-semibold text-neutral-900 mb-1">
+              Record Expense
+            </strong>
+            <p class="text-xs text-neutral-600">
+              Business expense or bill
+            </p>
           </div>
         </NuxtLink>
-        <NuxtLink to="/invoices" class="action-btn">
-          <span class="icon">🧾</span>
+        <NuxtLink
+          to="/invoices"
+          class="flex items-center gap-3 p-4 sm:p-5 rounded-md border-2 border-neutral-200 bg-neutral-50 hover:bg-neutral-100 hover:border-primary-500 transition transform hover:-translate-y-0.5 hover:shadow-md text-left w-full"
+        >
+          <span class="text-2xl flex-shrink-0">🧾</span>
           <div>
-            <strong>Create Invoice</strong>
-            <p>Generate guest invoice</p>
+            <strong class="block text-sm font-semibold text-neutral-900 mb-1">
+              Create Invoice
+            </strong>
+            <p class="text-xs text-neutral-600">
+              Generate guest invoice
+            </p>
           </div>
         </NuxtLink>
       </div>
     </div>
 
-    <div v-if="loading" class="loading">Loading payments...</div>
+    <div v-if="loading" class="py-12 text-center text-sm text-neutral-600">
+      Loading payments...
+    </div>
 
-    <div v-else class="payments-table card">
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Reservation #</th>
-            <th>Guest</th>
-            <th>Amount</th>
-            <th>Method</th>
-            <th>Status</th>
-            <th>Transaction ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="payment in payments" :key="payment.id">
-            <td>{{ formatDate(payment.payment_date) }}</td>
-            <td>{{ payment.reservation?.reservation_number }}</td>
-            <td>{{ payment.reservation?.guest?.first_name }} {{ payment.reservation?.guest?.last_name }}</td>
-            <td class="amount">₦{{ payment.amount.toFixed(2) }}</td>
-            <td>{{ payment.payment_method }}</td>
-            <td>
-              <span :class="['badge', `badge-${getStatusColor(payment.payment_status)}`]">
-                {{ payment.payment_status }}
-              </span>
-            </td>
-            <td>{{ payment.transaction_id || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div v-else class="card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-neutral-200">
+          <thead class="bg-neutral-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Date
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Reservation #
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Guest
+              </th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Amount
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Method
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Status
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Transaction ID
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-neutral-100">
+            <tr
+              v-for="payment in payments"
+              :key="payment.id"
+              class="hover:bg-neutral-50"
+            >
+              <td class="px-4 py-3 text-sm text-neutral-700 whitespace-nowrap">
+                {{ formatDate(payment.payment_date) }}
+              </td>
+              <td class="px-4 py-3 text-sm text-neutral-700 whitespace-nowrap">
+                {{ payment.reservation?.reservation_number }}
+              </td>
+              <td class="px-4 py-3 text-sm text-neutral-700">
+                {{ payment.reservation?.guest?.first_name }}
+                {{ payment.reservation?.guest?.last_name }}
+              </td>
+              <td class="px-4 py-3 text-sm font-semibold text-neutral-900 text-right whitespace-nowrap">
+                ₦{{ payment.amount.toFixed(2) }}
+              </td>
+              <td class="px-4 py-3 text-sm text-neutral-700 whitespace-nowrap">
+                {{ payment.payment_method }}
+              </td>
+              <td class="px-4 py-3">
+                <span :class="['badge', `badge-${getStatusColor(payment.payment_status)}`]">
+                  {{ payment.payment_status }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-sm text-neutral-700 whitespace-nowrap">
+                {{ payment.transaction_id || '-' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <PaymentModal
@@ -137,137 +203,3 @@ onMounted(() => {
   loadPayments()
 })
 </script>
-
-<style scoped>
-.payments-page {
-  max-width: 1400px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--spacing-xl);
-}
-
-.page-header h1 {
-  font-size: 2rem;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-xs);
-}
-
-.page-header p {
-  color: var(--neutral-600);
-  font-size: 0.938rem;
-}
-
-.header-actions {
-  display: flex;
-  gap: var(--spacing-md);
-  align-items: center;
-}
-
-.quick-actions {
-  margin-bottom: var(--spacing-xl);
-}
-
-.quick-actions h3 {
-  font-size: 1.125rem;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-md);
-}
-
-.action-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
-  background: var(--neutral-50);
-  border: 2px solid var(--neutral-200);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all 0.2s;
-  text-decoration: none;
-  color: inherit;
-}
-
-.action-btn:hover {
-  background: var(--neutral-100);
-  border-color: var(--primary-500);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.action-btn .icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
-
-.action-btn strong {
-  display: block;
-  color: var(--neutral-900);
-  font-size: 0.938rem;
-  margin-bottom: var(--spacing-xs);
-}
-
-.action-btn p {
-  color: var(--neutral-600);
-  font-size: 0.813rem;
-  margin: 0;
-}
-
-.loading {
-  text-align: center;
-  padding: var(--spacing-2xl);
-  color: var(--neutral-600);
-}
-
-.payments-table {
-  padding: 0;
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-thead {
-  background: var(--neutral-50);
-  border-bottom: 2px solid var(--neutral-200);
-}
-
-th {
-  padding: var(--spacing-md);
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.813rem;
-  color: var(--neutral-700);
-  text-transform: uppercase;
-}
-
-tbody tr {
-  border-bottom: 1px solid var(--neutral-200);
-}
-
-tbody tr:hover {
-  background: var(--neutral-50);
-}
-
-td {
-  padding: var(--spacing-md);
-  font-size: 0.875rem;
-  color: var(--neutral-700);
-}
-
-.amount {
-  font-weight: 600;
-  color: var(--neutral-900);
-}
-</style>
