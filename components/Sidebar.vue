@@ -1,5 +1,5 @@
 <template>
-  <aside class="sidebar">
+  <aside :class="['sidebar', { 'is-open': isOpen }]">
     <div class="sidebar-header">
       <h2>Hotel Management</h2>
     </div>
@@ -157,6 +157,8 @@
 </template>
 
 <script setup lang="ts">
+const props = defineProps<{ isOpen?: boolean }>()
+
 const { 
   profile, 
   signOut, 
@@ -192,6 +194,8 @@ const handleSignOut = async () => {
   position: fixed;
   left: 0;
   top: 0;
+  z-index: 40;
+  transition: transform 0.2s ease-in-out;
 }
 
 .sidebar-header {
@@ -343,5 +347,15 @@ const handleSignOut = async () => {
 .debug-info p {
   margin: 2px 0;
   color: var(--neutral-600);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.is-open {
+    transform: translateX(0);
+  }
 }
 </style>

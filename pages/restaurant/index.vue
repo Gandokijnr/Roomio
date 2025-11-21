@@ -3,14 +3,14 @@
     <!-- Header -->
     <div class="bg-white shadow-sm border-b">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center py-6">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-4 sm:py-6">
           <div>
             <h1 class="text-3xl font-bold text-gray-900">Restaurant Operations</h1>
             <p class="mt-1 text-sm text-gray-500">
               Manage orders, menu, and restaurant operations
             </p>
           </div>
-          <div class="flex space-x-3">
+          <div class="flex flex-wrap gap-2 sm:flex-nowrap sm:space-x-3">
             <button
               @click="showNewOrderModal = true"
               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-royal-gold-600 hover:bg-royal-gold-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-royal-gold-500"
@@ -119,7 +119,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
       <div class="bg-white shadow rounded-lg p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <NuxtLink
             to="/restaurant/tables"
             class="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -159,7 +159,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
       <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 class="text-lg leading-6 font-medium text-gray-900">
                 Recent Orders
@@ -168,7 +168,7 @@
                 Latest restaurant orders and their status
               </p>
             </div>
-            <div class="flex space-x-2">
+            <div class="flex flex-wrap gap-2 sm:flex-nowrap sm:space-x-2 sm:mt-0 mt-2">
               <select
                 v-model="statusFilter"
                 class="border-gray-300 rounded-md shadow-sm focus:ring-royal-gold-500 focus:border-royal-gold-500 sm:text-sm"

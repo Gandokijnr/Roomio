@@ -597,4 +597,71 @@ onMounted(() => {
   color: var(--neutral-500);
   font-size: 0.875rem;
 }
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 0 var(--spacing-md) var(--spacing-xl);
+  }
+
+  .page-header {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .stat-card {
+    padding: var(--spacing-md);
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .card h3 {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .room-status-list,
+  .reservations-list,
+  .orders-list,
+  .alerts-list,
+  .tasks-list {
+    padding: var(--spacing-md);
+  }
+
+  .status-item,
+  .reservation-item,
+  .order-item,
+  .alert-item,
+  .task-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .order-meta {
+    align-items: flex-start;
+  }
+}
 </style>
