@@ -20,7 +20,7 @@
           </div>
 
           <div class="mb-10">
-            <h1 class="text-5xl lg:text-6xl font-bold tracking-tighter leading-tight mb-6">
+            <h1 class="text-3xl lg:text-6xl font-bold tracking-tighter leading-tight mb-6">
               Transform Your Hotel Operations with 
               <span class="bg-gradient-to-r from-yellow-600 to-yellow-500 bg-clip-text text-transparent">
                 Roomio
@@ -70,8 +70,8 @@
             </div>
             
             <div class="flex h-96">
-              <div class="w-1/4 bg-gray-50 p-4 border-r border-gray-200 space-y-2">
-                <div class="text-xs text-gray-400 uppercase font-semibold">Menu</div>
+              <div class="w-1/4 bg-gray-50 border-r border-gray-200 space-y-2">
+                <div class="text-xs text-gray-400 uppercase font-semibold p-2">Menu</div>
                 <div class="bg-yellow-100 text-yellow-700 p-2 rounded-lg font-medium text-sm">Dashboard</div>
                 <div class="text-gray-600 p-2 rounded-lg font-medium text-sm hover:bg-gray-100">Bookings</div>
                 <div class="text-gray-600 p-2 rounded-lg font-medium text-sm hover:bg-gray-100">Rooms</div>
