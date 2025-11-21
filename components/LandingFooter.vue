@@ -4,7 +4,7 @@
       <!-- Main Footer Content -->
       <div class="footer-main">
         <div class="footer-brand">
-          <h3 class="brand-name">🏨 Roomio</h3>
+          <h3 class="brand-name">Roomio</h3>
           <p class="brand-description">
             The complete hotel management solution trusted by thousands of hotels worldwide. 
             Transform your operations, reduce costs, and delight your guests.
