@@ -1,129 +1,130 @@
 <template>
-  <div class="dashboard">
-    <div class="page-header">
-      <h1>Dashboard</h1>
-      <p>Overview of hotel operations</p>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div class="mb-8 sm:mb-10">
+      <h1 class="text-2xl font-semibold text-neutral-900 sm:text-3xl">Dashboard</h1>
+      <p class="mt-1 text-sm text-neutral-600">Overview of hotel operations</p>
     </div>
 
-    <div v-if="loading" class="loading">Loading dashboard...</div>
+    <div v-if="loading" class="py-12 text-center text-sm text-neutral-600">Loading dashboard...</div>
 
-    <div v-else class="dashboard-content">
-      <div class="stats-grid">
-        <div class="stat-card card">
-          <div class="stat-icon" style="background: var(--primary-100); color: var(--primary-600);">🏨</div>
-          <div class="stat-info">
-            <div class="stat-label">Total Rooms</div>
-            <div class="stat-value">{{ stats.totalRooms }}</div>
+    <div v-else class="space-y-8">
+      <div class="grid gap-6 mb-8 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="card flex items-center gap-4 p-6 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl text-xl" style="background: var(--primary-100); color: var(--primary-600);">
+🏨</div>
+          <div class="flex-1">
+            <div class="text-xs font-medium text-neutral-600 mb-1">Total Rooms</div>
+            <div class="text-2xl font-bold text-neutral-900">{{ stats.totalRooms }}</div>
           </div>
         </div>
 
-        <div class="stat-card card">
-          <div class="stat-icon" style="background: var(--success-50); color: var(--success-600);">✅</div>
-          <div class="stat-info">
-            <div class="stat-label">Available Rooms</div>
-            <div class="stat-value">{{ stats.availableRooms }}</div>
+        <div class="card flex items-center gap-4 p-6 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl text-xl" style="background: var(--success-50); color: var(--success-600);">✅</div>
+          <div class="flex-1">
+            <div class="text-xs font-medium text-neutral-600 mb-1">Available Rooms</div>
+            <div class="text-2xl font-bold text-neutral-900">{{ stats.availableRooms }}</div>
           </div>
         </div>
 
-        <div class="stat-card card">
-          <div class="stat-icon" style="background: var(--warning-50); color: var(--warning-600);">🔑</div>
-          <div class="stat-info">
-            <div class="stat-label">Occupied Rooms</div>
-            <div class="stat-value">{{ stats.occupiedRooms }}</div>
+        <div class="card flex items-center gap-4 p-6 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl text-xl" style="background: var(--warning-50); color: var(--warning-600);">🔑</div>
+          <div class="flex-1">
+            <div class="text-xs font-medium text-neutral-600 mb-1">Occupied Rooms</div>
+            <div class="text-2xl font-bold text-neutral-900">{{ stats.occupiedRooms }}</div>
           </div>
         </div>
 
-        <div class="stat-card card">
-          <div class="stat-icon" style="background: var(--primary-100); color: var(--primary-600);">📅</div>
-          <div class="stat-info">
-            <div class="stat-label">Today's Check-ins</div>
-            <div class="stat-value">{{ stats.todayCheckIns }}</div>
+        <div class="card flex items-center gap-4 p-6 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl text-xl" style="background: var(--primary-100); color: var(--primary-600);">📅</div>
+          <div class="flex-1">
+            <div class="text-xs font-medium text-neutral-600 mb-1">Today's Check-ins</div>
+            <div class="text-2xl font-bold text-neutral-900">{{ stats.todayCheckIns }}</div>
           </div>
         </div>
 
-        <div class="stat-card card">
-          <div class="stat-icon" style="background: var(--neutral-100); color: var(--neutral-600);">📤</div>
-          <div class="stat-info">
-            <div class="stat-label">Today's Check-outs</div>
-            <div class="stat-value">{{ stats.todayCheckOuts }}</div>
+        <div class="card flex items-center gap-4 p-6 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl text-xl" style="background: var(--neutral-100); color: var(--neutral-600);">📤</div>
+          <div class="flex-1">
+            <div class="text-xs font-medium text-neutral-600 mb-1">Today's Check-outs</div>
+            <div class="text-2xl font-bold text-neutral-900">{{ stats.todayCheckOuts }}</div>
           </div>
         </div>
 
-        <div class="stat-card card">
-          <div class="stat-icon" style="background: var(--success-50); color: var(--success-600);">💰</div>
-          <div class="stat-info">
-            <div class="stat-label">Occupancy Rate</div>
-            <div class="stat-value">{{ stats.occupancyRate }}%</div>
+        <div class="card flex items-center gap-4 p-6 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl text-xl" style="background: var(--success-50); color: var(--success-600);">💰</div>
+          <div class="flex-1">
+            <div class="text-xs font-medium text-neutral-600 mb-1">Occupancy Rate</div>
+            <div class="text-2xl font-bold text-neutral-900">{{ stats.occupancyRate }}%</div>
           </div>
         </div>
 
         <!-- F&B Operations Stats -->
-        <div v-if="canManageRestaurant() || canManageBar()" class="stat-card card">
-          <div class="stat-icon" style="background: var(--warning-50); color: var(--warning-600);">🍽️</div>
-          <div class="stat-info">
-            <div class="stat-label">Today's Orders</div>
-            <div class="stat-value">{{ stats.todayOrders }}</div>
+        <div v-if="canManageRestaurant() || canManageBar()" class="card flex items-center gap-4 p-6 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl text-xl" style="background: var(--warning-50); color: var(--warning-600);">🍽️</div>
+          <div class="flex-1">
+            <div class="text-xs font-medium text-neutral-600 mb-1">Today's Orders</div>
+            <div class="text-2xl font-bold text-neutral-900">{{ stats.todayOrders }}</div>
           </div>
         </div>
 
-        <div v-if="canManageBar()" class="stat-card card">
-          <div class="stat-icon" style="background: var(--info-50); color: var(--info-600);">🍸</div>
-          <div class="stat-info">
-            <div class="stat-label">Bar Orders</div>
-            <div class="stat-value">{{ stats.barOrders }}</div>
+        <div v-if="canManageBar()" class="card flex items-center gap-4 p-6 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl text-xl" style="background: var(--info-50); color: var(--info-600);">🍸</div>
+          <div class="flex-1">
+            <div class="text-xs font-medium text-neutral-600 mb-1">Bar Orders</div>
+            <div class="text-2xl font-bold text-neutral-900">{{ stats.barOrders }}</div>
           </div>
         </div>
 
-        <div v-if="canManageInventory()" class="stat-card card">
-          <div class="stat-icon" style="background: var(--error-50); color: var(--error-600);">📦</div>
-          <div class="stat-info">
-            <div class="stat-label">Low Stock Items</div>
-            <div class="stat-value">{{ stats.lowStockItems }}</div>
+        <div v-if="canManageInventory()" class="card flex items-center gap-4 p-6 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl text-xl" style="background: var(--error-50); color: var(--error-600);">📦</div>
+          <div class="flex-1">
+            <div class="text-xs font-medium text-neutral-600 mb-1">Low Stock Items</div>
+            <div class="text-2xl font-bold text-neutral-900">{{ stats.lowStockItems }}</div>
           </div>
         </div>
       </div>
 
-      <div class="dashboard-grid">
-        <div class="card room-status-card">
-          <h3>Room Status Overview</h3>
-          <div class="room-status-list">
-            <div class="status-item">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="card overflow-hidden">
+          <h3 class="px-6 py-4 text-base font-semibold text-neutral-900 border-b border-neutral-200">Room Status Overview</h3>
+          <div class="p-6 space-y-4">
+            <div class="flex items-center justify-between p-4 rounded-md bg-neutral-50 transition-colors duration-150 hover:bg-neutral-100">
               <span class="badge badge-success">Available</span>
-              <span class="status-count">{{ stats.availableRooms }} rooms</span>
+              <span class="text-sm font-medium text-neutral-700">{{ stats.availableRooms }} rooms</span>
             </div>
-            <div class="status-item">
+            <div class="flex items-center justify-between p-4 rounded-md bg-neutral-50 transition-colors duration-150 hover:bg-neutral-100">
               <span class="badge badge-warning">Occupied</span>
-              <span class="status-count">{{ stats.occupiedRooms }} rooms</span>
+              <span class="text-sm font-medium text-neutral-700">{{ stats.occupiedRooms }} rooms</span>
             </div>
-            <div class="status-item">
+            <div class="flex items-center justify-between p-4 rounded-md bg-neutral-50 transition-colors duration-150 hover:bg-neutral-100">
               <span class="badge badge-primary">Reserved</span>
-              <span class="status-count">{{ stats.reservedRooms }} rooms</span>
+              <span class="text-sm font-medium text-neutral-700">{{ stats.reservedRooms }} rooms</span>
             </div>
-            <div class="status-item">
+            <div class="flex items-center justify-between p-4 rounded-md bg-neutral-50 transition-colors duration-150 hover:bg-neutral-100">
               <span class="badge badge-error">Maintenance</span>
-              <span class="status-count">{{ stats.maintenanceRooms }} rooms</span>
+              <span class="text-sm font-medium text-neutral-700">{{ stats.maintenanceRooms }} rooms</span>
             </div>
-            <div class="status-item">
+            <div class="flex items-center justify-between p-4 rounded-md bg-neutral-50 transition-colors duration-150 hover:bg-neutral-100">
               <span class="badge badge-warning">Needs Cleaning</span>
-              <span class="status-count">{{ stats.needsCleaningRooms }} rooms</span>
+              <span class="text-sm font-medium text-neutral-700">{{ stats.needsCleaningRooms }} rooms</span>
             </div>
-            <div class="status-item">
+            <div class="flex items-center justify-between p-4 rounded-md bg-neutral-50 transition-colors duration-150 hover:bg-neutral-100">
               <span class="badge badge-info">Assigned Housekeeper</span>
-              <span class="status-count">{{ stats.assignedHousekeeperRooms }} rooms</span>
+              <span class="text-sm font-medium text-neutral-700">{{ stats.assignedHousekeeperRooms }} rooms</span>
             </div>
           </div>
         </div>
 
-        <div class="card recent-reservations-card">
-          <h3>Recent Reservations</h3>
-          <div v-if="recentReservations.length === 0" class="empty-state">
+        <div class="card overflow-hidden">
+          <h3 class="px-6 py-4 text-base font-semibold text-neutral-900 border-b border-neutral-200">Recent Reservations</h3>
+          <div v-if="recentReservations.length === 0" class="px-6 py-8 text-center text-sm text-neutral-500">
             No recent reservations
           </div>
-          <div v-else class="reservations-list">
-            <div v-for="reservation in recentReservations" :key="reservation.id" class="reservation-item">
-              <div class="reservation-info">
-                <div class="reservation-guest">{{ reservation.guest?.first_name }} {{ reservation.guest?.last_name }}</div>
-                <div class="reservation-details">
+          <div v-else class="p-6 space-y-4">
+            <div v-for="reservation in recentReservations" :key="reservation.id" class="flex items-center justify-between p-4 rounded-md bg-neutral-50 transition-colors duration-150 hover:bg-neutral-100">
+              <div class="flex-1 min-w-0">
+                <div class="mb-1 text-sm font-medium text-neutral-900 truncate">{{ reservation.guest?.first_name }} {{ reservation.guest?.last_name }}</div>
+                <div class="text-xs text-neutral-600">
                   Room {{ reservation.room?.room_number }} • {{ reservation.reservation_number }}
                 </div>
               </div>
@@ -135,40 +136,40 @@
         </div>
 
         <!-- Restaurant Orders Card -->
-        <div v-if="canManageRestaurant() || canManageBar()" class="card restaurant-orders-card">
-          <h3>Recent Restaurant Orders</h3>
-          <div v-if="recentOrders.length === 0" class="empty-state">
+        <div v-if="canManageRestaurant() || canManageBar()" class="card overflow-hidden">
+          <h3 class="px-6 py-4 text-base font-semibold text-neutral-900 border-b border-neutral-200">Recent Restaurant Orders</h3>
+          <div v-if="recentOrders.length === 0" class="px-6 py-8 text-center text-sm text-neutral-500">
             No recent orders
           </div>
-          <div v-else class="orders-list">
-            <div v-for="order in recentOrders" :key="order.id" class="order-item">
-              <div class="order-info">
-                <div class="order-number">#{{ order.order_number }}</div>
-                <div class="order-details">
+          <div v-else class="p-6 space-y-4">
+            <div v-for="order in recentOrders" :key="order.id" class="flex items-center justify-between p-4 rounded-md bg-neutral-50 transition-colors duration-150 hover:bg-neutral-100">
+              <div class="flex-1 min-w-0">
+                <div class="mb-1 text-sm font-medium text-neutral-900 truncate">#{{ order.order_number }}</div>
+                <div class="text-xs text-neutral-600">
                   {{ order.service_type }} • {{ order.table_number ? `Table ${order.table_number}` : 'Room Service' }}
                 </div>
               </div>
-              <div class="order-meta">
+              <div class="flex flex-col items-end gap-1">
                 <span :class="['badge', `badge-${getOrderStatusColor(order.status)}`]">
                   {{ order.status }}
                 </span>
-                <div class="order-total">${{ order.total_amount }}</div>
+                <div class="text-sm font-semibold text-neutral-900">${{ order.total_amount }}</div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Inventory Alerts Card -->
-        <div v-if="canManageInventory()" class="card inventory-alerts-card">
-          <h3>Inventory Alerts</h3>
-          <div v-if="inventoryAlerts.length === 0" class="empty-state">
+        <div v-if="canManageInventory()" class="card overflow-hidden">
+          <h3 class="px-6 py-4 text-base font-semibold text-neutral-900 border-b border-neutral-200">Inventory Alerts</h3>
+          <div v-if="inventoryAlerts.length === 0" class="px-6 py-8 text-center text-sm text-neutral-500">
             All items are well stocked
           </div>
-          <div v-else class="alerts-list">
-            <div v-for="item in inventoryAlerts" :key="item.id" class="alert-item">
-              <div class="alert-info">
-                <div class="item-name">{{ item.name }}</div>
-                <div class="item-details">
+          <div v-else class="p-6 space-y-4">
+            <div v-for="item in inventoryAlerts" :key="item.id" class="flex items-center justify-between p-4 rounded-md bg-neutral-50 transition-colors duration-150 hover:bg-neutral-100">
+              <div class="flex-1 min-w-0">
+                <div class="mb-1 text-sm font-medium text-neutral-900 truncate">{{ item.name }}</div>
+                <div class="text-xs text-neutral-600">
                   Current: {{ item.current_stock }} {{ item.unit }} • Min: {{ item.minimum_stock }} {{ item.unit }}
                 </div>
               </div>
@@ -180,16 +181,16 @@
         </div>
       </div>
 
-      <div v-if="canManageHousekeeping() || hasRole(['housekeeping'])" class="card housekeeping-card">
-        <h3>Pending Housekeeping Tasks</h3>
-        <div v-if="pendingTasks.length === 0" class="empty-state">
+      <div v-if="canManageHousekeeping() || hasRole(['housekeeping'])" class="card overflow-hidden">
+        <h3 class="px-6 py-4 text-base font-semibold text-neutral-900 border-b border-neutral-200">Pending Housekeeping Tasks</h3>
+        <div v-if="pendingTasks.length === 0" class="px-6 py-8 text-center text-sm text-neutral-500">
           No pending tasks
         </div>
-        <div v-else class="tasks-list">
-          <div v-for="task in pendingTasks" :key="task.id" class="task-item">
-            <div class="task-info">
-              <div class="task-title">{{ task.description }}</div>
-              <div class="task-details">Room {{ task.room?.room_number }} • {{ task.task_type }}</div>
+        <div v-else class="p-6 space-y-4">
+          <div v-for="task in pendingTasks" :key="task.id" class="flex items-center justify-between p-4 rounded-md bg-neutral-50 transition-colors duration-150 hover:bg-neutral-100">
+            <div class="flex-1 min-w-0">
+              <div class="mb-1 text-sm font-medium text-neutral-900 truncate">{{ task.description }}</div>
+              <div class="text-xs text-neutral-600">Room {{ task.room?.room_number }} • {{ task.task_type }}</div>
             </div>
             <span :class="['badge', `badge-${getPriorityColor(task.priority)}`]">
               {{ task.priority }}

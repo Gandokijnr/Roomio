@@ -1,9 +1,9 @@
 <template>
-  <div class="rooms-page">
-    <div class="page-header">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
       <div>
-        <h1>Rooms Management</h1>
-        <p>Manage hotel rooms and availability</p>
+        <h1 class="text-2xl font-semibold text-neutral-900 sm:text-3xl">Rooms Management</h1>
+        <p class="mt-1 text-sm text-neutral-600">Manage hotel rooms and availability</p>
       </div>
       <button
         v-if="canManageRooms()"
@@ -14,11 +14,11 @@
       </button>
     </div>
 
-    <div class="filters-section card">
-      <div class="filters-header">
-        <div class="filters-grid">
-          <div class="filter-group">
-            <label>Search</label>
+    <div class="card p-6 mb-8">
+      <div class="flex flex-col lg:flex-row justify-between items-start gap-6">
+        <div class="grid flex-1 min-w-0 gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium text-neutral-700">Search</label>
             <input
               v-model="filters.search"
               type="text"
@@ -26,8 +26,8 @@
               placeholder="Room number, name, type, amenities..."
             />
           </div>
-          <div class="filter-group">
-            <label>Status</label>
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium text-neutral-700">Status</label>
             <select v-model="filters.status" class="input">
               <option value="">All Statuses</option>
               <option value="available">🟢 Available</option>
@@ -38,8 +38,8 @@
               <option value="out_of_service">❌ Out of Service</option>
             </select>
           </div>
-          <div class="filter-group">
-            <label>Room Type</label>
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium text-neutral-700">Room Type</label>
             <select v-model="filters.roomType" class="input">
               <option value="">All Types</option>
               <option v-for="type in roomTypes" :key="type.id" :value="type.id">
@@ -47,8 +47,8 @@
               </option>
             </select>
           </div>
-          <div class="filter-group">
-            <label>Floor</label>
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium text-neutral-700">Floor</label>
             <select v-model="filters.floor" class="input">
               <option value="">All Floors</option>
               <option v-for="floor in availableFloors" :key="floor" :value="floor">
@@ -56,8 +56,8 @@
               </option>
             </select>
           </div>
-          <div class="filter-group">
-            <label>Price Range</label>
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium text-neutral-700">Price Range</label>
             <select v-model="filters.priceRange" class="input">
               <option value="">All Prices</option>
               <option value="0-100">₦0 - ₦100</option>
@@ -67,8 +67,8 @@
             </select>
           </div>
         </div>
-        <div class="view-controls">
-          <div class="view-toggle">
+        <div class="flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <div class="flex items-center gap-2">
             <button
               @click="viewMode = 'grid'"
               :class="['btn', 'btn-sm', viewMode === 'grid' ? 'btn-primary' : 'btn-secondary']"
@@ -82,7 +82,7 @@
               📋 List
             </button>
           </div>
-          <div class="bulk-actions" v-if="canManageRooms()">
+          <div class="flex gap-2 justify-end" v-if="canManageRooms()">
             <button
               @click="showBulkImport = true"
               class="btn btn-secondary btn-sm"
@@ -100,85 +100,92 @@
       </div>
     </div>
 
-    <div v-if="loading" class="loading">Loading rooms...</div>
+    <div v-if="loading" class="py-12 text-center text-sm text-neutral-600">Loading rooms...</div>
 
-    <div v-else-if="filteredRooms.length === 0" class="empty-state card">
-      <div class="empty-icon">🏨</div>
-      <h3>No rooms found</h3>
-      <p>Try adjusting your filters or add a new room</p>
+    <div v-else-if="filteredRooms.length === 0" class="card py-12 px-6 text-center">
+      <div class="text-5xl mb-4">🏨</div>
+      <h3 class="text-lg font-semibold text-neutral-900 mb-2">No rooms found</h3>
+      <p class="text-sm text-neutral-600">Try adjusting your filters or add a new room</p>
     </div>
 
     <!-- Grid View -->
-    <div v-else-if="viewMode === 'grid'" class="rooms-grid">
-      <div v-for="room in filteredRooms" :key="room.id" class="room-card card">
-        <div class="room-image" v-if="room.featured_image">
-          <img :src="room.featured_image" :alt="`Room ${room.room_number}`" class="room-thumbnail" />
+    <div v-else-if="viewMode === 'grid'" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div v-for="room in filteredRooms" :key="room.id" class="card flex flex-col p-6 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md">
+        <div v-if="room.featured_image" class="w-full h-40 -mt-6 -mx-6 mb-4 overflow-hidden rounded-t-lg">
+          <img :src="room.featured_image" :alt="`Room ${room.room_number}`" class="w-full h-full object-cover" />
         </div>
-        <div class="room-header">
-          <div class="room-title">
-            <div class="room-number">Room {{ room.room_number }}</div>
-            <div v-if="room.room_name" class="room-name">{{ room.room_name }}</div>
+        <div class="flex items-center justify-between mb-4 pb-4 border-b border-neutral-200">
+          <div class="flex flex-col gap-1">
+            <div class="text-lg font-semibold text-neutral-900">Room {{ room.room_number }}</div>
+            <div v-if="room.room_name" class="text-sm text-neutral-600">{{ room.room_name }}</div>
           </div>
           <span :class="['badge', `badge-${getStatusColor(room.status)}`]">
             {{ getStatusIcon(room.status) }} {{ formatStatus(room.status) }}
           </span>
         </div>
-        <div class="room-info">
-          <div class="info-item">
-            <span class="label">Type:</span>
-            <span class="value">{{ room.room_type?.name }}</span>
+        <div class="space-y-2 mb-6 text-sm">
+          <div class="flex justify-between">
+            <span class="text-neutral-600">Type:</span>
+            <span class="font-medium text-neutral-900">{{ room.room_type?.name }}</span>
           </div>
-          <div class="info-item">
-            <span class="label">Capacity:</span>
-            <span class="value">{{ room.capacity }} guests</span>
+          <div class="flex justify-between">
+            <span class="text-neutral-600">Capacity:</span>
+            <span class="font-medium text-neutral-900">{{ room.capacity }} guests</span>
           </div>
-          <div class="info-item">
-            <span class="label">Floor:</span>
-            <span class="value">{{ room.floor }}{{ room.section ? ` (${room.section})` : '' }}</span>
+          <div class="flex justify-between">
+            <span class="text-neutral-600">Floor:</span>
+            <span class="font-medium text-neutral-900">{{ room.floor }}{{ room.section ? ` (${room.section})` : '' }}</span>
           </div>
-          <div class="info-item">
-            <span class="label">Bed:</span>
-            <span class="value">{{ room.bed_type }}</span>
+          <div class="flex justify-between">
+            <span class="text-neutral-600">Bed:</span>
+            <span class="font-medium text-neutral-900">{{ room.bed_type }}</span>
           </div>
-          <div class="info-item">
-            <span class="label">Price:</span>
-            <span class="value">₦{{ room.price_per_night }}/night</span>
+          <div class="flex justify-between">
+            <span class="text-neutral-600">Price:</span>
+            <span class="font-medium text-neutral-900">₦{{ room.price_per_night }}/night</span>
           </div>
         </div>
-        <div v-if="room.parsedAmenities.length > 0" class="room-amenities">
-          <span v-for="amenity in room.parsedAmenities.slice(0, 3)" :key="amenity" class="amenity-tag">
+        <div v-if="room.parsedAmenities.length > 0" class="flex flex-wrap gap-2 mb-4">
+          <span
+            v-for="amenity in room.parsedAmenities.slice(0, 3)"
+            :key="amenity"
+            class="inline-flex items-center rounded-full bg-primary-100 text-primary-800 px-2.5 py-1 text-xs font-medium"
+          >
             {{ amenity }}
           </span>
-          <span v-if="room.parsedAmenities.length > 3" class="more-amenities">
+          <span
+            v-if="room.parsedAmenities.length > 3"
+            class="inline-flex items-center rounded-full bg-neutral-100 text-neutral-600 px-2.5 py-1 text-xs font-medium"
+          >
             +{{ room.parsedAmenities.length - 3 }} more
           </span>
         </div>
-        <div class="room-actions">
+        <div class="flex flex-col gap-2">
           <button
             @click="viewRoom(room)"
-            class="btn btn-secondary btn-sm"
+            class="btn btn-secondary btn-sm w-full"
           >
             View Details
           </button>
           <button
             v-if="canManageRooms()"
             @click="editRoom(room)"
-            class="btn btn-secondary btn-sm"
+            class="btn btn-secondary btn-sm w-full"
           >
             Edit
           </button>
           <button
             v-if="canDeleteRooms()"
             @click="deleteRoom(room)"
-            class="btn btn-error btn-sm"
+            class="btn btn-error btn-sm w-full"
           >
             Delete
           </button>
-          <div class="quick-actions" v-if="canUpdateRoomStatus()">
+          <div v-if="canUpdateRoomStatus()" class="mt-2">
             <select
               @change="updateRoomStatus(room, $event)"
               :value="room.status"
-              class="status-select"
+              class="mt-1 w-full rounded-md border border-neutral-300 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="available">Available</option>
               <option value="occupied">Occupied</option>
@@ -193,33 +200,37 @@
     </div>
 
     <!-- List View -->
-    <div v-else class="rooms-list">
-      <div class="list-header">
-        <div class="col-room">Room</div>
-        <div class="col-type">Type</div>
-        <div class="col-status">Status</div>
-        <div class="col-capacity">Capacity</div>
-        <div class="col-price">Price</div>
-        <div class="col-actions">Actions</div>
+    <div v-else class="card overflow-hidden mt-6">
+      <div class="hidden md:grid md:grid-cols-[2fr,1fr,1fr,1fr,1fr,1.5fr] gap-4 px-6 py-3 bg-neutral-50 border-b border-neutral-200 text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+        <div>Room</div>
+        <div>Type</div>
+        <div>Status</div>
+        <div>Capacity</div>
+        <div>Price</div>
+        <div>Actions</div>
       </div>
-      <div v-for="room in filteredRooms" :key="room.id" class="list-row">
-        <div class="col-room">
-          <div class="room-info-compact">
-            <div class="room-number">{{ room.room_number }}</div>
-            <div v-if="room.room_name" class="room-name-small">{{ room.room_name }}</div>
-            <div class="room-location">Floor {{ room.floor }}{{ room.section ? ` • ${room.section}` : '' }}</div>
+      <div
+        v-for="room in filteredRooms"
+        :key="room.id"
+        class="grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,1fr,1fr,1.5fr] gap-4 px-4 py-4 sm:px-6 border-b border-neutral-100 items-start md:items-center hover:bg-neutral-50"
+      >
+        <div>
+          <div class="flex flex-col gap-1">
+            <div class="text-sm font-semibold text-neutral-900">{{ room.room_number }}</div>
+            <div v-if="room.room_name" class="text-sm text-neutral-600">{{ room.room_name }}</div>
+            <div class="text-xs text-neutral-500">Floor {{ room.floor }}{{ room.section ? ` • ${room.section}` : '' }}</div>
           </div>
         </div>
-        <div class="col-type">{{ room.room_type?.name }}</div>
-        <div class="col-status">
+        <div class="text-sm text-neutral-900">{{ room.room_type?.name }}</div>
+        <div>
           <span :class="['badge', `badge-${getStatusColor(room.status)}`]">
             {{ getStatusIcon(room.status) }} {{ formatStatus(room.status) }}
           </span>
         </div>
-        <div class="col-capacity">{{ room.capacity }} guests</div>
-        <div class="col-price">₦{{ room.price_per_night }}/night</div>
-        <div class="col-actions">
-          <div class="action-buttons">
+        <div class="text-sm text-neutral-900">{{ room.capacity }} guests</div>
+        <div class="text-sm font-medium text-neutral-900">₦{{ room.price_per_night }}/night</div>
+        <div>
+          <div class="flex flex-wrap gap-2">
             <button @click="viewRoom(room)" class="btn btn-secondary btn-xs">View</button>
             <button v-if="canManageRooms()" @click="editRoom(room)" class="btn btn-secondary btn-xs">Edit</button>
           </div>
@@ -597,339 +608,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.rooms-page {
-  max-width: 1400px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--spacing-xl);
-}
-
-.page-header h1 {
-  font-size: 2rem;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-xs);
-}
-
-.page-header p {
-  color: var(--neutral-600);
-  font-size: 0.938rem;
-}
-
-.filters-section {
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
-}
-
-.filters-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--spacing-lg);
-  flex-wrap: wrap;
-}
-
-.filters-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--spacing-md);
-  flex: 1;
-  min-width: 0;
-}
-
-.view-controls {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  align-items: flex-end;
-}
-
-.view-toggle {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.bulk-actions {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.filter-group label {
-  font-weight: 500;
-  font-size: 0.875rem;
-  color: var(--neutral-700);
-}
-
-.loading {
-  text-align: center;
-  padding: var(--spacing-2xl);
-  color: var(--neutral-600);
-}
-
-.empty-state {
-  text-align: center;
-  padding: var(--spacing-2xl);
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: var(--spacing-md);
-}
-
-.empty-state h3 {
-  font-size: 1.25rem;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-sm);
-}
-
-.empty-state p {
-  color: var(--neutral-600);
-}
-
-.rooms-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: var(--spacing-lg);
-}
-
-.room-card {
-  padding: var(--spacing-lg);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.room-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.room-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-md);
-  padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--neutral-200);
-}
-
-.room-number {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--neutral-900);
-}
-
-.room-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-lg);
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.875rem;
-}
-
-.info-item .label {
-  color: var(--neutral-600);
-}
-
-.info-item .value {
-  color: var(--neutral-900);
-  font-weight: 500;
-}
-
-.room-image {
-  width: auto;
-  height: 150px;
-  overflow: hidden;
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-  margin: calc(-1 * var(--spacing-lg)) calc(-1 * var(--spacing-lg)) var(--spacing-md) calc(-1 * var(--spacing-lg));
-}
-
-.room-thumbnail {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.room-title {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.room-name {
-  font-size: 0.875rem;
-  color: var(--neutral-600);
-  font-weight: 400;
-}
-
-.room-amenities {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-md);
-}
-
-.amenity-tag {
-  display: inline-block;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--primary-100);
-  color: var(--primary-800);
-  border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.more-amenities {
-  display: inline-block;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--neutral-100);
-  color: var(--neutral-600);
-  border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.room-actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.room-actions .btn {
-  width: 100%;
-}
-
-.quick-actions {
-  margin-top: var(--spacing-sm);
-}
-
-.status-select {
-  width: 100%;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border: 1px solid var(--neutral-300);
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  background: white;
-}
-
-/* List View Styles */
-.rooms-list {
-  background: white;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-
-.list-header {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.5fr;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--neutral-50);
-  border-bottom: 1px solid var(--neutral-200);
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: var(--neutral-700);
-}
-
-.list-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.5fr;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: 1px solid var(--neutral-100);
-  transition: background-color 0.2s ease;
-  align-items: center;
-}
-
-.list-row:hover {
-  background: var(--neutral-25);
-}
-
-.list-row:last-child {
-  border-bottom: none;
-}
-
-.room-info-compact {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.room-number {
-  font-weight: 600;
-  color: var(--neutral-900);
-}
-
-.room-name-small {
-  font-size: 0.875rem;
-  color: var(--neutral-600);
-}
-
-.room-location {
-  font-size: 0.75rem;
-  color: var(--neutral-500);
-}
-
-.action-buttons {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
 .btn-xs {
   padding: var(--spacing-xs) var(--spacing-sm);
   font-size: 0.75rem;
   line-height: 1.2;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .filters-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .view-controls {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .filters-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .rooms-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .list-header,
-  .list-row {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
-  }
-  
-  .list-header {
-    display: none;
-  }
-  
-  .list-row {
-    padding: var(--spacing-md);
-    border: 1px solid var(--neutral-200);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-sm);
-  }
 }
 </style>
