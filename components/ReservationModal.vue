@@ -1,20 +1,33 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')">
-    <div class="modal-content card">
-      <div class="modal-header">
-        <h2>{{ reservation ? 'View Reservation' : 'New Reservation' }}</h2>
-        <button @click="$emit('close')" class="btn-close">×</button>
+  <div
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 sm:px-6 py-4 sm:py-8"
+    @click.self="$emit('close')"
+  >
+    <div
+      class="card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-0 transform transition-all sm:rounded-xl"
+    >
+      <div class="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-neutral-200">
+        <h2 class="text-lg font-semibold text-neutral-900 sm:text-xl">
+          {{ reservation ? 'View Reservation' : 'New Reservation' }}
+        </h2>
+        <button
+          @click="$emit('close')"
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-700 text-xl leading-none hover:bg-neutral-200 transition"
+        >
+          ×
+        </button>
       </div>
 
-      <form @submit.prevent="handleSubmit" class="modal-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="guest">Guest *</label>
-            <div class="guest-selection">
+      <form @submit.prevent="handleSubmit" class="px-4 py-4 sm:px-6 sm:py-5">
+        <div class="grid gap-4 md:grid-cols-2 mb-6">
+          <div class="flex flex-col gap-2">
+            <label for="guest" class="text-sm font-medium text-neutral-700">Guest *</label>
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
               <select
                 id="guest"
                 v-model="formData.guest_id"
-                class="input"
+                class="input flex-1"
                 required
                 :disabled="loading || !!reservation"
               >
@@ -27,7 +40,7 @@
                 v-if="!reservation"
                 type="button"
                 @click="showGuestModal = true"
-                class="btn btn-secondary btn-sm"
+                class="btn btn-secondary btn-sm w-full sm:w-auto"
                 :disabled="loading"
               >
                 + New Guest
@@ -35,8 +48,8 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="room">Room *</label>
+          <div class="flex flex-col gap-2">
+            <label for="room" class="text-sm font-medium text-neutral-700">Room *</label>
             <select
               id="room"
               v-model="formData.room_id"
@@ -55,8 +68,8 @@
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="check-in">Check-in Date *</label>
+          <div class="flex flex-col gap-2">
+            <label for="check-in" class="text-sm font-medium text-neutral-700">Check-in Date *</label>
             <input
               id="check-in"
               v-model="formData.check_in_date"
@@ -67,8 +80,8 @@
             />
           </div>
 
-          <div class="form-group">
-            <label for="check-out">Check-out Date *</label>
+          <div class="flex flex-col gap-2">
+            <label for="check-out" class="text-sm font-medium text-neutral-700">Check-out Date *</label>
             <input
               id="check-out"
               v-model="formData.check_out_date"
@@ -79,8 +92,8 @@
             />
           </div>
 
-          <div class="form-group">
-            <label for="adults">Adults *</label>
+          <div class="flex flex-col gap-2">
+            <label for="adults" class="text-sm font-medium text-neutral-700">Adults *</label>
             <input
               id="adults"
               v-model.number="formData.number_of_adults"
@@ -92,8 +105,8 @@
             />
           </div>
 
-          <div class="form-group">
-            <label for="children">Children</label>
+          <div class="flex flex-col gap-2">
+            <label for="children" class="text-sm font-medium text-neutral-700">Children</label>
             <input
               id="children"
               v-model.number="formData.number_of_children"
@@ -104,8 +117,8 @@
             />
           </div>
 
-          <div class="form-group">
-            <label for="total-amount">Total Amount *</label>
+          <div class="flex flex-col gap-2">
+            <label for="total-amount" class="text-sm font-medium text-neutral-700">Total Amount *</label>
             <input
               id="total-amount"
               v-model.number="formData.total_amount"
@@ -115,13 +128,16 @@
               required
               :disabled="loading || !!reservation"
             />
-            <div v-if="!reservation && selectedRoom && numberOfNights > 0" class="calculation-info">
+            <div
+              v-if="!reservation && selectedRoom && numberOfNights > 0"
+              class="mt-1 text-xs text-neutral-600"
+            >
               {{ numberOfNights }} night{{ numberOfNights !== 1 ? 's' : '' }} × ₦{{ selectedRoom.price_per_night }} = ₦{{ calculatedAmount }}
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="booking-source">Booking Source *</label>
+          <div class="flex flex-col gap-2">
+            <label for="booking-source" class="text-sm font-medium text-neutral-700">Booking Source *</label>
             <select
               id="booking-source"
               v-model="formData.booking_source"
@@ -143,12 +159,12 @@
             </select>
           </div>
 
-          <div class="form-group full-width">
-            <label for="special-requests">Special Requests</label>
+          <div class="flex flex-col gap-2 md:col-span-2">
+            <label for="special-requests" class="text-sm font-medium text-neutral-700">Special Requests</label>
             <textarea
               id="special-requests"
               v-model="formData.special_requests"
-              class="input"
+              class="input resize-y"
               rows="3"
               placeholder="Any special requests..."
               :disabled="loading || !!reservation"
@@ -156,11 +172,11 @@
           </div>
         </div>
 
-        <div v-if="error" class="error-message">
+        <div v-if="error" class="mb-4 rounded-md bg-error-50 px-4 py-3 text-sm text-error-700">
           {{ error }}
         </div>
 
-        <div class="modal-footer">
+        <div class="flex justify-end gap-2 pt-4 mt-2 border-t border-neutral-200">
           <button type="button" @click="$emit('close')" class="btn btn-secondary" :disabled="loading">
             Close
           </button>
@@ -404,120 +420,3 @@ onMounted(() => {
   }
 })
 </script>
-
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: var(--spacing-lg);
-}
-
-.modal-content {
-  width: 100%;
-  max-width: 700px;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: 0;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--neutral-200);
-}
-
-.modal-header h2 {
-  font-size: 1.5rem;
-  color: var(--neutral-900);
-}
-
-.btn-close {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--neutral-100);
-  color: var(--neutral-700);
-  font-size: 1.5rem;
-  line-height: 1;
-  transition: all 0.2s ease;
-}
-
-.btn-close:hover {
-  background: var(--neutral-200);
-}
-
-.modal-body {
-  padding: var(--spacing-lg);
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.form-group.full-width {
-  grid-column: 1 / -1;
-}
-
-.form-group label {
-  font-weight: 500;
-  font-size: 0.875rem;
-  color: var(--neutral-700);
-}
-
-textarea.input {
-  resize: vertical;
-  font-family: inherit;
-}
-
-.guest-selection {
-  display: flex;
-  gap: var(--spacing-sm);
-  align-items: flex-end;
-}
-
-.guest-selection select {
-  flex: 1;
-}
-
-.calculation-info {
-  font-size: 0.75rem;
-  color: var(--neutral-600);
-  margin-top: var(--spacing-xs);
-}
-
-.error-message {
-  padding: var(--spacing-md);
-  background: var(--error-50);
-  color: var(--error-700);
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  margin-bottom: var(--spacing-lg);
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-sm);
-  padding-top: var(--spacing-lg);
-  border-top: 1px solid var(--neutral-200);
-}
-</style>

@@ -1,9 +1,9 @@
 <template>
-  <div class="reservations-page">
-    <div class="page-header">
+  <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
       <div>
-        <h1>Reservations</h1>
-        <p>Manage hotel bookings and reservations</p>
+        <h1 class="text-2xl font-semibold text-neutral-900 sm:text-3xl">Reservations</h1>
+        <p class="mt-1 text-sm text-neutral-600">Manage hotel bookings and reservations</p>
       </div>
       <button
         v-if="canManageReservations()"
@@ -14,8 +14,8 @@
       </button>
     </div>
 
-    <div class="view-controls card">
-      <div class="view-toggle">
+    <div class="card mb-6 px-4 py-3 sm:px-6 sm:py-4">
+      <div class="flex justify-center gap-2">
         <button
           @click="currentView = 'list'"
           :class="['btn', currentView === 'list' ? 'btn-primary' : 'btn-secondary']"
@@ -31,10 +31,10 @@
       </div>
     </div>
 
-    <div v-if="currentView === 'list'" class="filters-section card">
-      <div class="filters-grid">
-        <div class="filter-group">
-          <label>Search</label>
+    <div v-if="currentView === 'list'" class="card p-6 mb-6">
+      <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+        <div class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-neutral-700">Search</label>
           <input
             v-model="filters.search"
             type="text"
@@ -42,8 +42,8 @@
             placeholder="Reservation number, guest name..."
           />
         </div>
-        <div class="filter-group">
-          <label>Status</label>
+        <div class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-neutral-700">Status</label>
           <select v-model="filters.status" class="input">
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
@@ -53,8 +53,8 @@
             <option value="cancelled">Cancelled</option>
           </select>
         </div>
-        <div class="filter-group">
-          <label>Check-in Date</label>
+        <div class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-neutral-700">Check-in Date</label>
           <input
             v-model="filters.checkInDate"
             type="date"
@@ -64,7 +64,7 @@
       </div>
     </div>
 
-    <div v-if="loading" class="loading">Loading reservations...</div>
+    <div v-if="loading" class="py-12 text-center text-sm text-neutral-600">Loading reservations...</div>
 
     <!-- Calendar View -->
     <div v-else-if="currentView === 'calendar'">
@@ -76,72 +76,80 @@
     </div>
 
     <!-- List View -->
-    <div v-else-if="currentView === 'list' && filteredReservations.length === 0" class="empty-state card">
-      <div class="empty-icon">📅</div>
-      <h3>No reservations found</h3>
-      <p>Try adjusting your filters or create a new reservation</p>
+    <div v-else-if="currentView === 'list' && filteredReservations.length === 0" class="card py-12 px-6 text-center">
+      <div class="text-5xl mb-4">📅</div>
+      <h3 class="text-lg font-semibold text-neutral-900 mb-2">No reservations found</h3>
+      <p class="text-sm text-neutral-600">Try adjusting your filters or create a new reservation</p>
     </div>
 
-    <div v-else-if="currentView === 'list'" class="reservations-table card">
-      <table>
-        <thead>
-          <tr>
-            <th>Reservation #</th>
-            <th>Guest</th>
-            <th>Room</th>
-            <th>Check-in</th>
-            <th>Check-out</th>
-            <th>Guests</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="reservation in filteredReservations" :key="reservation.id">
-            <td class="reservation-number">{{ reservation.reservation_number }}</td>
-            <td>
-              <div class="guest-info">
-                <div class="guest-name">
-                  {{ reservation.guest?.first_name }} {{ reservation.guest?.last_name }}
+    <div v-else-if="currentView === 'list'" class="card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-neutral-200">
+          <thead class="bg-neutral-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">Reservation #</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">Guest</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">Room</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">Check-in</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">Check-out</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">Guests</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-neutral-700 uppercase tracking-wide">Amount</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">Status</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-neutral-100">
+            <tr v-for="reservation in filteredReservations" :key="reservation.id" class="hover:bg-neutral-50">
+              <td class="px-4 py-3 text-sm font-semibold text-neutral-900 whitespace-nowrap">{{ reservation.reservation_number }}</td>
+              <td class="px-4 py-3">
+                <div class="flex flex-col gap-1">
+                  <div class="text-sm font-medium text-neutral-900">
+                    {{ reservation.guest?.first_name }} {{ reservation.guest?.last_name }}
+                  </div>
+                  <div class="text-xs text-neutral-500">{{ reservation.guest?.email }}</div>
                 </div>
-                <div class="guest-email">{{ reservation.guest?.email }}</div>
-              </div>
-            </td>
-            <td>{{ reservation.room?.room_number }}</td>
-            <td>{{ formatDate(reservation.check_in_date) }}</td>
-            <td>{{ formatDate(reservation.check_out_date) }}</td>
-            <td>{{ reservation.number_of_guests }}</td>
-            <td class="amount">₦{{ reservation.total_amount.toFixed(2) }}</td>
-            <td>
-              <span :class="['badge', `badge-${getStatusColor(reservation.status)}`]">
-                {{ reservation.status.replace('_', ' ') }}
-              </span>
-            </td>
-            <td>
-              <div class="actions">
-                <button @click="viewReservation(reservation)" class="btn-icon" title="View">👁️</button>
-                <button
-                  v-if="reservation.status === 'confirmed'"
-                  @click="openCheckInModal(reservation)"
-                  class="btn-icon"
-                  title="Check In"
-                >
-                  ✓
-                </button>
-                <button
-                  v-if="reservation.status === 'checked_in'"
-                  @click="openCheckOutModal(reservation)"
-                  class="btn-icon"
-                  title="Check Out"
-                >
-                  📤
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+              <td class="px-4 py-3 text-sm text-neutral-700 whitespace-nowrap">{{ reservation.room?.room_number }}</td>
+              <td class="px-4 py-3 text-sm text-neutral-700 whitespace-nowrap">{{ formatDate(reservation.check_in_date) }}</td>
+              <td class="px-4 py-3 text-sm text-neutral-700 whitespace-nowrap">{{ formatDate(reservation.check_out_date) }}</td>
+              <td class="px-4 py-3 text-sm text-neutral-700 whitespace-nowrap">{{ reservation.number_of_guests }}</td>
+              <td class="px-4 py-3 text-sm font-semibold text-neutral-900 text-right whitespace-nowrap">₦{{ reservation.total_amount.toFixed(2) }}</td>
+              <td class="px-4 py-3">
+                <span :class="['badge', `badge-${getStatusColor(reservation.status)}`]">
+                  {{ reservation.status.replace('_', ' ') }}
+                </span>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex gap-2">
+                  <button
+                    @click="viewReservation(reservation)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-neutral-100 text-base hover:bg-neutral-200 hover:scale-110 transition transform duration-150"
+                    title="View"
+                  >
+                    👁️
+                  </button>
+                  <button
+                    v-if="reservation.status === 'confirmed'"
+                    @click="openCheckInModal(reservation)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-neutral-100 text-base hover:bg-neutral-200 hover:scale-110 transition transform duration-150"
+                    title="Check In"
+                  >
+                    ✓
+                  </button>
+                  <button
+                    v-if="reservation.status === 'checked_in'"
+                    @click="openCheckOutModal(reservation)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-neutral-100 text-base hover:bg-neutral-200 hover:scale-110 transition transform duration-150"
+                    title="Check Out"
+                  >
+                    📤
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <ReservationModal
@@ -308,175 +316,3 @@ onMounted(() => {
   loadReservations()
 })
 </script>
-
-<style scoped>
-.reservations-page {
-  max-width: 1400px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--spacing-xl);
-}
-
-.page-header h1 {
-  font-size: 2rem;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-xs);
-}
-
-.page-header p {
-  color: var(--neutral-600);
-  font-size: 0.938rem;
-}
-
-.view-controls {
-  padding: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-}
-
-.view-toggle {
-  display: flex;
-  gap: var(--spacing-xs);
-  justify-content: center;
-}
-
-.filters-section {
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
-}
-
-.filters-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.filter-group label {
-  font-weight: 500;
-  font-size: 0.875rem;
-  color: var(--neutral-700);
-}
-
-.loading {
-  text-align: center;
-  padding: var(--spacing-2xl);
-  color: var(--neutral-600);
-}
-
-.empty-state {
-  text-align: center;
-  padding: var(--spacing-2xl);
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: var(--spacing-md);
-}
-
-.empty-state h3 {
-  font-size: 1.25rem;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-sm);
-}
-
-.empty-state p {
-  color: var(--neutral-600);
-}
-
-.reservations-table {
-  padding: 0;
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-thead {
-  background: var(--neutral-50);
-  border-bottom: 2px solid var(--neutral-200);
-}
-
-th {
-  padding: var(--spacing-md);
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.813rem;
-  color: var(--neutral-700);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-tbody tr {
-  border-bottom: 1px solid var(--neutral-200);
-  transition: background 0.2s ease;
-}
-
-tbody tr:hover {
-  background: var(--neutral-50);
-}
-
-td {
-  padding: var(--spacing-md);
-  font-size: 0.875rem;
-  color: var(--neutral-700);
-}
-
-.reservation-number {
-  font-weight: 600;
-  color: var(--neutral-900);
-}
-
-.guest-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.guest-name {
-  font-weight: 500;
-  color: var(--neutral-900);
-}
-
-.guest-email {
-  font-size: 0.75rem;
-  color: var(--neutral-500);
-}
-
-.amount {
-  font-weight: 600;
-  color: var(--neutral-900);
-}
-
-.actions {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.btn-icon {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  background: var(--neutral-100);
-  font-size: 1rem;
-  transition: all 0.2s ease;
-}
-
-.btn-icon:hover {
-  background: var(--neutral-200);
-  transform: scale(1.1);
-}
-</style>

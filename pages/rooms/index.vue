@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+  <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 py-6 sm:py-8">
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
       <div>
         <h1 class="text-2xl font-semibold text-neutral-900 sm:text-3xl">Rooms Management</h1>
@@ -67,7 +67,7 @@
             </select>
           </div>
         </div>
-        <div class="flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:justify-end">
+        <div class="flex items-end gap-2 sm:flex-row sm:items-center sm:justify-end">
           <div class="flex items-center gap-2">
             <button
               @click="viewMode = 'grid'"
