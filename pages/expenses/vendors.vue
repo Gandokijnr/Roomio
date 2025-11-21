@@ -28,7 +28,7 @@
     <div class="filters card">
       <div class="filter-group">
         <label>Vendor Type</label>
-        <select v-model="filters.type" class="input">
+        <select v-model="filters.type" class="input w-full">
           <option value="">All Types</option>
           <option v-for="type in vendorTypes" :key="type" :value="type">
             {{ formatType(type) }}
@@ -37,7 +37,7 @@
       </div>
       <div class="filter-group">
         <label>Status</label>
-        <select v-model="filters.status" class="input">
+        <select v-model="filters.status" class="input w-full">
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
           <option value="suspended">Suspended</option>
@@ -108,11 +108,11 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Vendor Name *</label>
-                <input type="text" v-model="vendorForm.vendor_name" class="input" required />
+                <input type="text" v-model="vendorForm.vendor_name" class="input w-full" required />
               </div>
               <div class="form-group">
                 <label>Vendor Type *</label>
-                <select v-model="vendorForm.vendor_type" class="input" required>
+                <select v-model="vendorForm.vendor_type" class="input w-full" required>
                   <option value="">Select Type</option>
                   <option v-for="type in vendorTypes" :key="type" :value="type">
                     {{ formatType(type) }}
@@ -124,22 +124,22 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Contact Person</label>
-                <input type="text" v-model="vendorForm.contact_person" class="input" />
+                <input type="text" v-model="vendorForm.contact_person" class="input w-full" />
               </div>
               <div class="form-group">
                 <label>Email</label>
-                <input type="email" v-model="vendorForm.email" class="input" />
+                <input type="email" v-model="vendorForm.email" class="input w-full" />
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label>Phone</label>
-                <input type="tel" v-model="vendorForm.phone" class="input" />
+                <input type="tel" v-model="vendorForm.phone" class="input w-full" />
               </div>
               <div class="form-group">
                 <label>Status</label>
-                <select v-model="vendorForm.status" class="input">
+                <select v-model="vendorForm.status" class="input w-full">
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                   <option value="suspended">Suspended</option>
@@ -149,60 +149,60 @@
 
             <div class="form-group">
               <label>Address</label>
-              <textarea v-model="vendorForm.address" class="input" rows="2"></textarea>
+              <textarea v-model="vendorForm.address" class="input w-full" rows="2"></textarea>
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label>City</label>
-                <input type="text" v-model="vendorForm.city" class="input" />
+                <input type="text" v-model="vendorForm.city" class="input w-full" />
               </div>
               <div class="form-group">
                 <label>State</label>
-                <input type="text" v-model="vendorForm.state" class="input" />
+                <input type="text" v-model="vendorForm.state" class="input w-full" />
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label>Tax ID</label>
-                <input type="text" v-model="vendorForm.tax_id" class="input" />
+                <input type="text" v-model="vendorForm.tax_id" class="input w-full" />
               </div>
               <div class="form-group">
                 <label>Registration Number</label>
-                <input type="text" v-model="vendorForm.registration_number" class="input" />
+                <input type="text" v-model="vendorForm.registration_number" class="input w-full" />
               </div>
             </div>
 
             <div class="form-group">
               <label>Payment Terms</label>
-              <input type="text" v-model="vendorForm.payment_terms" class="input" placeholder="e.g., Net 30" />
+              <input type="text" v-model="vendorForm.payment_terms" class="input w-full" placeholder="e.g., Net 30" />
             </div>
 
             <div class="form-group">
               <label>Credit Limit</label>
-              <input type="number" v-model.number="vendorForm.credit_limit" class="input" step="0.01" />
+              <input type="number" v-model.number="vendorForm.credit_limit" class="input w-full" step="0.01" />
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label>Bank Name</label>
-                <input type="text" v-model="vendorForm.bank_name" class="input" />
+                <input type="text" v-model="vendorForm.bank_name" class="input w-full" />
               </div>
               <div class="form-group">
                 <label>Account Number</label>
-                <input type="text" v-model="vendorForm.account_number" class="input" />
+                <input type="text" v-model="vendorForm.account_number" class="input w-full" />
               </div>
             </div>
 
             <div class="form-group">
               <label>Account Name</label>
-              <input type="text" v-model="vendorForm.account_name" class="input" />
+              <input type="text" v-model="vendorForm.account_name" class="input w-full" />
             </div>
 
             <div class="form-group">
               <label>Notes</label>
-              <textarea v-model="vendorForm.notes" class="input" rows="3"></textarea>
+              <textarea v-model="vendorForm.notes" class="input w-full" rows="3"></textarea>
             </div>
 
             <div class="modal-actions">

@@ -1,157 +1,296 @@
 <template>
-  <div class="expenses-page">
-    <div class="page-header">
+  <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 py-6 sm:py-8">
+    <!-- Header -->
+    <div class="flex flex-col gap-4 mb-6 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1>Expense Tracking</h1>
-        <p>Record and manage business expenses</p>
+        <h1 class="text-2xl font-semibold text-neutral-900 sm:text-3xl">
+          Expense Tracking
+        </h1>
+        <p class="mt-1 text-sm text-neutral-600">
+          Record and manage business expenses
+        </p>
       </div>
-      <div class="header-actions">
-        <NuxtLink to="/expenses/vendors" class="btn btn-secondary">
-          <span class="icon">🏢</span>
-          Manage Vendors
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <NuxtLink
+          to="/expenses/vendors"
+          class="btn btn-secondary w-full sm:w-auto inline-flex items-center justify-center gap-2"
+        >
+          <span>🏢</span>
+          <span>Manage Vendors</span>
         </NuxtLink>
-        <NuxtLink to="/expenses/analytics" class="btn btn-secondary">
-          <span class="icon">📊</span>
-          Analytics
+        <NuxtLink
+          to="/expenses/analytics"
+          class="btn btn-secondary w-full sm:w-auto inline-flex items-center justify-center gap-2"
+        >
+          <span>📊</span>
+          <span>Analytics</span>
         </NuxtLink>
-        <button @click="showExpenseModal = true" class="btn btn-primary">
-          <span class="icon">+</span>
-          Add Expense
+        <button
+          @click="showExpenseModal = true"
+          class="btn btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2"
+        >
+          <span>+</span>
+          <span>Add Expense</span>
         </button>
       </div>
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="tabs">
-      <NuxtLink to="/expenses" class="tab active">
+    <div class="flex flex-wrap gap-2 mb-6 border-b border-neutral-200">
+      <NuxtLink
+        to="/expenses"
+        class="px-4 py-2.5 text-sm font-medium border-b-2 border-primary-500 text-primary-700 bg-white"
+      >
         Expenses
       </NuxtLink>
-      <NuxtLink to="/expenses/vendors" class="tab">
+      <NuxtLink
+        to="/expenses/vendors"
+        class="px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50"
+      >
         Vendors
       </NuxtLink>
-      <NuxtLink to="/expenses/analytics" class="tab">
+      <NuxtLink
+        to="/expenses/analytics"
+        class="px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50"
+      >
         Analytics
       </NuxtLink>
     </div>
 
     <!-- Filters -->
-    <div class="filters card">
-      <div class="filter-group flex">
-        <label>Date Range</label>
-        <input type="date" v-model="filters.startDate" class="input" />
-        <span>to</span>
-        <input type="date" v-model="filters.endDate" class="input" />
+    <div class="card mb-6 p-4 sm:p-5">
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-neutral-700">Date Range</label>
+          <div class="flex items-center gap-2 md:flex-row flex-col">
+            <input type="date" v-model="filters.startDate" class="input w-full" />
+            <span class="text-xs text-neutral-500">to</span>
+            <input type="date" v-model="filters.endDate" class="input w-full" />
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-neutral-700">Category</label>
+          <select v-model="filters.category" class="input w-full sm:min-w-[180px]">
+            <option value="">All Categories</option>
+            <option v-for="cat in expenseCategories" :key="cat" :value="cat">
+              {{ formatCategory(cat) }}
+            </option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-neutral-700">Payment Status</label>
+          <select v-model="filters.paymentStatus" class="input w-full sm:min-w-[160px]">
+            <option value="">All Status</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="partial">Partial</option>
+            <option value="paid">Paid</option>
+            <option value="overdue">Overdue</option>
+          </select>
+        </div>
+        <button
+          @click="loadExpenses"
+          class="btn btn-secondary mt-1 w-full sm:w-auto"
+        >
+          Apply Filters
+        </button>
       </div>
-      <div class="filter-group">
-        <label>Category</label>
-        <select v-model="filters.category" class="input">
-          <option value="">All Categories</option>
-          <option v-for="cat in expenseCategories" :key="cat" :value="cat">
-            {{ formatCategory(cat) }}
-          </option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Payment Status</label>
-        <select v-model="filters.paymentStatus" class="input">
-          <option value="">All Status</option>
-          <option value="unpaid">Unpaid</option>
-          <option value="partial">Partial</option>
-          <option value="paid">Paid</option>
-          <option value="overdue">Overdue</option>
-        </select>
-      </div>
-      <button @click="loadExpenses" class="btn btn-secondary">Apply Filters</button>
     </div>
 
     <!-- Summary Cards -->
-    <div class="summary-cards">
-      <div class="summary-card">
-        <div class="summary-label">Total Expenses (Last 30 Days)</div>
-        <div class="summary-value">₦{{ formatAmount(summary.total) }}</div>
+    <div class="grid gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
+      <div class="card p-4 sm:p-5">
+        <div class="text-xs font-medium text-neutral-600 mb-1">
+          Total Expenses (Last 30 Days)
+        </div>
+        <div class="text-xl font-semibold text-neutral-900">
+          ₦{{ formatAmount(summary.total) }}
+        </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-label">Unpaid</div>
-        <div class="summary-value text-error">₦{{ formatAmount(summary.unpaid) }}</div>
+      <div class="card p-4 sm:p-5">
+        <div class="text-xs font-medium text-neutral-600 mb-1">
+          Unpaid
+        </div>
+        <div class="text-xl font-semibold text-error-600">
+          ₦{{ formatAmount(summary.unpaid) }}
+        </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-label">Paid</div>
-        <div class="summary-value text-success">₦{{ formatAmount(summary.paid) }}</div>
+      <div class="card p-4 sm:p-5">
+        <div class="text-xs font-medium text-neutral-600 mb-1">
+          Paid
+        </div>
+        <div class="text-xl font-semibold text-success-600">
+          ₦{{ formatAmount(summary.paid) }}
+        </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-label">Filtered Results</div>
-        <div class="summary-value">{{ expenses.length }}</div>
+      <div class="card p-4 sm:p-5">
+        <div class="text-xs font-medium text-neutral-600 mb-1">
+          Filtered Results
+        </div>
+        <div class="text-xl font-semibold text-neutral-900">
+          {{ expenses.length }}
+        </div>
       </div>
     </div>
 
-    <div v-if="loading" class="loading">Loading expenses...</div>
-
-    <div v-else-if="expenses.length === 0" class="empty-state card">
-      <div class="empty-icon">💰</div>
-      <h3>No expenses found</h3>
-      <p>Start tracking your business expenses</p>
+    <div v-if="loading" class="py-12 text-center text-sm text-neutral-600">
+      Loading expenses...
     </div>
 
-    <div v-else class="expenses-table card">
-      <table>
-        <thead>
-          <tr>
-            <th>Expense #</th>
-            <th>Date</th>
-            <th>Category</th>
-            <th>Description</th>
-            <th>Vendor</th>
-            <th>Base Amount</th>
-            <th>Tax</th>
-            <th>Total Amount</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="expense in expenses" :key="expense.id">
-            <td class="expense-number">{{ expense.expense_number }}</td>
-            <td>{{ formatDate(expense.expense_date) }}</td>
-            <td>{{ formatCategory(expense.expense_category) }}</td>
-            <td>{{ expense.description }}</td>
-            <td>{{ expense.vendor?.vendor_name || '-' }}</td>
-            <td class="amount">₦{{ expense.amount.toFixed(2) }}</td>
-            <td class="amount">₦{{ expense.tax_amount.toFixed(2) }}</td>
-            <td class="amount total">₦{{ expense.total_amount.toFixed(2) }}</td>
-            <td>
-              <span :class="['badge', `badge-${getStatusColor(expense.payment_status)}`]">
-                {{ expense.payment_status }}
-              </span>
-            </td>
-            <td>
-              <div class="actions">
-                <button @click="viewExpense(expense)" class="btn-icon" title="View">👁️</button>
-                <button @click="editExpense(expense)" class="btn-icon" title="Edit">✏️</button>
-                <button v-if="expense.payment_status !== 'paid'" @click="markAsPaid(expense)" class="btn-icon" title="Mark as Paid">✓</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div
+      v-else-if="expenses.length === 0"
+      class="card py-12 px-6 text-center"
+    >
+      <div class="text-5xl mb-4">💰</div>
+      <h3 class="text-lg font-semibold text-neutral-900 mb-2">
+        No expenses found
+      </h3>
+      <p class="text-sm text-neutral-600">
+        Start tracking your business expenses
+      </p>
+    </div>
+
+    <div v-else class="card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-neutral-200">
+          <thead class="bg-neutral-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Expense #
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Date
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Category
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Description
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Vendor
+              </th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Base Amount
+              </th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Tax
+              </th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Total Amount
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Status
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-neutral-100">
+            <tr
+              v-for="expense in expenses"
+              :key="expense.id"
+              class="hover:bg-neutral-50"
+            >
+              <td class="px-4 py-3 text-sm font-semibold text-neutral-900 whitespace-nowrap">
+                {{ expense.expense_number }}
+              </td>
+              <td class="px-4 py-3 text-sm text-neutral-700 whitespace-nowrap">
+                {{ formatDate(expense.expense_date) }}
+              </td>
+              <td class="px-4 py-3 text-sm text-neutral-700 whitespace-nowrap">
+                {{ formatCategory(expense.expense_category) }}
+              </td>
+              <td class="px-4 py-3 text-sm text-neutral-700">
+                {{ expense.description }}
+              </td>
+              <td class="px-4 py-3 text-sm text-neutral-700 whitespace-nowrap">
+                {{ expense.vendor?.vendor_name || '-' }}
+              </td>
+              <td class="px-4 py-3 text-sm font-semibold text-neutral-900 text-right whitespace-nowrap">
+                ₦{{ expense.amount.toFixed(2) }}
+              </td>
+              <td class="px-4 py-3 text-sm font-semibold text-neutral-900 text-right whitespace-nowrap">
+                ₦{{ expense.tax_amount.toFixed(2) }}
+              </td>
+              <td class="px-4 py-3 text-sm font-semibold text-primary-700 text-right whitespace-nowrap">
+                ₦{{ expense.total_amount.toFixed(2) }}
+              </td>
+              <td class="px-4 py-3">
+                <span :class="['badge', `badge-${getStatusColor(expense.payment_status)}`]">
+                  {{ expense.payment_status }}
+                </span>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex gap-2">
+                  <button
+                    @click="viewExpense(expense)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-neutral-100 text-base hover:bg-neutral-200 hover:scale-110 transition transform duration-150"
+                    title="View"
+                  >
+                    👁️
+                  </button>
+                  <button
+                    @click="editExpense(expense)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-neutral-100 text-base hover:bg-neutral-200 hover:scale-110 transition transform duration-150"
+                    title="Edit"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    v-if="expense.payment_status !== 'paid'"
+                    @click="markAsPaid(expense)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-neutral-100 text-base hover:bg-neutral-200 hover:scale-110 transition transform duration-150"
+                    title="Mark as Paid"
+                  >
+                    ✓
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Add/Edit Expense Modal -->
-    <div v-if="showExpenseModal" class="modal-overlay" @click.self="closeExpenseModal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>{{ editingExpense ? 'Edit Expense' : 'Add New Expense' }}</h2>
-          <button @click="closeExpenseModal" class="btn-close">×</button>
+    <div
+      v-if="showExpenseModal"
+      class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 sm:px-6 py-4 sm:py-8"
+      @click.self="closeExpenseModal"
+    >
+      <div class="card w-full max-w-3xl max-h-[90vh] overflow-y-auto p-0 sm:rounded-xl">
+        <div class="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-neutral-200">
+          <h2 class="text-lg font-semibold text-neutral-900 sm:text-xl">
+            {{ editingExpense ? 'Edit Expense' : 'Add New Expense' }}
+          </h2>
+          <button
+            @click="closeExpenseModal"
+            type="button"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-700 text-xl leading-none hover:bg-neutral-200 transition"
+          >
+            ×
+          </button>
         </div>
-        <div class="modal-body">
-          <form @submit.prevent="saveExpense">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Expense Date *</label>
-                <input type="date" v-model="expenseForm.expense_date" class="input" required />
+        <div class="px-4 py-4 sm:px-6 sm:py-5">
+          <form @submit.prevent="saveExpense" class="space-y-4">
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-neutral-700">Expense Date *</label>
+                <input
+                  type="date"
+                  v-model="expenseForm.expense_date"
+                  class="input w-full"
+                  required
+                />
               </div>
-              <div class="form-group">
-                <label>Category *</label>
-                <select v-model="expenseForm.expense_category" class="input" required>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-neutral-700">Category *</label>
+                <select
+                  v-model="expenseForm.expense_category"
+                  class="input w-full"
+                  required
+                >
                   <option value="">Select Category</option>
                   <option v-for="cat in expenseCategories" :key="cat" :value="cat">
                     {{ formatCategory(cat) }}
@@ -160,42 +299,63 @@
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label>Vendor</label>
-                <select v-model="expenseForm.vendor_id" class="input">
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-neutral-700">Vendor</label>
+                <select v-model="expenseForm.vendor_id" class="input w-full">
                   <option value="">Select Vendor</option>
                   <option v-for="vendor in vendors" :key="vendor.id" :value="vendor.id">
                     {{ vendor.vendor_name }}
                   </option>
                 </select>
               </div>
-              <div class="form-group">
-                <label>Department</label>
-                <input type="text" v-model="expenseForm.department" class="input" placeholder="e.g., Housekeeping" />
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-neutral-700">Department</label>
+                <input
+                  type="text"
+                  v-model="expenseForm.department"
+                  class="input w-full"
+                  placeholder="e.g., Housekeeping"
+                />
               </div>
             </div>
 
-            <div class="form-group">
-              <label>Description *</label>
-              <textarea v-model="expenseForm.description" class="input" rows="3" required></textarea>
+            <div class="flex flex-col gap-2">
+              <label class="text-sm font-medium text-neutral-700">Description *</label>
+              <textarea
+                v-model="expenseForm.description"
+                class="input w-full resize-y"
+                rows="3"
+                required
+              ></textarea>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label>Amount *</label>
-                <input type="number" v-model.number="expenseForm.amount" class="input" step="0.01" required />
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-neutral-700">Amount *</label>
+                <input
+                  type="number"
+                  v-model.number="expenseForm.amount"
+                  class="input w-full"
+                  step="0.01"
+                  required
+                />
               </div>
-              <div class="form-group">
-                <label>Tax Amount</label>
-                <input type="number" v-model.number="expenseForm.tax_amount" class="input" step="0.01" />
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-neutral-700">Tax Amount</label>
+                <input
+                  type="number"
+                  v-model.number="expenseForm.tax_amount"
+                  class="input w-full"
+                  step="0.01"
+                />
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label>Payment Method</label>
-                <select v-model="expenseForm.payment_method" class="input">
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-neutral-700">Payment Method</label>
+                <select v-model="expenseForm.payment_method" class="input w-full">
                   <option value="">Not Paid Yet</option>
                   <option value="cash">Cash</option>
                   <option value="bank_transfer">Bank Transfer</option>
@@ -204,9 +364,9 @@
                   <option value="other">Other</option>
                 </select>
               </div>
-              <div class="form-group">
-                <label>Payment Status</label>
-                <select v-model="expenseForm.payment_status" class="input">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-neutral-700">Payment Status</label>
+                <select v-model="expenseForm.payment_status" class="input w-full">
                   <option value="unpaid">Unpaid</option>
                   <option value="partial">Partial</option>
                   <option value="paid">Paid</option>
@@ -214,27 +374,27 @@
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label>Receipt Number</label>
-                <input type="text" v-model="expenseForm.receipt_number" class="input" />
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-neutral-700">Receipt Number</label>
+                <input type="text" v-model="expenseForm.receipt_number" class="input w-full" />
               </div>
-              <div class="form-group">
-                <label>Invoice Reference</label>
-                <input type="text" v-model="expenseForm.invoice_reference" class="input" />
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-neutral-700">Invoice Reference</label>
+                <input type="text" v-model="expenseForm.invoice_reference" class="input w-full" />
               </div>
             </div>
 
-            <div class="form-group">
-              <label>
+            <div class="flex flex-col gap-2">
+              <label class="inline-flex items-center gap-2 text-sm font-medium text-neutral-700 cursor-pointer">
                 <input type="checkbox" v-model="expenseForm.is_recurring" />
                 Recurring Expense
               </label>
             </div>
 
-            <div v-if="expenseForm.is_recurring" class="form-row">
-              <div class="form-group">
-                <label>Frequency</label>
+            <div v-if="expenseForm.is_recurring" class="grid gap-4 md:grid-cols-2">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-neutral-700">Frequency</label>
                 <select v-model="expenseForm.recurring_frequency" class="input">
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
@@ -243,20 +403,30 @@
                   <option value="yearly">Yearly</option>
                 </select>
               </div>
-              <div class="form-group">
-                <label>Next Occurrence</label>
-                <input type="date" v-model="expenseForm.next_occurrence" class="input" />
+              <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-neutral-700">Next Occurrence</label>
+                <input type="date" v-model="expenseForm.next_occurrence" class="input w-full" />
               </div>
             </div>
 
-            <div class="form-group">
-              <label>Notes</label>
-              <textarea v-model="expenseForm.notes" class="input" rows="2"></textarea>
+            <div class="flex flex-col gap-2">
+              <label class="text-sm font-medium text-neutral-700">Notes</label>
+              <textarea v-model="expenseForm.notes" class="input w-full resize-y" rows="2"></textarea>
             </div>
 
-            <div class="modal-actions">
-              <button type="button" @click="closeExpenseModal" class="btn btn-secondary">Cancel</button>
-              <button type="submit" class="btn btn-primary" :disabled="saving">
+            <div class="flex justify-end gap-2 pt-4 mt-2 border-t border-neutral-200">
+              <button
+                type="button"
+                @click="closeExpenseModal"
+                class="btn btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                :disabled="saving"
+              >
                 {{ saving ? 'Saving...' : 'Save Expense' }}
               </button>
             </div>
@@ -602,316 +772,3 @@ onMounted(async () => {
   await Promise.all([loadExpenses(), loadVendors()])
 })
 </script>
-
-<style scoped>
-.expenses-page {
-  max-width: 1400px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-xl);
-}
-
-.page-header h1 {
-  font-size: 2rem;
-  color: var(--neutral-900);
-  margin-bottom: var(--spacing-xs);
-}
-
-.page-header p {
-  color: var(--neutral-600);
-  font-size: 0.938rem;
-}
-
-.header-actions {
-  display: flex;
-  gap: var(--spacing-md);
-  align-items: center;
-}
-
-.tabs {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-lg);
-  border-bottom: 2px solid var(--neutral-200);
-}
-
-.tab {
-  padding: var(--spacing-md) var(--spacing-lg);
-  text-decoration: none;
-  color: var(--neutral-600);
-  font-weight: 600;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  transition: all 0.2s;
-}
-
-.tab:hover {
-  color: var(--primary-600);
-  background: var(--neutral-50);
-}
-
-.tab.active {
-  color: var(--primary-600);
-  border-bottom-color: var(--primary-600);
-}
-
-.filters {
-  display: flex;
-  gap: var(--spacing-md);
-  align-items: flex-end;
-  margin-bottom: var(--spacing-lg);
-  flex-wrap: wrap;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.filter-group label {
-  font-size: 0.813rem;
-  font-weight: 600;
-  color: var(--neutral-700);
-}
-
-.summary-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
-}
-
-.summary-card {
-  background: white;
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--neutral-200);
-}
-
-.summary-label {
-  font-size: 0.813rem;
-  color: var(--neutral-600);
-  margin-bottom: var(--spacing-xs);
-}
-
-.summary-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--neutral-900);
-}
-
-.text-error {
-  color: var(--error-600);
-}
-
-.text-success {
-  color: var(--success-600);
-}
-
-.loading, .empty-state {
-  text-align: center;
-  padding: var(--spacing-2xl);
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: var(--spacing-md);
-}
-
-.expenses-table {
-  padding: 0;
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-thead {
-  background: var(--neutral-50);
-  border-bottom: 2px solid var(--neutral-200);
-}
-
-th {
-  padding: var(--spacing-md);
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.813rem;
-  color: var(--neutral-700);
-  text-transform: uppercase;
-}
-
-tbody tr {
-  border-bottom: 1px solid var(--neutral-200);
-}
-
-tbody tr:hover {
-  background: var(--neutral-50);
-}
-
-td {
-  padding: var(--spacing-md);
-  font-size: 0.875rem;
-  color: var(--neutral-700);
-}
-
-.expense-number {
-  font-weight: 600;
-  color: var(--neutral-900);
-}
-
-.amount {
-  font-weight: 600;
-  color: var(--neutral-900);
-  text-align: right;
-}
-
-.amount.total {
-  font-weight: 700;
-  color: var(--primary-700);
-  font-size: 1rem;
-}
-
-.actions {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--spacing-xs);
-  font-size: 1.2rem;
-  transition: transform 0.2s;
-}
-
-.btn-icon:hover {
-  transform: scale(1.2);
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: var(--spacing-md);
-}
-
-.modal {
-  background: white;
-  border-radius: var(--radius-lg);
-  max-width: 800px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--neutral-200);
-}
-
-.modal-header h2 {
-  font-size: 1.5rem;
-  color: var(--neutral-900);
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  cursor: pointer;
-  color: var(--neutral-500);
-  line-height: 1;
-}
-
-.modal-body {
-  padding: var(--spacing-lg);
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
-}
-
-.form-group {
-  margin-bottom: var(--spacing-md);
-}
-
-.form-group label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--neutral-700);
-  margin-bottom: var(--spacing-xs);
-}
-
-.input {
-  width: 100%;
-  padding: var(--spacing-sm);
-  border: 1px solid var(--neutral-300);
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-}
-
-.input:focus {
-  outline: none;
-  border-color: var(--primary-500);
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
-}
-
-.btn {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  font-size: 0.875rem;
-}
-
-.btn-primary {
-  background: var(--primary-600);
-  color: white;
-}
-
-.btn-primary:hover {
-  background: var(--primary-700);
-}
-
-.btn-secondary {
-  background: var(--neutral-200);
-  color: var(--neutral-700);
-}
-
-.btn-secondary:hover {
-  background: var(--neutral-300);
-}
-
-.icon {
-  margin-right: var(--spacing-xs);
-}
-</style>
