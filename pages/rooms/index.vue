@@ -395,6 +395,8 @@ const getStatusColor = (status: RoomStatus) => {
     maintenance: 'neutral',
     cleaning: 'info',
     out_of_service: 'error',
+    needs_cleaning: 'warning',
+    assigned_housekeeper: 'info',
   }
   return colors[status] || 'neutral'
 }
@@ -407,6 +409,8 @@ const getStatusIcon = (status: RoomStatus) => {
     maintenance: '⚙️',
     cleaning: '🧹',
     out_of_service: '❌',
+    needs_cleaning: '🧹',
+    assigned_housekeeper: '👤',
   }
   return icons[status] || '⚪'
 }
@@ -419,6 +423,8 @@ const formatStatus = (status: RoomStatus) => {
     maintenance: 'Maintenance',
     cleaning: 'Cleaning',
     out_of_service: 'Out of Service',
+    needs_cleaning: 'Needs Cleaning',
+    assigned_housekeeper: 'Assigned Housekeeper',
   }
   return labels[status] || status
 }
