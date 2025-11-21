@@ -1,69 +1,104 @@
 <template>
-  <div class="housekeeping-page">
-    <div class="page-header">
+  <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div class="flex flex-col gap-4 mb-6 sm:mb-8 sm:flex-row sm:items-start sm:justify-between">
       <div>
-        <h1>{{ isHousekeeper ? 'My Tasks' : 'Housekeeping Management' }}</h1>
-        <p>{{ isHousekeeper ? 'Your assigned cleaning and maintenance tasks' : 'Manage all housekeeping tasks and assignments' }}</p>
+        <h1 class="text-2xl font-semibold text-neutral-900 sm:text-3xl">
+          {{ isHousekeeper ? 'My Tasks' : 'Housekeeping Management' }}
+        </h1>
+        <p class="mt-1 text-sm text-neutral-600">
+          {{ isHousekeeper ? 'Your assigned cleaning and maintenance tasks' : 'Manage all housekeeping tasks and assignments' }}
+        </p>
       </div>
-      <div class="header-actions">
+      <div class="flex w-full sm:w-auto justify-end">
         <button 
           v-if="!isHousekeeper"
           @click="loadTasks" 
-          class="btn btn-secondary"
+          class="btn btn-secondary w-full sm:w-auto inline-flex items-center justify-center gap-2"
           :disabled="loading"
         >
-          🔄 Refresh
+          <span>🔄</span>
+          <span>Refresh</span>
         </button>
       </div>
     </div>
 
     <!-- Task Stats -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-number">{{ taskStats.pending }}</div>
-        <div class="stat-label">Pending Tasks</div>
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4 mb-6">
+      <div class="card p-4 sm:p-5 text-center">
+        <div class="text-2xl font-semibold text-neutral-900 mb-1">
+          {{ taskStats.pending }}
+        </div>
+        <div class="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+          Pending Tasks
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ taskStats.in_progress }}</div>
-        <div class="stat-label">In Progress</div>
+      <div class="card p-4 sm:p-5 text-center">
+        <div class="text-2xl font-semibold text-neutral-900 mb-1">
+          {{ taskStats.in_progress }}
+        </div>
+        <div class="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+          In Progress
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ taskStats.completed_today }}</div>
-        <div class="stat-label">Completed Today</div>
+      <div class="card p-4 sm:p-5 text-center">
+        <div class="text-2xl font-semibold text-neutral-900 mb-1">
+          {{ taskStats.completed_today }}
+        </div>
+        <div class="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+          Completed Today
+        </div>
       </div>
-      <div v-if="!isHousekeeper" class="stat-card">
-        <div class="stat-number">{{ taskStats.needs_assignment }}</div>
-        <div class="stat-label">Needs Assignment</div>
+      <div
+        v-if="!isHousekeeper"
+        class="card p-4 sm:p-5 text-center"
+      >
+        <div class="text-2xl font-semibold text-neutral-900 mb-1">
+          {{ taskStats.needs_assignment }}
+        </div>
+        <div class="text-xs font-medium text-neutral-600 uppercase tracking-wide">
+          Needs Assignment
+        </div>
       </div>
     </div>
 
     <!-- Filter Tabs -->
-    <div class="filter-tabs">
+    <div class="flex flex-wrap gap-2 mb-6 border-b border-neutral-200">
       <button 
         v-for="filter in filterOptions" 
         :key="filter.value"
         @click="activeFilter = filter.value"
-        :class="['filter-tab', { active: activeFilter === filter.value }]"
+        class="px-3 py-2 text-sm font-medium border-b-2"
+        :class="activeFilter === filter.value
+          ? 'border-primary-500 text-primary-700 bg-white'
+          : 'border-transparent text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'"
       >
         {{ filter.label }} ({{ getFilterCount(filter.value) }})
       </button>
     </div>
 
-    <div v-if="loading" class="loading">
-      <div class="loading-spinner"></div>
-      Loading tasks...
+    <div v-if="loading" class="py-12 flex flex-col items-center gap-3 text-neutral-600 text-sm">
+      <div class="w-8 h-8 border-2 border-neutral-200 border-t-primary-500 rounded-full animate-spin"></div>
+      <span>Loading tasks...</span>
     </div>
 
-    <div v-else-if="filteredTasks.length === 0" class="empty-state">
-      <div class="empty-icon">📋</div>
-      <h3>No tasks found</h3>
-      <p>{{ getEmptyMessage() }}</p>
+    <div v-else-if="filteredTasks.length === 0" class="py-12 text-center text-neutral-600">
+      <div class="text-4xl mb-3">📋</div>
+      <h3 class="text-lg font-semibold text-neutral-900 mb-1">
+        No tasks found
+      </h3>
+      <p class="text-sm">
+        {{ getEmptyMessage() }}
+      </p>
     </div>
 
-    <div v-else class="tasks-grid">
-      <div v-for="task in filteredTasks" :key="task.id" class="task-card">
-        <div class="task-header">
-          <div class="task-badges">
+    <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div
+        v-for="task in filteredTasks"
+        :key="task.id"
+        class="card overflow-hidden transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-md"
+      >
+        <div class="flex items-center justify-between px-4 pt-4 pb-2">
+          <div class="flex gap-2">
             <span :class="['badge', `badge-${getPriorityColor(task.priority)}`]">
               {{ task.priority.toUpperCase() }}
             </span>
@@ -71,18 +106,18 @@
               {{ formatStatus(task.status) }}
             </span>
           </div>
-          <div class="task-actions">
+          <div class="flex gap-1">
             <button 
               v-if="!isHousekeeper && task.status === 'pending'"
               @click="openAssignmentModal(task)"
-              class="btn-icon"
+              class="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-neutral-100 text-neutral-600"
               title="Assign to housekeeper"
             >
               👤
             </button>
             <button 
               @click="openTaskDetails(task)"
-              class="btn-icon"
+              class="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-neutral-100 text-neutral-600"
               title="View details"
             >
               👁️
@@ -90,43 +125,57 @@
           </div>
         </div>
 
-        <div class="task-content">
-          <h3>{{ task.title }}</h3>
-          <div class="room-info">
-            <span class="room-number">Room {{ task.room?.room_number }}</span>
-            <span class="task-type">{{ task.task_type }}</span>
+        <div class="px-4 pb-4">
+          <h3 class="text-base font-semibold text-neutral-900 mb-2">
+            {{ task.title }}
+          </h3>
+          <div class="flex flex-wrap gap-3 mb-3 text-sm">
+            <span class="font-semibold text-primary-600">
+              Room {{ task.room?.room_number }}
+            </span>
+            <span class="text-neutral-600 capitalize">
+              {{ task.task_type }}
+            </span>
           </div>
           
-          <p class="task-description">{{ task.description }}</p>
+          <p class="text-sm text-neutral-800 leading-relaxed mb-3">
+            {{ task.description }}
+          </p>
           
-          <div v-if="task.special_instructions" class="special-instructions">
+          <div
+            v-if="task.special_instructions"
+            class="bg-amber-50 border border-amber-400 rounded-md px-3 py-2 mb-3 text-sm text-amber-900"
+          >
             <strong>⚠️ Special Instructions:</strong>
-            <p>{{ task.special_instructions }}</p>
+            <p class="mt-1">{{ task.special_instructions }}</p>
           </div>
 
-          <div class="task-meta">
-            <div class="meta-item">
-              <span class="meta-label">Scheduled:</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-neutral-700 mb-4">
+            <div class="flex flex-col">
+              <span class="text-neutral-500 font-medium">Scheduled:</span>
               <span>{{ formatDateTime(task.scheduled_date) }}</span>
             </div>
-            <div v-if="task.estimated_duration" class="meta-item">
-              <span class="meta-label">Duration:</span>
+            <div v-if="task.estimated_duration" class="flex flex-col">
+              <span class="text-neutral-500 font-medium">Duration:</span>
               <span>{{ task.estimated_duration }} min</span>
             </div>
-            <div v-if="task.assigned_housekeeper" class="meta-item">
-              <span class="meta-label">Assigned to:</span>
+            <div v-if="task.assigned_housekeeper" class="flex flex-col">
+              <span class="text-neutral-500 font-medium">Assigned to:</span>
               <span>{{ task.assigned_housekeeper.full_name }}</span>
             </div>
-            <div v-if="task.started_at" class="meta-item">
-              <span class="meta-label">Started:</span>
+            <div v-if="task.started_at" class="flex flex-col">
+              <span class="text-neutral-500 font-medium">Started:</span>
               <span>{{ formatDateTime(task.started_at) }}</span>
             </div>
           </div>
         </div>
 
-        <div class="task-footer">
+        <div class="px-4 py-3 border-t border-neutral-200 bg-neutral-50">
           <!-- Housekeeper Actions -->
-          <div v-if="isHousekeeper && task.assigned_to === user?.id" class="housekeeper-actions">
+          <div
+            v-if="isHousekeeper && task.assigned_to === user?.id"
+            class="flex justify-end gap-2"
+          >
             <button 
               v-if="task.status === 'pending'"
               @click="startTask(task)"
@@ -144,7 +193,10 @@
           </div>
 
           <!-- Manager Actions -->
-          <div v-else-if="!isHousekeeper" class="manager-actions">
+          <div
+            v-else-if="!isHousekeeper"
+            class="flex justify-end gap-2"
+          >
             <button 
               v-if="task.status === 'pending' && !task.assigned_to"
               @click="openAssignmentModal(task)"
@@ -414,330 +466,3 @@ onMounted(() => {
   loadTasks()
 })
 </script>
-
-<style scoped>
-.housekeeping-page {
-  max-width: 1400px;
-  padding: 1rem;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
-}
-
-.page-header h1 {
-  font-size: 2rem;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.page-header p {
-  color: #6b7280;
-  font-size: 0.938rem;
-}
-
-.header-actions {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
-
-.stat-number {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.stat-label {
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-
-.filter-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.filter-tab {
-  padding: 0.75rem 1rem;
-  background: none;
-  border: none;
-  color: #6b7280;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
-}
-
-.filter-tab:hover {
-  color: #374151;
-}
-
-.filter-tab.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
-}
-
-.loading {
-  text-align: center;
-  padding: 3rem;
-  color: #6b7280;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.loading-spinner {
-  width: 2rem;
-  height: 2rem;
-  border: 2px solid #e5e7eb;
-  border-top: 2px solid #3b82f6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.empty-state {
-  text-align: center;
-  padding: 3rem;
-  color: #6b7280;
-}
-
-.empty-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.empty-state h3 {
-  color: #374151;
-  margin-bottom: 0.5rem;
-}
-
-.tasks-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-}
-
-.task-card {
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.task-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.task-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1rem 0;
-}
-
-.task-badges {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.task-actions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.btn-icon {
-  padding: 0.25rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  border-radius: 0.25rem;
-  transition: background-color 0.2s;
-}
-
-.btn-icon:hover {
-  background: #f3f4f6;
-}
-
-.task-content {
-  padding: 0 1rem 1rem;
-}
-
-.task-content h3 {
-  font-size: 1.125rem;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.room-info {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.room-number {
-  font-weight: 600;
-  color: #3b82f6;
-}
-
-.task-type {
-  color: #6b7280;
-  text-transform: capitalize;
-}
-
-.task-description {
-  color: #374151;
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
-  line-height: 1.5;
-}
-
-.special-instructions {
-  background: #fef3c7;
-  border: 1px solid #f59e0b;
-  border-radius: 0.375rem;
-  padding: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.special-instructions strong {
-  color: #92400e;
-}
-
-.special-instructions p {
-  margin: 0.5rem 0 0;
-  color: #92400e;
-}
-
-.task-meta {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  font-size: 0.813rem;
-  margin-bottom: 1rem;
-}
-
-.meta-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.meta-label {
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.task-footer {
-  padding: 1rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
-}
-
-.housekeeper-actions,
-.manager-actions {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-}
-
-.btn {
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.btn-sm {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.813rem;
-}
-
-.btn-primary {
-  background: #3b82f6;
-  color: white;
-}
-
-.btn-primary:hover {
-  background: #2563eb;
-}
-
-.btn-success {
-  background: #10b981;
-  color: white;
-}
-
-.btn-success:hover {
-  background: #059669;
-}
-
-.btn-secondary {
-  background: #6b7280;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background: #4b5563;
-}
-
-.badge {
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.badge-success {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.badge-warning {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.badge-error {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.badge-info {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.badge-neutral {
-  background: #f3f4f6;
-  color: #374151;
-}
-</style>
