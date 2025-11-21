@@ -205,8 +205,22 @@ const handleSignup = async () => {
       } else {
         alert('Signup failed: ' + message)
       }
-
       return
+    }
+    
+    // Ensure the invited user becomes the admin of the created tenant
+    if (data.user) {
+      try {
+        await $fetch('/api/invitations/complete-signup', {
+          method: 'POST',
+          body: {
+            token: route.query.token,
+            userId: data.user.id
+          }
+        })
+      } catch (completeError) {
+        console.error('Failed to finalize invited signup:', completeError)
+      }
     }
     
     // Mark invitation as used
