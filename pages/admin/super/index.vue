@@ -1,16 +1,18 @@
 <template>
-  <div class="super-admin-page">
-    <header class="super-admin-header">
+  <div class="super-admin-page space-y-6 lg:space-y-8">
+    <header class="super-admin-header flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-4 py-3 sm:px-6 rounded-xl bg-gradient-to-r from-slate-950 to-slate-900 text-slate-100">
       <div>
-        <h1>Super Admin Command Center</h1>
-        <p>Global control panel for Roomio platform owners</p>
+        <h1 class="text-xl sm:text-2xl font-semibold">Super Admin Command Center</h1>
+        <p class="mt-1 text-sm text-slate-400">Global control panel for Roomio platform owners</p>
       </div>
-      <span class="super-admin-badge">Super Admin</span>
+      <span class="super-admin-badge inline-flex items-center rounded-full border border-royal-gold-500/70 bg-slate-900/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+        Super Admin
+      </span>
     </header>
 
-    <nav class="super-admin-tabs">
+    <nav class="super-admin-tabs mt-4 flex flex-wrap gap-2 overflow-x-auto pb-1 px-1">
       <button
-        class="tab-pill"
+        class="tab-pill inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap bg-slate-900/80 text-slate-200 border-slate-700/70 hover:bg-slate-800/90"
         :class="{ active: activeTab === 'overview' }"
         type="button"
         @click="setActiveTab('overview')"
@@ -18,7 +20,7 @@
         🛡️ Overview
       </button>
       <button
-        class="tab-pill"
+        class="tab-pill inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap bg-slate-900/80 text-slate-200 border-slate-700/70 hover:bg-slate-800/90"
         :class="{ active: activeTab === 'tenantsSummary' }"
         type="button"
         @click="setActiveTab('tenantsSummary')"
@@ -26,7 +28,7 @@
         🏨 Tenants (Summary)
       </button>
       <button
-        class="tab-pill"
+        class="tab-pill inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap bg-slate-900/80 text-slate-200 border-slate-700/70 hover:bg-slate-800/90"
         :class="{ active: activeTab === 'tenantsDirectory' }"
         type="button"
         @click="setActiveTab('tenantsDirectory')"
@@ -34,7 +36,7 @@
         📋 Tenants Directory
       </button>
       <button
-        class="tab-pill"
+        class="tab-pill inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap bg-slate-900/80 text-slate-200 border-slate-700/70 hover:bg-slate-800/90"
         :class="{ active: activeTab === 'onboardingSummary' }"
         type="button"
         @click="setActiveTab('onboardingSummary')"
@@ -42,7 +44,7 @@
         📬 Onboarding (Summary)
       </button>
       <button
-        class="tab-pill"
+        class="tab-pill inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap bg-slate-900/80 text-slate-200 border-slate-700/70 hover:bg-slate-800/90"
         :class="{ active: activeTab === 'onboardingQueue' }"
         type="button"
         @click="setActiveTab('onboardingQueue')"
@@ -50,7 +52,7 @@
         ✅ Onboarding Queue
       </button>
       <button
-        class="tab-pill"
+        class="tab-pill inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap bg-slate-900/80 text-slate-200 border-slate-700/70 hover:bg-slate-800/90"
         :class="{ active: activeTab === 'activity' }"
         type="button"
         @click="setActiveTab('activity')"
@@ -59,136 +61,181 @@
       </button>
     </nav>
 
-    <section class="metrics-grid" v-if="dashboard && activeTab === 'overview'">
-      <div class="metric-card tenants">
-        <div class="metric-label">Total Tenants</div>
-        <div class="metric-value">{{ dashboard.totalTenants }}</div>
-        <div class="metric-sub" v-if="dashboard.newTenantsLast30Days !== undefined">
+    <section
+      v-if="dashboard && activeTab === 'overview'"
+      class="grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3"
+    >
+      <div class="rounded-xl border border-slate-700/70 bg-slate-950/80 px-4 py-3 sm:px-5 sm:py-4">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Total Tenants</p>
+        <p class="mt-2 text-2xl sm:text-3xl font-semibold text-slate-50">
+          {{ dashboard.totalTenants }}
+        </p>
+        <p
+          v-if="dashboard.newTenantsLast30Days !== undefined"
+          class="mt-1 text-xs text-slate-400"
+        >
           {{ dashboard.newTenantsLast30Days }} new in last 30 days
-        </div>
+        </p>
       </div>
-      <div class="metric-card requests">
-        <div class="metric-label">Pending Requests</div>
-        <div class="metric-value">{{ dashboard.pendingRequests }}</div>
+
+      <div class="rounded-xl border border-slate-700/70 bg-slate-950/80 px-4 py-3 sm:px-5 sm:py-4">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Pending Requests</p>
+        <p class="mt-2 text-2xl sm:text-3xl font-semibold text-amber-300">
+          {{ dashboard.pendingRequests }}
+        </p>
       </div>
-      <div class="metric-card users">
-        <div class="metric-label">Active Users (15 min)</div>
-        <div class="metric-value">{{ dashboard.activeUsers }}</div>
-        <div class="metric-sub" v-if="dashboard.churnRateLast30Days !== undefined">
+
+      <div class="rounded-xl border border-slate-700/70 bg-slate-950/80 px-4 py-3 sm:px-5 sm:py-4">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Active Users (15 min)</p>
+        <p class="mt-2 text-2xl sm:text-3xl font-semibold text-emerald-300">
+          {{ dashboard.activeUsers }}
+        </p>
+        <p
+          v-if="dashboard.churnRateLast30Days !== undefined"
+          class="mt-1 text-xs text-slate-400"
+        >
           Churn 30d: {{ (dashboard.churnRateLast30Days * 100).toFixed(1) }}%
-        </div>
+        </p>
       </div>
-      <div class="metric-card financial" v-if="dashboard.mrr !== undefined">
-        <div class="metric-label">Monthly Recurring Revenue</div>
-        <div class="metric-value">
+
+      <div
+        v-if="dashboard.mrr !== undefined"
+        class="rounded-xl border border-slate-700/70 bg-slate-950/80 px-4 py-3 sm:px-5 sm:py-4"
+      >
+        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Monthly Recurring Revenue</p>
+        <p class="mt-2 text-2xl sm:text-3xl font-semibold text-emerald-300">
           ${{ dashboard.mrr.toLocaleString() }}
-        </div>
+        </p>
       </div>
-      <div class="metric-card usage" v-if="dashboard.totalRooms !== undefined">
-        <div class="metric-label">Rooms Managed</div>
-        <div class="metric-value">{{ dashboard.totalRooms }}</div>
-        <div class="metric-sub" v-if="dashboard.totalInventoryItems !== undefined">
+
+      <div
+        v-if="dashboard.totalRooms !== undefined"
+        class="rounded-xl border border-slate-700/70 bg-slate-950/80 px-4 py-3 sm:px-5 sm:py-4"
+      >
+        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Rooms Managed</p>
+        <p class="mt-2 text-2xl sm:text-3xl font-semibold text-slate-50">
+          {{ dashboard.totalRooms }}
+        </p>
+        <p
+          v-if="dashboard.totalInventoryItems !== undefined"
+          class="mt-1 text-xs text-slate-400"
+        >
           {{ dashboard.totalInventoryItems }} inventory items
-        </div>
+        </p>
       </div>
-      <div class="metric-card health" :class="dashboard.systemHealth.status">
-        <div class="metric-label">System Health</div>
-        <div class="metric-value">
-          {{ dashboard.systemHealth.status === 'green' ? 'Green' : 'Red' }}
-        </div>
-        <div class="metric-sub">
+
+      <div class="rounded-xl border px-4 py-3 sm:px-5 sm:py-4"
+        :class="dashboard.systemHealth.status === 'green'
+          ? 'border-emerald-500/60 bg-emerald-950/40'
+          : 'border-rose-500/60 bg-rose-950/40'"
+      >
+        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-200">System Health</p>
+        <p class="mt-2 text-2xl sm:text-3xl font-semibold">
+          <span v-if="dashboard.systemHealth.status === 'green'" class="text-emerald-300">Green</span>
+          <span v-else class="text-rose-300">Red</span>
+        </p>
+        <p class="mt-1 text-xs text-slate-200">
           {{ dashboard.systemHealth.errorCountLastHour }} errors in last hour
           <span v-if="dashboard.systemHealth.errorRateLast24h !== undefined">
             · {{ (dashboard.systemHealth.errorRateLast24h * 100).toFixed(1) }}% last 24h
           </span>
-        </div>
+        </p>
       </div>
+
       <div
-        class="metric-card"
         v-if="billingMetrics && billingMetrics.billing_hold_count !== undefined"
+        class="rounded-xl border border-slate-700/70 bg-slate-950/80 px-4 py-3 sm:px-5 sm:py-4"
       >
-        <div class="metric-label">Hotels in Billing Hold</div>
-        <div class="metric-value">{{ billingMetrics.billing_hold_count }}</div>
+        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Hotels in Billing Hold</p>
+        <p class="mt-2 text-2xl sm:text-3xl font-semibold text-amber-300">
+          {{ billingMetrics.billing_hold_count }}
+        </p>
       </div>
+
       <div
-        class="metric-card"
         v-if="billingMetrics && billingMetrics.payment_stats_24h"
+        class="rounded-xl border border-slate-700/70 bg-slate-950/80 px-4 py-3 sm:px-5 sm:py-4"
       >
-        <div class="metric-label">Paystack Success Rate (24h)</div>
-        <div class="metric-value">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Paystack Success Rate (24h)</p>
+        <p class="mt-2 text-2xl sm:text-3xl font-semibold text-emerald-300">
           {{ billingMetrics.payment_stats_24h.success_rate.toFixed(1) }}%
-        </div>
-        <div class="metric-sub">
+        </p>
+        <p class="mt-1 text-xs text-slate-400">
           {{ billingMetrics.payment_stats_24h.successes }} success ·
           {{ billingMetrics.payment_stats_24h.failures }} failed
-        </div>
+        </p>
       </div>
     </section>
 
     <section
       v-if="activeTab === 'tenantsSummary'"
-      class="summary-grid"
+      class="grid gap-5 lg:grid-cols-2"
     >
-      <div class="summary-card">
-        <div class="summary-card-header">
-          <h2>Tenant Status Overview</h2>
-          <p>High-level snapshot of all hotels on the platform.</p>
+      <div class="rounded-xl border border-slate-200/70 bg-white/95 shadow-sm">
+        <div class="border-b border-slate-200 px-4 sm:px-5 py-3">
+          <h2 class="text-sm font-semibold text-slate-900">Tenant Status Overview</h2>
+          <p class="mt-0.5 text-xs text-slate-500">High-level snapshot of all hotels on the platform.</p>
         </div>
-        <div class="summary-stats-row">
-          <div class="mini-stat">
-            <span class="label">Total Tenants</span>
-            <span class="value">{{ dashboard?.totalTenants ?? tenants.length }}</span>
+        <div class="px-4 sm:px-5 py-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div class="space-y-0.5">
+            <span class="block text-[11px] text-slate-500 uppercase tracking-wide">Total Tenants</span>
+            <span class="block text-base font-semibold text-slate-900">{{ dashboard?.totalTenants ?? tenants.length }}</span>
           </div>
-          <div class="mini-stat">
-            <span class="label">Active</span>
-            <span class="value">{{ tenantCountsByStatus.active || 0 }}</span>
+          <div class="space-y-0.5">
+            <span class="block text-[11px] text-slate-500 uppercase tracking-wide">Active</span>
+            <span class="block text-base font-semibold text-emerald-600">{{ tenantCountsByStatus.active || 0 }}</span>
           </div>
-          <div class="mini-stat">
-            <span class="label">Trial</span>
-            <span class="value">{{ tenantCountsByStatus.trial || 0 }}</span>
+          <div class="space-y-0.5">
+            <span class="block text-[11px] text-slate-500 uppercase tracking-wide">Trial</span>
+            <span class="block text-base font-semibold text-amber-600">{{ tenantCountsByStatus.trial || 0 }}</span>
           </div>
-          <div class="mini-stat">
-            <span class="label">Pending</span>
-            <span class="value">{{ tenantCountsByStatus.pending || 0 }}</span>
+          <div class="space-y-0.5">
+            <span class="block text-[11px] text-slate-500 uppercase tracking-wide">Pending</span>
+            <span class="block text-base font-semibold text-sky-600">{{ tenantCountsByStatus.pending || 0 }}</span>
           </div>
-          <div class="mini-stat">
-            <span class="label">Suspended</span>
-            <span class="value">{{ tenantCountsByStatus.suspended || 0 }}</span>
+          <div class="space-y-0.5">
+            <span class="block text-[11px] text-slate-500 uppercase tracking-wide">Suspended</span>
+            <span class="block text-base font-semibold text-rose-600">{{ tenantCountsByStatus.suspended || 0 }}</span>
           </div>
         </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-card-header">
-          <h2>Plans Mix</h2>
-          <p>Distribution of subscription plans across tenants.</p>
+
+      <div class="rounded-xl border border-slate-200/70 bg-white/95 shadow-sm flex flex-col">
+        <div class="border-b border-slate-200 px-4 sm:px-5 py-3">
+          <h2 class="text-sm font-semibold text-slate-900">Plans Mix</h2>
+          <p class="mt-0.5 text-xs text-slate-500">Distribution of subscription plans across tenants.</p>
         </div>
-        <div class="summary-stats-row">
+        <div class="px-4 sm:px-5 py-3 flex flex-wrap gap-3">
           <div
             v-for="(count, plan) in tenantCountsByPlan"
             :key="plan"
-            class="mini-stat"
+            class="rounded-lg border border-slate-200 px-3 py-2 flex flex-col gap-1 min-w-[7rem]"
           >
-            <span class="label">{{ plan }}</span>
-            <span class="value">{{ count }}</span>
+            <span class="text-[11px] font-medium text-slate-600 truncate">{{ plan }}</span>
+            <span class="text-base font-semibold text-slate-900">{{ count }}</span>
           </div>
-          <div v-if="Object.keys(tenantCountsByPlan).length === 0" class="empty-cell">
+          <div
+            v-if="Object.keys(tenantCountsByPlan).length === 0"
+            class="w-full text-center text-xs text-slate-500 py-4"
+          >
             No tenants loaded yet.
           </div>
         </div>
       </div>
     </section>
 
+
     <section
       v-if="activeTab === 'tenantsDirectory'"
       id="tenants-directory"
-      class="card tenants-card"
+      class="card tenants-card rounded-xl border border-slate-200/80 bg-white/95 shadow-sm overflow-hidden"
     >
-      <header class="card-header">
+      <header class="card-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-5 py-3 border-b border-slate-200 bg-slate-50/80">
         <div>
-          <h2>Tenants</h2>
-          <p>Manage all hotels on the platform</p>
+          <h2 class="text-sm font-semibold text-slate-900">Tenants</h2>
+          <p class="mt-0.5 text-xs text-slate-500">Manage all hotels on the platform</p>
         </div>
-        <div class="card-filters">
+        <div class="card-filters flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
           <select v-model="tenantStatus" @change="loadTenants" class="filter-input">
             <option value="">All Statuses</option>
             <option value="active">Active</option>
@@ -199,48 +246,63 @@
           <input
             v-model="tenantSearch"
             @keyup.enter="loadTenants"
-            class="filter-input"
+            class="filter-input w-full sm:w-auto"
             type="search"
             placeholder="Search hotels or contacts..."
           />
-          <button class="btn" @click="loadTenants">Refresh</button>
+          <button class="btn w-full sm:w-auto" @click="loadTenants">Refresh</button>
         </div>
       </header>
 
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
+      <div class="table-wrapper overflow-x-auto">
+        <table class="min-w-full text-xs text-slate-700">
+          <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th>Hotel Name</th>
-              <th>Primary Contact</th>
-              <th>Plan</th>
-              <th>Status</th>
-              <th>Date Joined</th>
-              <th></th>
+              <th class="px-3 sm:px-4 py-2 text-left font-semibold uppercase tracking-wide text-[11px] text-slate-500">Hotel Name</th>
+              <th class="px-3 sm:px-4 py-2 text-left font-semibold uppercase tracking-wide text-[11px] text-slate-500">Primary Contact</th>
+              <th class="px-3 sm:px-4 py-2 text-left font-semibold uppercase tracking-wide text-[11px] text-slate-500">Plan</th>
+              <th class="px-3 sm:px-4 py-2 text-left font-semibold uppercase tracking-wide text-[11px] text-slate-500">Status</th>
+              <th class="px-3 sm:px-4 py-2 text-left font-semibold uppercase tracking-wide text-[11px] text-slate-500">Date Joined</th>
+              <th class="px-3 sm:px-4 py-2" />
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-slate-100 bg-white">
             <tr
               v-for="tenant in tenants"
               :key="tenant.id"
-              :class="{ selected: selectedTenant && selectedTenant.id === tenant.id }"
+              class="hover:bg-slate-50 cursor-pointer"
+              :class="{ 'bg-slate-50/80': selectedTenant && selectedTenant.id === tenant.id }"
               @click="selectTenant(tenant)"
             >
-              <td>{{ tenant.name }}</td>
-              <td>
-                <div class="cell-main">{{ tenant.primary_contact_name || '-' }}</div>
-                <div class="cell-sub">{{ tenant.primary_contact_email }}</div>
+              <td class="px-3 sm:px-4 py-2 align-top">
+                <div class="text-xs font-medium text-slate-900">{{ tenant.name }}</div>
               </td>
-              <td>{{ tenant.subscription_plan }}</td>
-              <td>
-                <span class="status-pill" :class="tenant.status">
+              <td class="px-3 sm:px-4 py-2 align-top">
+                <div class="text-xs font-medium text-slate-900">{{ tenant.primary_contact_name || '-' }}</div>
+                <div class="mt-0.5 text-[11px] text-slate-500">{{ tenant.primary_contact_email }}</div>
+              </td>
+              <td class="px-3 sm:px-4 py-2 align-top text-xs text-slate-700">
+                {{ tenant.subscription_plan }}
+              </td>
+              <td class="px-3 sm:px-4 py-2 align-top">
+                <span
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
+                  :class="{
+                    'bg-emerald-50 text-emerald-700': tenant.status === 'active',
+                    'bg-amber-50 text-amber-700': tenant.status === 'trial',
+                    'bg-sky-50 text-sky-700': tenant.status === 'pending',
+                    'bg-rose-50 text-rose-700': tenant.status === 'suspended'
+                  }"
+                >
                   {{ tenant.status }}
                 </span>
               </td>
-              <td>{{ formatDate(tenant.date_joined || tenant.created_at) }}</td>
-              <td>
+              <td class="px-3 sm:px-4 py-2 align-top text-xs text-slate-700">
+                {{ formatDate(tenant.date_joined || tenant.created_at) }}
+              </td>
+              <td class="px-3 sm:px-4 py-2 align-top text-right">
                 <NuxtLink
-                  class="btn xs"
+                  class="inline-flex items-center rounded-md border border-slate-300 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 hover:bg-slate-50"
                   :to="`/admin/super/tenants/${tenant.id}`"
                   @click.stop
                 >
@@ -249,45 +311,53 @@
               </td>
             </tr>
             <tr v-if="tenants.length === 0">
-              <td colspan="5" class="empty-cell">No tenants found.</td>
+              <td
+                colspan="6"
+                class="px-3 sm:px-4 py-4 text-center text-xs text-slate-500"
+              >
+                No tenants found.
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <footer v-if="selectedTenant" class="tenant-detail">
+      <footer
+        v-if="selectedTenant"
+        class="tenant-detail border-t border-slate-200 px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-50/60"
+      >
         <div class="detail-main">
-          <h3>{{ selectedTenant.name }}</h3>
-          <p>
+          <h3 class="text-sm font-semibold text-slate-900">{{ selectedTenant.name }}</h3>
+          <p class="mt-0.5 text-xs text-slate-600">
             {{ selectedTenant.primary_contact_name }}
             <span v-if="selectedTenant.primary_contact_email">
               · {{ selectedTenant.primary_contact_email }}
             </span>
           </p>
-          <div class="detail-stats">
-            <div>
-              <span class="label">Rooms Defined</span>
-              <span class="value">{{ selectedTenant.rooms_defined ?? 0 }}</span>
+          <div class="detail-stats mt-2 flex flex-wrap gap-4">
+            <div class="space-y-0.5">
+              <span class="label block text-[11px] text-slate-500 uppercase tracking-wide">Rooms Defined</span>
+              <span class="value block text-sm font-medium text-slate-900">{{ selectedTenant.rooms_defined ?? 0 }}</span>
             </div>
-            <div>
-              <span class="label">Storage Used</span>
-              <span class="value">{{ (selectedTenant.storage_used_mb ?? 0).toFixed(1) }} MB</span>
+            <div class="space-y-0.5">
+              <span class="label block text-[11px] text-slate-500 uppercase tracking-wide">Storage Used</span>
+              <span class="value block text-sm font-medium text-slate-900">{{ (selectedTenant.storage_used_mb ?? 0).toFixed(1) }} MB</span>
             </div>
-            <div>
-              <span class="label">Last Active</span>
-              <span class="value">{{ formatDateTime(selectedTenant.last_active_at) }}</span>
+            <div class="space-y-0.5">
+              <span class="label block text-[11px] text-slate-500 uppercase tracking-wide">Last Active</span>
+              <span class="value block text-sm font-medium text-slate-900">{{ formatDateTime(selectedTenant.last_active_at) }}</span>
             </div>
           </div>
         </div>
-        <div class="detail-actions">
-          <button class="btn subtle" @click="impersonateTenant" disabled>
+        <div class="detail-actions flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <button class="btn subtle w-full sm:w-auto" @click="impersonateTenant" disabled>
             Impersonate (coming soon)
           </button>
-          <button class="btn" @click="openUpdateTenant('update_plan')">
+          <button class="btn w-full sm:w-auto" @click="openUpdateTenant('update_plan')">
             Change Plan
           </button>
           <button
-            class="btn danger"
+            class="btn danger w-full sm:w-auto"
             @click="openUpdateTenant('update_status')"
           >
             {{ selectedTenant.status === 'suspended' ? 'Activate Tenant' : 'Suspend Tenant' }}
@@ -298,109 +368,131 @@
 
     <section
       v-if="activeTab === 'onboardingSummary'"
-      class="summary-grid"
+      class="grid gap-5 lg:grid-cols-2"
     >
-      <div class="summary-card">
-        <div class="summary-card-header">
-          <h2>Onboarding Funnel</h2>
-          <p>Pipeline of access requests from the landing page.</p>
+      <div class="rounded-xl border border-slate-200/70 bg-white/95 shadow-sm">
+        <div class="border-b border-slate-200 px-4 sm:px-5 py-3">
+          <h2 class="text-sm font-semibold text-slate-900">Onboarding Funnel</h2>
+          <p class="mt-0.5 text-xs text-slate-500">Pipeline of access requests from the landing page.</p>
         </div>
-        <div class="summary-stats-row">
-          <div class="mini-stat">
-            <span class="label">Total Requests</span>
-            <span class="value">{{ requests.length }}</span>
+        <div class="px-4 sm:px-5 py-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="space-y-0.5">
+            <span class="block text-[11px] text-slate-500 uppercase tracking-wide">Total Requests</span>
+            <span class="block text-base font-semibold text-slate-900">{{ requests.length }}</span>
           </div>
-          <div class="mini-stat">
-            <span class="label">Pending</span>
-            <span class="value">{{ onboardingCounts.pending }}</span>
+          <div class="space-y-0.5">
+            <span class="block text-[11px] text-slate-500 uppercase tracking-wide">Pending</span>
+            <span class="block text-base font-semibold text-amber-600">{{ onboardingCounts.pending }}</span>
           </div>
-          <div class="mini-stat">
-            <span class="label">Approved</span>
-            <span class="value">{{ onboardingCounts.approved }}</span>
+          <div class="space-y-0.5">
+            <span class="block text-[11px] text-slate-500 uppercase tracking-wide">Approved</span>
+            <span class="block text-base font-semibold text-emerald-600">{{ onboardingCounts.approved }}</span>
           </div>
-          <div class="mini-stat">
-            <span class="label">Rejected</span>
-            <span class="value">{{ onboardingCounts.rejected }}</span>
+          <div class="space-y-0.5">
+            <span class="block text-[11px] text-slate-500 uppercase tracking-wide">Rejected</span>
+            <span class="block text-base font-semibold text-rose-600">{{ onboardingCounts.rejected }}</span>
           </div>
         </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-card-header">
-          <h2>Recent Requests</h2>
-          <p>Most recent hotels that requested access.</p>
+
+      <div class="rounded-xl border border-slate-200/70 bg-white/95 shadow-sm flex flex-col">
+        <div class="border-b border-slate-200 px-4 sm:px-5 py-3">
+          <h2 class="text-sm font-semibold text-slate-900">Recent Requests</h2>
+          <p class="mt-0.5 text-xs text-slate-500">Most recent hotels that requested access.</p>
         </div>
-        <ul class="summary-list">
+        <ul class="divide-y divide-slate-100">
           <li
             v-for="request in requests.slice(0, 5)"
             :key="request.id"
-            class="summary-list-item"
+            class="px-4 sm:px-5 py-2.5"
           >
-            <div class="cell-main">{{ request.hotel_name }}</div>
-            <div class="cell-sub">
+            <div class="text-xs font-medium text-slate-900">{{ request.hotel_name }}</div>
+            <div class="mt-0.5 text-[11px] text-slate-500">
               {{ request.name }} · {{ formatDate(request.created_at) }} · {{ request.status }}
             </div>
           </li>
-          <li v-if="requests.length === 0" class="empty-cell">No requests yet.</li>
+          <li
+            v-if="requests.length === 0"
+            class="px-4 sm:px-5 py-4 text-center text-xs text-slate-500"
+          >
+            No requests yet.
+          </li>
         </ul>
       </div>
     </section>
 
     <section
       v-if="activeTab === 'onboardingQueue'"
-      class="card requests-card"
+      class="rounded-xl border border-slate-200/70 bg-white/95 shadow-sm flex flex-col"
     >
-      <header class="card-header">
+      <header class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-5 py-3 border-b border-slate-200">
         <div>
-          <h2>Registration Requests</h2>
-          <p>Invite-only and approval queue</p>
+          <h2 class="text-sm font-semibold text-slate-900">Registration Requests</h2>
+          <p class="mt-0.5 text-xs text-slate-500">Invite-only and approval queue</p>
         </div>
-        <div class="card-filters">
-          <select v-model="requestStatus" @change="loadRequests" class="filter-input">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+          <select
+            v-model="requestStatus"
+            @change="loadRequests"
+            class="w-full sm:w-auto rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700 focus:border-royal-gold-500 focus:ring-royal-gold-500"
+          >
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </select>
-          <button class="btn" @click="loadRequests">Refresh</button>
+          <button
+            class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 w-full sm:w-auto"
+            @click="loadRequests"
+          >
+            Refresh
+          </button>
         </div>
       </header>
 
-      <div class="table-wrapper compact">
-        <table class="data-table">
-          <thead>
+      <div class="max-h-72 overflow-auto">
+        <table class="min-w-full text-xs text-slate-700">
+          <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th>Hotel</th>
-              <th>Contact</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th class="px-3 sm:px-4 py-2 text-left font-semibold uppercase tracking-wide text-[11px] text-slate-500">Hotel</th>
+              <th class="px-3 sm:px-4 py-2 text-left font-semibold uppercase tracking-wide text-[11px] text-slate-500">Contact</th>
+              <th class="px-3 sm:px-4 py-2 text-left font-semibold uppercase tracking-wide text-[11px] text-slate-500">Status</th>
+              <th class="px-3 sm:px-4 py-2 text-right font-semibold uppercase tracking-wide text-[11px] text-slate-500">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-slate-100 bg-white">
             <tr v-for="request in requests" :key="request.id">
-              <td>
-                <div class="cell-main">{{ request.hotel_name }}</div>
-                <div class="cell-sub">{{ formatDate(request.created_at) }}</div>
+              <td class="px-3 sm:px-4 py-2 align-top">
+                <div class="text-xs font-medium text-slate-900">{{ request.hotel_name }}</div>
+                <div class="mt-0.5 text-[11px] text-slate-500">{{ formatDate(request.created_at) }}</div>
               </td>
-              <td>
-                <div class="cell-main">{{ request.name }}</div>
-                <div class="cell-sub">{{ request.email }}</div>
+              <td class="px-3 sm:px-4 py-2 align-top">
+                <div class="text-xs font-medium text-slate-900">{{ request.name }}</div>
+                <div class="mt-0.5 text-[11px] text-slate-500">{{ request.email }}</div>
               </td>
-              <td>
-                <span class="status-pill" :class="request.status">
+              <td class="px-3 sm:px-4 py-2 align-top">
+                <span
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
+                  :class="{
+                    'bg-amber-50 text-amber-700': request.status === 'pending',
+                    'bg-emerald-50 text-emerald-700': request.status === 'approved',
+                    'bg-rose-50 text-rose-700': request.status === 'rejected'
+                  }"
+                >
                   {{ request.status }}
                 </span>
               </td>
-              <td>
-                <div class="row-actions">
+              <td class="px-3 sm:px-4 py-2 align-top text-right">
+                <div class="flex justify-end gap-1.5">
                   <button
                     v-if="request.status === 'pending'"
-                    class="btn xs"
+                    class="inline-flex items-center rounded-md border border-emerald-500/70 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100"
                     @click="approveRequest(request)"
                   >
                     Approve
                   </button>
                   <button
                     v-if="request.status === 'pending'"
-                    class="btn xs danger"
+                    class="inline-flex items-center rounded-md border border-rose-500/70 bg-rose-50 px-2.5 py-1 text-[11px] font-medium text-rose-700 hover:bg-rose-100"
                     @click="rejectRequest(request)"
                   >
                     Reject
@@ -409,7 +501,12 @@
               </td>
             </tr>
             <tr v-if="requests.length === 0">
-              <td colspan="4" class="empty-cell">No requests found.</td>
+              <td
+                colspan="4"
+                class="px-3 sm:px-4 py-4 text-center text-xs text-slate-500"
+              >
+                No requests found.
+              </td>
             </tr>
           </tbody>
         </table>
@@ -418,24 +515,41 @@
 
     <section
       v-if="activeTab === 'activity'"
-      class="card activity-card"
+      class="rounded-xl border border-slate-200/70 bg-white/95 shadow-sm flex flex-col"
     >
-      <header class="card-header">
+      <header class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-5 py-3 border-b border-slate-200">
         <div>
-          <h2>Global Activity</h2>
-          <p>High-level events across the platform</p>
+          <h2 class="text-sm font-semibold text-slate-900">Global Activity</h2>
+          <p class="mt-0.5 text-xs text-slate-500">High-level events across the platform</p>
         </div>
-        <button class="btn" @click="loadActivity">Refresh</button>
+        <button
+          class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 w-full sm:w-auto"
+          @click="loadActivity"
+        >
+          Refresh
+        </button>
       </header>
 
-      <div class="activity-list">
-        <div v-for="event in activity" :key="event.id" class="activity-item">
-          <div class="activity-type" :class="event.type">
+      <div class="max-h-72 overflow-auto px-3 sm:px-4 py-3 space-y-2.5">
+        <span id="analytics" class="sr-only">Analytics anchor</span>
+        <div
+          v-for="event in activity"
+          :key="event.id"
+          class="flex gap-2.5 rounded-lg border border-slate-100 bg-slate-50/60 px-3 py-2"
+        >
+          <div
+            class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide"
+            :class="{
+              'bg-rose-50 text-rose-700': event.type === 'system_error',
+              'bg-emerald-50 text-emerald-700': event.type === 'tenant_created',
+              'bg-slate-200 text-slate-800': event.type !== 'system_error' && event.type !== 'tenant_created'
+            }"
+          >
             {{ event.type }}
           </div>
-          <div class="activity-body">
-            <div class="activity-title">{{ event.title }}</div>
-            <div class="activity-meta">
+          <div class="flex flex-col">
+            <div class="text-xs font-medium text-slate-900">{{ event.title }}</div>
+            <div class="mt-0.5 text-[11px] text-slate-500 flex flex-wrap gap-x-2">
               <span>{{ formatDateTime(event.created_at) }}</span>
               <span v-if="event.metadata?.hotel_name">
                 · {{ event.metadata.hotel_name }}
@@ -443,43 +557,73 @@
             </div>
           </div>
         </div>
-        <div v-if="activity.length === 0" class="empty-cell">No recent activity.</div>
+        <div
+          v-if="activity.length === 0"
+          class="px-3 py-4 text-center text-xs text-slate-500"
+        >
+          No recent activity.
+        </div>
       </div>
     </section>
 
-    <div v-if="showUpdateModal && selectedTenant" class="modal-backdrop">
-      <div class="modal">
-        <h3>Update Tenant</h3>
-        <p v-if="updateAction === 'update_status'">
-          Change status for <strong>{{ selectedTenant.name }}</strong>
-        </p>
-        <p v-else>
-          Change subscription plan for <strong>{{ selectedTenant.name }}</strong>
-        </p>
+    <div
+      v-if="showUpdateModal && selectedTenant"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4"
+    >
+      <div class="w-full max-w-sm rounded-xl border border-slate-200 bg-white shadow-xl">
+        <div class="px-4 sm:px-5 pt-4 pb-2">
+          <h3 class="text-sm font-semibold text-slate-900">Update Tenant</h3>
+          <p v-if="updateAction === 'update_status'" class="mt-1 text-xs text-slate-600">
+            Change status for <span class="font-semibold">{{ selectedTenant.name }}</span>
+          </p>
+          <p v-else class="mt-1 text-xs text-slate-600">
+            Change subscription plan for <span class="font-semibold">{{ selectedTenant.name }}</span>
+          </p>
+        </div>
 
-        <div class="modal-body">
-          <div v-if="updateAction === 'update_status'" class="field">
-            <label>Status</label>
-            <select v-model="updateStatus" class="filter-input">
+        <div class="px-4 sm:px-5 pb-3 space-y-3 text-xs">
+          <div v-if="updateAction === 'update_status'" class="space-y-1">
+            <label class="block text-[11px] font-medium text-slate-600">Status</label>
+            <select
+              v-model="updateStatus"
+              class="w-full rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700 focus:border-royal-gold-500 focus:ring-royal-gold-500"
+            >
               <option value="active">Active</option>
               <option value="trial">Trial</option>
               <option value="pending">Pending</option>
               <option value="suspended">Suspended</option>
             </select>
           </div>
-          <div v-else class="field">
-            <label>Plan</label>
-            <input v-model="updatePlan" class="filter-input" placeholder="e.g. trial, starter, growth" />
+          <div v-else class="space-y-1">
+            <label class="block text-[11px] font-medium text-slate-600">Plan</label>
+            <input
+              v-model="updatePlan"
+              class="w-full rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700 focus:border-royal-gold-500 focus:ring-royal-gold-500"
+              placeholder="e.g. trial, starter, growth"
+            />
           </div>
-          <div class="field">
-            <label>Notes (optional)</label>
-            <textarea v-model="updateNotes" rows="3" class="filter-input"></textarea>
+          <div class="space-y-1">
+            <label class="block text-[11px] font-medium text-slate-600">Notes (optional)</label>
+            <textarea
+              v-model="updateNotes"
+              rows="3"
+              class="w-full rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700 focus:border-royal-gold-500 focus:ring-royal-gold-500"
+            />
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button class="btn subtle" @click="closeUpdateModal">Cancel</button>
-          <button class="btn" @click="submitUpdate" :disabled="updating">
+        <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 sm:px-5 py-2.5">
+          <button
+            class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            @click="closeUpdateModal"
+          >
+            Cancel
+          </button>
+          <button
+            class="inline-flex items-center justify-center rounded-md border border-royal-gold-500 bg-royal-gold-500 px-3 py-1 text-xs font-medium text-slate-900 hover:bg-royal-gold-600 disabled:opacity-60 disabled:cursor-not-allowed"
+            @click="submitUpdate"
+            :disabled="updating"
+          >
             Save
           </button>
         </div>
@@ -920,458 +1064,3 @@ onMounted(async () => {
   ])
 })
 </script>
-
-<style scoped>
-.super-admin-page {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.super-admin-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-radius: 0.75rem;
-  background: linear-gradient(135deg, #020617, #111827);
-  color: #e5e7eb;
-}
-
-.super-admin-header h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.super-admin-header p {
-  font-size: 0.875rem;
-  color: #9ca3af;
-}
-
-.super-admin-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  background: #111827;
-  border: 1px solid #d4af37;
-  color: #fbbf24;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-}
-
-.metric-card {
-  padding: 1rem 1.25rem;
-  border-radius: 0.75rem;
-  background: #020617;
-  border: 1px solid #1f2937;
-  color: #e5e7eb;
-}
-
-.metric-card .metric-label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #9ca3af;
-}
-
-.metric-card .metric-value {
-  margin-top: 0.25rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.metric-card.health.green {
-  border-color: #22c55e;
-}
-
-.metric-card.health.red {
-  border-color: #ef4444;
-}
-
-.metric-card .metric-sub {
-  margin-top: 0.25rem;
-  font-size: 0.75rem;
-  color: #9ca3af;
-}
-
-.content-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.5fr);
-  gap: 1.5rem;
-}
-
-.card {
-  border-radius: 0.75rem;
-  background: white;
-  border: 1px solid #e5e7eb;
-  display: flex;
-  flex-direction: column;
-}
-
-.card-header {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.card-header h2 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.card-header p {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.card-filters {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.filter-input {
-  border-radius: 0.375rem;
-  border: 1px solid #d1d5db;
-  padding: 0.35rem 0.5rem;
-  font-size: 0.75rem;
-}
-
-.table-wrapper {
-  overflow: auto;
-}
-
-.table-wrapper.compact {
-  max-height: 260px;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.8rem;
-}
-
-.data-table thead {
-  background: #f9fafb;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-.data-table th,
-.data-table td {
-  padding: 0.4rem 0.6rem;
-  border-bottom: 1px solid #f3f4f6;
-  text-align: left;
-}
-
-.data-table tbody tr:hover {
-  background: #f9fafb;
-}
-
-.data-table tbody tr.selected {
-  background: #eff6ff;
-}
-
-.cell-main {
-  font-weight: 500;
-  color: #111827;
-}
-
-.cell-sub {
-  font-size: 0.7rem;
-  color: #6b7280;
-}
-
-.empty-cell {
-  text-align: center;
-  padding: 1rem;
-  color: #9ca3af;
-}
-
-.status-pill {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.7rem;
-  text-transform: capitalize;
-}
-
-.status-pill.active {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.status-pill.trial {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-pill.pending {
-  background: #e0f2fe;
-  color: #0369a1;
-}
-
-.status-pill.suspended {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.tenant-detail {
-  border-top: 1px solid #e5e7eb;
-  padding: 0.75rem 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.detail-main h3 {
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.detail-main p {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-.detail-stats {
-  display: flex;
-  gap: 1.5rem;
-  margin-top: 0.5rem;
-}
-
-.detail-stats .label {
-  display: block;
-  font-size: 0.7rem;
-  color: #6b7280;
-}
-
-.detail-stats .value {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.detail-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.side-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.activity-list {
-  max-height: 260px;
-  overflow: auto;
-  padding: 0.5rem 0.75rem 0.75rem;
-}
-
-.activity-item {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.4rem 0.5rem;
-  border-radius: 0.5rem;
-  border: 1px solid #f3f4f6;
-  margin-bottom: 0.35rem;
-}
-
-.activity-type {
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0.2rem 0.4rem;
-  border-radius: 9999px;
-  background: #f3f4f6;
-  align-self: flex-start;
-}
-
-.activity-type.system_error {
-  background: #fef2f2;
-  color: #b91c1c;
-}
-
-.activity-type.tenant_created {
-  background: #ecfdf5;
-  color: #15803d;
-}
-
-.activity-title {
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.activity-meta {
-  font-size: 0.7rem;
-  color: #6b7280;
-}
-
-.activity-body {
-  display: flex;
-  flex-direction: column;
-}
-
-.row-actions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.btn {
-  border-radius: 0.375rem;
-  border: 1px solid #d1d5db;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.75rem;
-  background: white;
-  cursor: pointer;
-}
-
-.btn:hover {
-  background: #f9fafb;
-}
-
-.btn.danger {
-  border-color: #ef4444;
-  color: #b91c1c;
-}
-
-.btn.subtle {
-  border-color: #e5e7eb;
-  color: #4b5563;
-}
-
-.btn.xs {
-  padding: 0.15rem 0.4rem;
-  font-size: 0.7rem;
-}
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-.modal {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1rem 1.25rem;
-  width: 360px;
-  border: 1px solid #e5e7eb;
-}
-
-.modal h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.modal p {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-.modal-body {
-  margin-top: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.field label {
-  display: block;
-  font-size: 0.75rem;
-  color: #4b5563;
-  margin-bottom: 0.25rem;
-}
-
-.field textarea {
-  min-height: 60px;
-}
-
-.modal-footer {
-  margin-top: 0.75rem;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
-@media (max-width: 1024px) {
-  .content-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .super-admin-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .super-admin-tabs {
-    display: flex;
-    gap: 0.5rem;
-    overflow-x: auto;
-    padding-bottom: 0.25rem;
-  }
-
-  .super-admin-tabs .tab-pill {
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .card-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .card-filters {
-    width: 100%;
-    flex-wrap: wrap;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-  }
-
-  .card-filters .filter-input,
-  .card-filters .btn {
-    width: 100%;
-  }
-
-  .tenant-detail {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .detail-stats {
-    flex-wrap: wrap;
-  }
-
-  .detail-actions {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-
-  .detail-actions .btn {
-    flex: 1 1 100%;
-    text-align: center;
-  }
-}
-</style>

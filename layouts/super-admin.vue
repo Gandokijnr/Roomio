@@ -1,15 +1,17 @@
 <template>
-  <div class="super-admin-layout">
+  <div class="min-h-screen flex bg-gradient-to-br from-slate-900 via-slate-950 to-black">
     <SuperAdminSidebar :class="{ 'is-open': isSidebarOpen }" />
     <div
       v-if="isSidebarOpen"
-      class="super-admin-backdrop"
+      class="fixed inset-0 bg-slate-900/60 z-30 lg:hidden"
       @click="isSidebarOpen = false"
     />
-    <main class="super-admin-main">
+    <main
+      class="flex-1 ml-0 lg:ml-64 px-4 sm:px-6 lg:px-10 py-6 sm:py-8 bg-gradient-to-b from-slate-950 to-black text-slate-100 overflow-x-hidden"
+    >
       <button
         type="button"
-        class="super-sidebar-toggle"
+        class="inline-flex items-center gap-1 mb-4 px-3 py-1.5 rounded-full border border-slate-500/70 bg-slate-900/80 text-xs font-medium text-slate-100 cursor-pointer lg:hidden"
         @click="isSidebarOpen = !isSidebarOpen"
       >
         ☰ Super Admin Menu
@@ -30,51 +32,3 @@ watch(
   }
 )
 </script>
-
-<style scoped>
-.super-admin-layout {
-  display: flex;
-  min-height: 100vh;
-  background: radial-gradient(circle at top left, #111827, #020617);
-}
-
-.super-admin-main {
-  flex: 1;
-  margin-left: 260px;
-  padding: var(--spacing-xl);
-  background: linear-gradient(to bottom, #020617, #030712);
-  color: #e5e7eb;
-  overflow-x: hidden;
-}
-
-.super-admin-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  z-index: 30;
-}
-
-.super-sidebar-toggle {
-  display: none;
-}
-
-@media (max-width: 1024px) {
-  .super-admin-main {
-    margin-left: 0;
-  }
-
-  .super-sidebar-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    margin-bottom: 1rem;
-    padding: 0.4rem 0.75rem;
-    border-radius: 9999px;
-    border: 1px solid rgba(148, 163, 184, 0.6);
-    background: rgba(15, 23, 42, 0.9);
-    color: #e5e7eb;
-    font-size: 0.8rem;
-    cursor: pointer;
-  }
-}
-</style>

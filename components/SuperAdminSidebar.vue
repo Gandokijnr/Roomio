@@ -37,6 +37,11 @@
         <span class="icon">📣</span>
         <span>Activity</span>
       </NuxtLink>
+
+      <NuxtLink to="/admin/analytics" class="nav-item">
+        <span class="icon">📊</span>
+        <span>Analytics</span>
+      </NuxtLink>
     </nav>
 
     <div class="super-footer">
